@@ -1,4 +1,5 @@
 import { DicePip } from "./Dices"
+import { standardConf } from "./GameConf"
 
 /**
  * 相対表記で表現した盤面。常に動かす側の観点になっていて、0はバーポイント、25は上がり、
@@ -96,8 +97,14 @@ export function countWhitePieces(pieces: number[]) {
 export function countRedPieces(pieces: number[]) {
     return countWhitePieces(pieces.map(n => -n))
 }
-
-export function boardState(pieces: number[], bornOffs: [number, number] = [0, 0]): BoardState {
+/**
+ * 駒の配置を格納した配列から、BoardStateを生成する
+ * 
+ * @param pieces 駒の配置（省略時は標準ルールでの開始時な配置）
+ * @param bornOffs すでにベアリングオフした駒の数の対（順に自分、相手：省略時は0）
+ * @returns 盤面
+ */
+export function boardState(pieces: number[] = standardConf.initialPos, bornOffs: [number, number] = [0, 0]): BoardState {
     return initBoardState(pieces, bornOffs)
 }
 
@@ -106,7 +113,7 @@ function initBoardState(pieces: number[], bornOffs: [number, number] = [0, 0], i
     const bornOffOpponent = bornOffs[1]
     const pieceCount = countWhitePieces(pieces)
     const pieceCountOpponent = countRedPieces(pieces)
-    
+
     return {
         pieces: pieces,
         pieceCount: pieceCount,
