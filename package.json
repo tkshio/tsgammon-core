@@ -1,14 +1,15 @@
 {
-    "name": "tsgammon_core",
+    "name": "tsgammon-core",
     "version": "0.1.0",
-    "private": true,
     "keywords": [
-        "Backgammon",
+        "backgammon",
+        "game",
         "tsgammon",
         "typescript"
     ],
     "author": {
         "name": "tkshio",
+        "email": "tkshio.nacl@gmail.com",
         "url": "https://github.com/tkshio"
     },
     "license": "Apache-2.0",
