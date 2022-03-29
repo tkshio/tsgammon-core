@@ -1,0 +1,32 @@
+{
+    "name": "tsgammon-core",
+    "version": "0.1.0",
+    "keywords": [
+        "backgammon",
+        "game",
+        "tsgammon",
+        "typescript"
+    ],
+    "author": {
+        "name": "tkshio",
+        "email": "tkshio.nacl@gmail.com",
+        "url": "https://github.com/tkshio"
+    },
+    "license": "Apache-2.0",
+    "main":"index.js",
+    "types":"index.d.ts",
+    "dependencies": {
+        "typescript": "^4.6.3"
+    },
+    "devDependencies": {
+        "@types/jest": "^27.4.1",
+        "rimraf": "^3.0.2",
+        "ts-jest": "^27.1.4"
+    },
+    "scripts": {
+        "test": "jest",
+        "prebuild": "rimraf dist",
+        "build": "tsc -p tsconfig.dist.json",
+        "postbuild": "cp package.json README.md LICENSE dist/"
+    }
+}
