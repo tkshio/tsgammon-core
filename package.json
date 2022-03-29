@@ -12,9 +12,8 @@
         "url": "https://github.com/tkshio"
     },
     "license": "Apache-2.0",
-    "files": [
-        "dist"
-    ],
+    "main":"index.js",
+    "types":"index.d.ts",
     "dependencies": {
         "typescript": "^4.6.3"
     },
@@ -27,6 +26,6 @@
         "test": "jest",
         "prebuild": "rimraf dist",
         "build": "tsc -p tsconfig.dist.json",
-        "postbuild":"cp package.json dist/"
+        "postbuild": "cp package.json README.md LICENSE dist/"
     }
 }
