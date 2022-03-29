@@ -2,6 +2,16 @@
  * ダイスの目のペアを表す
  */
 export type DiceRoll = { dice1: DicePip, dice2: DicePip }
+/**
+ * ダイスの目のペアを生成する
+ * 
+ * @param dice1 ダイスの目
+ * @param dice2 ダイスの目
+ * @returns ダイスの目のペア
+ */
+export function diceRoll(dice1: DicePip, dice2: DicePip): DiceRoll {
+    return { dice1, dice2 }
+}
 
 /**
  * ダイスの目を表す
@@ -36,6 +46,6 @@ export function dices(...dicePips: DicePip[]): Dice[] {
  * @param dicePips ダイスの目を格納した配列
  * @returns 未使用の状態のDice配列
  */
-export function dice(pip:DicePip):Dice{
-    return ({pip, used:false})
+export function dice(pip: DicePip): Dice {
+    return ({ pip, used: false })
 }
