@@ -64,7 +64,11 @@ export const NO_MOVE: NoMove = { hasValue: false }
 
 
 /**
- * 与えられたBoardStateオブジェクトとダイスから、BoardStateNodeを生成する
+ * 与えられた盤面とダイス目のペアから、BoardStateNodeを生成する
+ * 
+ * @param board 盤面
+ * @param dicePips ダイス目のペア
+ * @returns 局面
  */
 export function boardStateNode(board: BoardState, dicePips: DiceRoll): BoardStateNode {
     const { dice1, dice2 } = dicePips
@@ -75,7 +79,16 @@ export function boardStateNode(board: BoardState, dicePips: DiceRoll): BoardStat
 }
 
 /**
- * 各ポイントの駒数を格納した配列からBoardStateNodeを生成する
+ * 駒の配置を格納した配列からBoardStateNodeを生成する。
+ * 
+ * pieces[0]が自分のバーポイント、pieces[25]が相手のバーポイントとなり
+ * pieces[1]-[24]は盤面の各ポイントに対応する。
+ * 
+ * @param pieces 駒の配置。正は自駒、負は相手の駒
+ * @param dice1 ダイス目
+ * @param dice2 ダイス目
+ * @param bornOffs すでにベアリングオフした駒の数の対（順に自分、相手：省略時は0）
+ * @returns 局面
  */
 export function boardStateNodeFromArray(pieces: number[],
     dice1: DicePip, dice2: DicePip,
