@@ -1,5 +1,5 @@
 import { formatDices } from "./formatDices";
-import { formatMoves, MoveFormatDirection } from "./formatMove";
+import { formatAbsMoves, MoveFormatDirection } from "./formatAbsMove";
 import { Ply } from "../Ply";
 
 /**
@@ -18,7 +18,7 @@ export function formatPly(ply: Omit<Ply, 'isRed'>, direction: MoveFormatDirectio
 
     const roll = formatDices(ply.dices);
     const moves = ply.moves.length === 0 ? ""
-        : `Moves ${formatMoves(ply.moves, direction).join(" ")}`;
+        : `Moves ${formatAbsMoves(ply.moves, direction).join(" ")}`;
 
     return `Roll ${roll} ${moves}`;
 }
@@ -43,6 +43,6 @@ export function formatPlyAbbr(ply: Omit<Ply, 'isRed'>,
     }
 
     const roll = formatDices(ply.dices, fmtDoublet);
-    const moves = formatMoves(ply.moves, direction, labelNoMove).join(" ");
+    const moves = formatAbsMoves(ply.moves, direction, labelNoMove).join(" ");
     return `${roll}: ${moves}`;
 }

@@ -1,4 +1,4 @@
-import { MoveFormatDirection } from "../../utils/formatMove";
+import { MoveFormatDirection } from "../../utils/formatAbsMove";
 import { formatPlyAbbr } from "../../utils/formatPly";
 import { PlyRecord } from "../PlyRecord";
 import { SGResult } from "../SGResult";

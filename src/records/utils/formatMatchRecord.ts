@@ -5,7 +5,7 @@ import { GameRecord } from "../GameRecord";
 import { MatchRecord } from "../MatchRecord";
 import { Ply } from "../../Ply";
 import { SGResult } from "../SGResult";
-import { MoveFormatDirection } from "../../utils/formatMove";
+import { MoveFormatDirection } from "../../utils/formatAbsMove";
 
 
 /**
