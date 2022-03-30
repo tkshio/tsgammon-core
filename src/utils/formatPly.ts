@@ -41,8 +41,8 @@ export function formatPly(
 export function formatPlyAbbr(
     ply: Omit<Ply, 'isRed'>,
     direction: MoveFormatDirection = MoveFormatDirection.RELATIVE_DEC,
-    fmtDoublet: boolean = true,
-    labelNoMove: string = ''
+    fmtDoublet = true,
+    labelNoMove = ''
 ) {
     if (ply.dices.length === 0) {
         return ''

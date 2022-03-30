@@ -13,10 +13,10 @@ import { MoveFormatDirection } from '../../utils/formatAbsMove'
  * @param matchRecord 対象となるマッチ
  * @param conf オプショナルルールの適否など、ヘッダ情報に出力する設定情報
  */
-export function formatMatchRecord(
-    matchRecord: MatchRecord<any>,
-    redPlayer: string = 'Red',
-    whitePlayer: string = 'White'
+export function formatMatchRecord<T>(
+    matchRecord: MatchRecord<T>,
+    redPlayer = 'Red',
+    whitePlayer = 'White'
 ): string {
     const header = formatHeaderPart(matchRecord, redPlayer, whitePlayer)
 
@@ -41,10 +41,10 @@ export function formatMatchRecord(
 }
 
 // ヘッダ情報の出力：confのルール設定や日時など
-function formatHeaderPart(
-    matchRecord: MatchRecord<any>,
-    redPlayer: string = 'Red',
-    whitePlayer: string = 'White'
+function formatHeaderPart<T>(
+    matchRecord: MatchRecord<T>,
+    redPlayer = 'Red',
+    whitePlayer = 'White'
 ) {
     const conf = matchRecord.conf
     const date = new Date()
@@ -74,11 +74,11 @@ ${matchRecord.matchLength + ' point match'}
 }
 
 // 1ゲーム分の出力
-function formatGameRecord(
-    gameRecord: GameRecord<any>,
+function formatGameRecord<T>(
+    gameRecord: GameRecord<T>,
     gameNum: number,
-    redPlayer: string = 'Red',
-    whitePlayer: string = 'White'
+    redPlayer= 'Red',
+    whitePlayer = 'White'
 ): string[] {
     const columnWidth = 34
     const numWidth = 3

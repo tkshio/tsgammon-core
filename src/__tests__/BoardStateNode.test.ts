@@ -1037,16 +1037,24 @@ const markRedundantMovesTest: { name: string; args: BasicTestArg }[] = [
     },
 ]
 
-describe('Basic Backgammon rules', () => testWith(basicTestItems))
-describe('listup moves', () => testWith(listupMovesTestItems))
-describe('implementation dependent matters', () =>
-    testWith(implementationDependentMattersTest))
-describe('mark redundant moves', () => testWith(markRedundantMovesTest))
+describe('Basic Backgammon rules', () => {
+    testWith(basicTestItems)
+})
+describe('listup moves', () => {
+    testWith(listupMovesTestItems)
+})
+describe('implementation dependent matters', () => {
+    testWith(implementationDependentMattersTest)
+})
+describe('mark redundant moves', () => {
+    testWith(markRedundantMovesTest)
+})
 
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["basicTest"] }] */
 function testWith(testConds: { name: string; args: BasicTestArg }[]) {
     testConds.forEach(
         ({ name, args }: { name: string; args: BasicTestArg }) => {
-            // eslint-disable-next-line jest/valid-title
+            // eslint-disable-next-line  jest/valid-title
             test(name, () => {
                 basicTest(args)
             })
@@ -1081,7 +1089,7 @@ function basicTest(arg: BasicTestArg) {
     )
 }
 
-export function move(from: number, to: number, isHit?: boolean): Move {
+function move(from: number, to: number, isHit?: boolean): Move {
     return {
         from: from,
         to: to,

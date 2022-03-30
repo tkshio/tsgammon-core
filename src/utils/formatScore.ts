@@ -13,8 +13,8 @@ import { Score } from '../Score'
  */
 export function formatScore(
     score: Score,
-    redPlayer: string = 'Red',
-    whitePlayer: string = 'White'
+    redPlayer = 'Red',
+    whitePlayer = 'White'
 ) {
     return `Score: ${redPlayer}:${score.redScore} - ${whitePlayer}:${score.whiteScore}`
 }

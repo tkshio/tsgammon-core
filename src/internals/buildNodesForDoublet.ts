@@ -167,7 +167,7 @@ function leaveNodesAndParentBuilder(
             1
         )
 
-        //　末端ノードの親ノードを生成して返す
+        // 末端ノードの親ノードを生成して返す
         return [
             {
                 hasValue: true,

@@ -265,9 +265,12 @@ const diceStatusTestDoublet: { name: string; args: DiceTestArg }[] = [
     },
 ]
 
-describe('Dice status test', () => testDiceStatus(diceStatusTest))
-describe('Dice status test (doublet)', () =>
-    testDiceStatus(diceStatusTestDoublet))
+describe('Dice status test', () => {
+    testDiceStatus(diceStatusTest)
+})
+describe('Dice status test (doublet)', () => {
+    testDiceStatus(diceStatusTestDoublet)
+})
 
 function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
     testConds.forEach(({ name, args }: { name: string; args: DiceTestArg }) => {

@@ -235,7 +235,7 @@ function leaveNodeAndParentBuilder(
         // unusedDiceはどこかのポイントがムーブ可能であれば0、
         // そうでなければ1（ムーブできないのでダイスが1個余る）となる。
 
-        //　末端ノードの親ノードを生成して返す
+        // 末端ノードの親ノードを生成して返す
         return [
             {
                 hasValue: true,

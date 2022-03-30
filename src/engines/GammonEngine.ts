@@ -61,17 +61,13 @@ export type GammonEngine = {
  */
 export function randomEngine(): GammonEngine {
     return {
-        initialized(): void {},
-        cubeAction(
-            _boardState: BoardState,
-            _cubeState: CubeState
-        ): { isDouble: boolean } {
+        initialized(): void {
+            //
+        },
+        cubeAction(): { isDouble: boolean } {
             return { isDouble: false }
         },
-        cubeResponse(
-            _boardState: BoardState,
-            _cubeState: CubeState
-        ): { isTake: boolean } {
+        cubeResponse(): { isTake: boolean } {
             return { isTake: true }
         },
         checkerPlay(node: BoardStateNode): BoardStateNode {
@@ -84,7 +80,9 @@ export function randomEngine(): GammonEngine {
             return nodes[n]
         },
 
-        endOfGame(_: BoardStateNode): void {},
+        endOfGame(): void {
+            // do nothing.
+        },
     }
 }
 
@@ -100,8 +98,12 @@ export function simpleEvalEngine(
     evaluate: (board: BoardState) => number
 ): GammonEngine {
     const evaluator: Evaluator = {
-        initialize: () => {},
-        endOfGame: () => {},
+        initialize: () => {
+            //
+        },
+        endOfGame: () => {
+            //
+        },
         evaluate,
     }
     return simpleEvalEngineWithEvaluator(evaluator)
@@ -114,13 +116,11 @@ export function simpleEvalEngineWithEvaluator(ev: Evaluator): GammonEngine {
         },
         cubeAction(
             board: BoardState,
-            _cubeState: CubeState
         ): { isDouble: boolean } {
             return { isDouble: ev.evaluate(board) > 0.4 }
         },
         cubeResponse(
             board: BoardState,
-            _cubeState: CubeState
         ): { isTake: boolean } {
             return { isTake: ev.evaluate(board) > -0.5 }
         },

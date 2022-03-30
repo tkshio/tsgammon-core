@@ -46,7 +46,7 @@ export function formatAbsMove(
 export function formatAbsMoves(
     moves: AbsoluteMove[],
     direction: MoveFormatDirection = MoveFormatDirection.RELATIVE_DEC,
-    labelNoMove: string = ''
+    labelNoMove = ''
 ): string[] {
     if (moves.length === 0) {
         return [labelNoMove]

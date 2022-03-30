@@ -18,7 +18,7 @@ import { DicePip } from '../Dices'
  */
 export function formatDices(
     dices: DicePip[],
-    fmtDoublet: boolean = true
+    fmtDoublet = true
 ): string {
     if (dices.length === 0) {
         return ''

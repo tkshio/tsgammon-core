@@ -54,7 +54,7 @@ export type CubeState = {
 export function cube(
     value: number,
     owner?: CubeOwner,
-    max: number = 512
+    max = 512
 ): CubeState {
     const isMax = max <= value
     const doubledValue = isMax ? value : ((value * 2) as number)

@@ -13,8 +13,8 @@ import { Score } from '../Score'
 export function formatStake(
     stake: Score,
     eog: EOGStatus,
-    redPlayer: string = 'Red',
-    whitePlayer: string = 'White'
+    redPlayer = 'Red',
+    whitePlayer = 'White'
 ) {
     const gammon = eog.isBackgammon
         ? ' by Backgammon'

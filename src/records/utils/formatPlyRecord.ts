@@ -15,8 +15,8 @@ import { SGResult } from '../SGResult'
 export function formatPlyRecord(
     plyRecord: PlyRecord,
     direction: MoveFormatDirection = MoveFormatDirection.RELATIVE_DEC,
-    fmtDoublet: boolean = true,
-    labelNoMove: string = ''
+    fmtDoublet = true,
+    labelNoMove = ''
 ) {
     switch (plyRecord.tag) {
         case 'Commit': {

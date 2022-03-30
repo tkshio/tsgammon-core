@@ -79,7 +79,7 @@ export function eog(status?: Partial<EOGStatus>): EOGStatus {
         isEndOfGame: true,
         isGammon: false,
         isBackgammon: false,
-        calcStake(cubeValue: number = 1, jacobyRule: boolean = false) {
+        calcStake(cubeValue = 1, jacobyRule = false) {
             // Jacobyルールでは、キューブが動いていなければギャモン・バックギャモンは無視
             return jacobyRule && cubeValue === 1
                 ? 1
@@ -113,7 +113,7 @@ export function boardState(
 function initBoardState(
     pieces: number[],
     bornOffs: [number, number] = [0, 0],
-    innerPos: number = 19
+    innerPos = 19
 ): Board {
     const bornOff = bornOffs[0]
     const bornOffOpponent = bornOffs[1]

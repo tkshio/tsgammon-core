@@ -6,7 +6,7 @@ type TestArgs = {
     expected: DicePip[][]
     action: 'roll' | 'openingRoll'
 }
-
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["doTest"] }] */
 test('presetDiceSource', () => {
     const arg: TestArgs = {
         preset: [1, 2, 3, 2, 6, 1, 3, 3, 2, 4],
