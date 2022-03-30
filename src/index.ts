@@ -1,4 +1,3 @@
-
 export * from './AbsoluteBoardState'
 export * from './AbsoluteMove'
 export * from './BoardStateNode'

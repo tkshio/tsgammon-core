@@ -1,5 +1,5 @@
-import { DicePip } from "./Dices"
-import { standardConf } from "./GameConf"
+import { DicePip } from './Dices'
+import { standardConf } from './GameConf'
 
 /**
  * 相対表記で表現した盤面。常に動かす側の観点になっていて、0はバーポイント、25は上がり、
@@ -33,10 +33,10 @@ export interface BoardState {
 
     /** 指定されたポイントの駒をpip分進めた盤面を返す。
      * ポイントに駒がなかったり、行き先がブロックされている・範囲外などの場合、自分自身が返ってくる */
-    movePiece(from: number, pip: DicePip): BoardState;
+    movePiece(from: number, pip: DicePip): BoardState
 
     /** 盤面を相手側視点に変換する */
-    revert(): BoardState;
+    revert(): BoardState
 
     /** 盤面で自分側の駒が全て上がったかどうかを、ギャモン・バックギャモンの有無とあわせて返す。
      * ギャモン・バックギャモンは純粋に自駒の配置で判断され、ジャコビールールなどは適用されない。
@@ -68,10 +68,10 @@ type Board = {
  * 終局状態を示す
  */
 export type EOGStatus = {
-    isEndOfGame: boolean,
-    isGammon: boolean,
+    isEndOfGame: boolean
+    isGammon: boolean
     isBackgammon: boolean
-    calcStake(cubeValue: number, jacobyRule: boolean): number;
+    calcStake(cubeValue: number, jacobyRule: boolean): number
 }
 
 export function eog(status?: Partial<EOGStatus>): EOGStatus {
@@ -81,34 +81,40 @@ export function eog(status?: Partial<EOGStatus>): EOGStatus {
         isBackgammon: false,
         calcStake(cubeValue: number = 1, jacobyRule: boolean = false) {
             // Jacobyルールでは、キューブが動いていなければギャモン・バックギャモンは無視
-            return (jacobyRule && cubeValue === 1) ? 1 :
-                cubeValue *
-                (this.isBackgammon ? 3 : (this.isGammon ? 2 : 1))
+            return jacobyRule && cubeValue === 1
+                ? 1
+                : cubeValue * (this.isBackgammon ? 3 : this.isGammon ? 2 : 1)
         },
-        ...status
+        ...status,
     }
 }
 
-
 export function countWhitePieces(pieces: number[]) {
-    return pieces.filter(n => n > 0).reduce((n, m) => n + m, 0)
+    return pieces.filter((n) => n > 0).reduce((n, m) => n + m, 0)
 }
 
 export function countRedPieces(pieces: number[]) {
-    return countWhitePieces(pieces.map(n => -n))
+    return countWhitePieces(pieces.map((n) => -n))
 }
 /**
  * 駒の配置を格納した配列から、BoardStateを生成する
- * 
+ *
  * @param pieces 駒の配置（省略時は標準ルールでの開始時な配置）
  * @param bornOffs すでにベアリングオフした駒の数の対（順に自分、相手：省略時は0）
  * @returns 盤面
  */
-export function boardState(pieces: number[] = standardConf.initialPos, bornOffs: [number, number] = [0, 0]): BoardState {
+export function boardState(
+    pieces: number[] = standardConf.initialPos,
+    bornOffs: [number, number] = [0, 0]
+): BoardState {
     return initBoardState(pieces, bornOffs)
 }
 
-function initBoardState(pieces: number[], bornOffs: [number, number] = [0, 0], innerPos: number = 19): Board {
+function initBoardState(
+    pieces: number[],
+    bornOffs: [number, number] = [0, 0],
+    innerPos: number = 19
+): Board {
     const bornOff = bornOffs[0]
     const bornOffOpponent = bornOffs[1]
     const pieceCount = countWhitePieces(pieces)
@@ -133,12 +139,18 @@ function initBoardState(pieces: number[], bornOffs: [number, number] = [0, 0], i
             return eog({
                 isEndOfGame: isEndOfGame,
                 isGammon: isGammon,
-                isBackgammon: isBackgammon
+                isBackgammon: isBackgammon,
             })
         },
         isBackgammonAlso(): boolean {
-            const opponentOuterAndBar = [...Array(7)].map((_, index) => index + innerPos)
-            return opponentOuterAndBar.map(pos => this.piecesAt(pos)).reduce((m, n) => m + n) < 0
+            const opponentOuterAndBar = [...Array(7)].map(
+                (_, index) => index + innerPos
+            )
+            return (
+                opponentOuterAndBar
+                    .map((pos) => this.piecesAt(pos))
+                    .reduce((m, n) => m + n) < 0
+            )
         },
         points(): number[] {
             return this.pieces
@@ -153,10 +165,10 @@ function initBoardState(pieces: number[], bornOffs: [number, number] = [0, 0], i
             return this.isBearableMemo()
         },
         calcIsBearable(): boolean {
-            const isBearable = (this.pieces
-                // インナーボード外の自分の駒が存在しない
-                .find((n, index) => index < innerPos && n > 0))
-                === undefined
+            const isBearable =
+                this.pieces
+                    // インナーボード外の自分の駒が存在しない
+                    .find((n, index) => index < innerPos && n > 0) === undefined
 
             this.isBearableMemo = () => isBearable
             return isBearable
@@ -173,7 +185,7 @@ function initBoardState(pieces: number[], bornOffs: [number, number] = [0, 0], i
             return lastPos
         },
         piecesAt(n: number): number {
-            return this.pieces[n];
+            return this.pieces[n]
         },
         myBornOff(): number {
             return this.bornOff
@@ -183,15 +195,17 @@ function initBoardState(pieces: number[], bornOffs: [number, number] = [0, 0], i
         },
         movePiece(from: number, pip: number): Board {
             const moved = doMove(this, from, pip)
-            return moved === this ? moved : {
-                ...moved,
-                lastPiecePos() {
-                    return this.calcLastPiecePos()
-                },
-                isBearable() {
-                    return this.calcIsBearable()
-                },
-            }
+            return moved === this
+                ? moved
+                : {
+                      ...moved,
+                      lastPiecePos() {
+                          return this.calcLastPiecePos()
+                      },
+                      isBearable() {
+                          return this.calcIsBearable()
+                      },
+                  }
         },
 
         revert(): Board {
@@ -201,13 +215,13 @@ function initBoardState(pieces: number[], bornOffs: [number, number] = [0, 0], i
                     const n = -this.pieces[pieces.length - 1 - index]
 
                     // remove negative 0
-                    return (n === 0) ? 0 : n;
+                    return n === 0 ? 0 : n
                 }),
                 bornOff: this.bornOffOpponent,
                 bornOffOpponent: this.bornOff,
                 pieceCount: this.pieceCountOpponent,
                 pieceCountOpponent: this.pieceCount,
-                
+
                 // TODO: 単純に再計算するのはもったいない
                 lastPiecePos() {
                     return this.calcLastPiecePos()
@@ -216,7 +230,7 @@ function initBoardState(pieces: number[], bornOffs: [number, number] = [0, 0], i
                     return this.calcIsBearable()
                 },
             }
-        }
+        },
     }
 }
 
@@ -235,14 +249,14 @@ function doMove(board: Board, from: number, pip: number): Board {
 
     // ベアオフではなく、行先がブロックされている
     const to = from + pip > boardSize ? boardSize : from + pip
-    const isBearOff = (boardSize <= to)
+    const isBearOff = boardSize <= to
     if (!isBearOff && board.pieces[to] < -1) {
         return board
     }
 
     // 駒を取り上げる
     const piecesAfter = board.pieces.slice()
-    piecesAfter[from] = piecesAfter[from] - 1;
+    piecesAfter[from] = piecesAfter[from] - 1
 
     // 上がりなら、上がり数を更新して終了
     if (isBearOff) {
@@ -263,10 +277,9 @@ function doMove(board: Board, from: number, pip: number): Board {
     }
 
     // 移動先に駒を置く
-    piecesAfter[to] = piecesAfter[to] + 1;
+    piecesAfter[to] = piecesAfter[to] + 1
     return {
         ...board,
-        pieces: piecesAfter
+        pieces: piecesAfter,
     }
 }
-

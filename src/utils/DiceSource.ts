@@ -1,4 +1,4 @@
-import { DicePip, DiceRoll } from "../Dices";
+import { DicePip, DiceRoll } from '../Dices'
 
 /**
  * ダイスをロールして、その目を提供するインターフェース
@@ -6,13 +6,13 @@ import { DicePip, DiceRoll } from "../Dices";
 export type DiceSource = {
     /**
      * ダイス二つをまとめて振る
-     * 
+     *
      * @param tag 統計用（未実装）
      */
     roll(tag?: string): DiceRoll
     /**
      * ダイス二つをまとめて振る。ただし、ゾロ目が出たらやり直す。
-     * 
+     *
      * あまりにゾロ目が続く場合は、例外が発生する
      *
      * @param tag 統計用（未実装）
@@ -21,7 +21,7 @@ export type DiceSource = {
 }
 
 function diceSource(doRoll: () => DicePip): DiceSource {
-    const doRollDices = () => ({ dice1: doRoll(), dice2: doRoll() });
+    const doRollDices = () => ({ dice1: doRoll(), dice2: doRoll() })
     return {
         roll: doRollDices,
         openingRoll: () => asOpeningRoll(doRollDices),
@@ -45,7 +45,7 @@ export function presetDiceSource(...pips: DicePip[]): DiceSource {
 }
 
 function asOpeningRoll(src: () => DiceRoll): DiceRoll {
-    let counter = 0;
+    let counter = 0
     do {
         const dices = src()
         if (dices.dice1 !== dices.dice2) {
@@ -55,9 +55,8 @@ function asOpeningRoll(src: () => DiceRoll): DiceRoll {
     } while (counter < 1000)
 
     throw new Error('Too many doublets')
-
 }
 
 export function rollMathRandom(): DicePip {
-    return (Math.floor(Math.random() * 6) + 1) as DicePip;
+    return (Math.floor(Math.random() * 6) + 1) as DicePip
 }

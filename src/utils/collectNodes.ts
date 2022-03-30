@@ -1,4 +1,4 @@
-import { BoardStateNode } from "../BoardStateNode";
+import { BoardStateNode } from '../BoardStateNode'
 
 /**
  * 指定された局面について、冗長な手も含めて、手番終了時の局面を全て格納した配列を返す。
@@ -8,18 +8,20 @@ import { BoardStateNode } from "../BoardStateNode";
  */
 
 export function collectNodes(node: BoardStateNode): BoardStateNode[] {
-    const hasUnusedDice = node.dices.find(dice => !dice.used);
+    const hasUnusedDice = node.dices.find((dice) => !dice.used)
     if (hasUnusedDice) {
-        const major: BoardStateNode[] = node.board.points()
+        const major: BoardStateNode[] = node.board
+            .points()
             .map((_, idx) => node.majorFirst(idx))
-            .map(node => node.hasValue ? collectNodes(node) : [])
-            .flat();
-        const minor: BoardStateNode[] = node.board.points()
+            .map((node) => (node.hasValue ? collectNodes(node) : []))
+            .flat()
+        const minor: BoardStateNode[] = node.board
+            .points()
             .map((_, idx) => node.minorFirst(idx))
-            .map(node => node.hasValue ? collectNodes(node) : [])
-            .flat();
+            .map((node) => (node.hasValue ? collectNodes(node) : []))
+            .flat()
 
-        return minor.concat(major);
+        return minor.concat(major)
     }
-    return [node];
+    return [node]
 }

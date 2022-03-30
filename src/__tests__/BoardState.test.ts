@@ -1,17 +1,19 @@
-import { BoardState, boardState } from "../BoardState";
-import { standardConf } from "../GameConf";
+import { BoardState, boardState } from '../BoardState'
+import { standardConf } from '../GameConf'
 
 const standard = standardConf.initialPos
 
 test('initialize board', () => {
-
     const board = boardState(standard, [0, 0])
     testWith(board, standard)
     testWith(board.revert(), standard)
 
-    function testWith(board: BoardState, pieces: number[], bornOffs: [number, number] = [0, 0]
+    function testWith(
+        board: BoardState,
+        pieces: number[],
+        bornOffs: [number, number] = [0, 0]
     ) {
-        expect(board.points().map(value => value)).toEqual(pieces)
+        expect(board.points().map((value) => value)).toEqual(pieces)
         expect(board.lastPiecePos()).toEqual(1)
         expect(board.isBearable()).toBeFalsy()
         standard.forEach((pieces, index) => {
@@ -22,7 +24,6 @@ test('initialize board', () => {
         expect(board.eogStatus().isEndOfGame).toBeFalsy()
         expect(board.eogStatus().isGammon).toBeFalsy()
         expect(board.eogStatus().isBackgammon).toBeFalsy()
-
     }
 })
 
@@ -48,7 +49,6 @@ describe('Moving piece', () => {
         const revertAndReenter = revertAndHit.revert().movePiece(0, 4)
         expect(revertAndReenter.piecesAt(4)).toBe(1)
         expect(revertAndReenter.piecesAt(25)).toBe(-1)
-
     })
 
     test('ignore illegal move', () => {
@@ -64,10 +64,9 @@ describe('Moving piece', () => {
     })
 
     test('may bearOff', () => {
-        const board = boardState([0,
-            0, 0, 0, 0, 0, 0,/*bar*/0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0,/*bar*/0, 1, 0, 0, 0, 0,
-            0
+        const board = boardState([
+            0, 0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /*bar*/ 0, 1, 0, 0, 0, 0, 0,
         ])
         expect(board.isBearable()).toBeTruthy()
         const bornOff = board.movePiece(20, 5)
@@ -80,16 +79,14 @@ describe('Moving piece', () => {
         expect(overRun).not.toBe(board)
         expect(bornOff.myBornOff()).toBe(1)
         expect(bornOff.opponentBornOff()).toBe(0)
-
     })
 })
 
 describe('bear off', () => {
     test('may bear off when all pieces get into inner', () => {
-        const pieces = [0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, -1, -1,
-            0, 0, 0, 0, 0, 1,/* bar */ 0, 0, 0, 0, 1, 1,
-            0
+        const pieces = [
+            0, 0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 1,
+            /* bar */ 0, 0, 0, 0, 1, 1, 0,
         ]
         const board = boardState(pieces, [0, 0])
         expect(board.isBearable()).toBeFalsy()
@@ -103,11 +100,10 @@ describe('bear off', () => {
         expect(afterMove.isBearable()).toBeTruthy()
     })
 
-    test('can\'t bear off (piece on the bar )', () => {
-        const pieces = [1,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, -1, -1,
-            0, 0, 0, 0, 0, 1,/* bar */ 0, 0, 0, 0, 1, 1,
-            0
+    test("can't bear off (piece on the bar )", () => {
+        const pieces = [
+            1, 0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 1,
+            /* bar */ 0, 0, 0, 0, 1, 1, 0,
         ]
         const board = boardState(pieces, [0, 0])
         expect(board.isBearable()).toBeFalsy()
@@ -117,10 +113,9 @@ describe('bear off', () => {
 
 describe('endOfGame', () => {
     test('is EndOfGame when there is no pieces', () => {
-        const pieces = [0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, -1,
-            0
+        const pieces = [
+            0, 0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /* bar */ 0, 0, 0, 0, 0, -1, 0,
         ]
         const board = boardState(pieces, [0, 15])
         const eog = board.eogStatus()
@@ -128,23 +123,21 @@ describe('endOfGame', () => {
         expect(eog.isGammon).toBeFalsy()
         expect(eog.isBackgammon).toBeFalsy()
     })
-    test('is Gammon if opponent doesn\'t have born off', () => {
-        const pieces = [0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, -1,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, 0,
-            0
+    test("is Gammon if opponent doesn't have born off", () => {
+        const pieces = [
+            0, 0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0,
+            /* bar */ 0, 0, 0, 0, 0, 0, 0,
         ]
-        const board = boardState(pieces, [0, 0])// 駒の総数は管理していない
+        const board = boardState(pieces, [0, 0]) // 駒の総数は管理していない
         const eog = board.eogStatus()
         expect(eog.isEndOfGame).toBeTruthy()
         expect(eog.isGammon).toBeTruthy()
         expect(eog.isBackgammon).toBeFalsy()
     })
     test('is Backgammon if pieces exists in inner', () => {
-        const pieces = [0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, -1,
-            0
+        const pieces = [
+            0, 0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /* bar */ 0, 0, 0, 0, 0, -1, 0,
         ]
         const board = boardState(pieces, [0, 0])
         const eog = board.eogStatus()
@@ -153,10 +146,9 @@ describe('endOfGame', () => {
         expect(eog.isBackgammon).toBeTruthy()
     })
     test('is Backgammon(on the bar)', () => {
-        const pieces = [0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, 0,
-            -1
+        const pieces = [
+            0, 0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /* bar */ 0, 0, 0, 0, 0, 0, -1,
         ]
         const board = boardState(pieces, [0, 0])
         const eog = board.eogStatus()
@@ -165,10 +157,9 @@ describe('endOfGame', () => {
         expect(eog.isBackgammon).toBeTruthy()
     })
     test('is not Backgammon if not gammon', () => {
-        const pieces = [0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0,/* bar */ 0, 0, 0, 0, 0, 0,
-            -1
+        const pieces = [
+            0, 0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            /* bar */ 0, 0, 0, 0, 0, 0, -1,
         ]
         const board = boardState(pieces, [0, 1])
         const eog = board.eogStatus()

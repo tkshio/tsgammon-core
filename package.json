@@ -13,8 +13,8 @@
         "url": "https://github.com/tkshio"
     },
     "license": "Apache-2.0",
-    "main":"index.js",
-    "types":"index.d.ts",
+    "main": "index.js",
+    "types": "index.d.ts",
     "dependencies": {
         "typescript": "^4.6.3"
     },

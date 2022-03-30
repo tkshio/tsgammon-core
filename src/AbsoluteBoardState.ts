@@ -1,6 +1,5 @@
-import {boardState, BoardState} from "./BoardState";
-import { standardConf } from "./GameConf";
-
+import { boardState, BoardState } from './BoardState'
+import { standardConf } from './GameConf'
 
 /**
  * 盤面を絶対座標で表現した、主に表示用のインターフェース
@@ -21,16 +20,18 @@ export interface AbsoluteBoardState {
     /**
      * すでに上がったWhiteの駒の数を返す。
      */
-    whiteBornOff(): number;
+    whiteBornOff(): number
 
     /**
      * すでに上がったRedの駒の数を返す（負数ではなく、正の値を返すことに注意）。
      */
-    redBornOff(): number;
+    redBornOff(): number
 }
 
-
-export function initAbsoluteBoard(pieces: number[] = standardConf.initialPos, bornOffs: [number, number] = [0, 0]): AbsoluteBoardState {
+export function initAbsoluteBoard(
+    pieces: number[] = standardConf.initialPos,
+    bornOffs: [number, number] = [0, 0]
+): AbsoluteBoardState {
     const board = boardState(pieces, bornOffs)
     return whiteViewAbsoluteBoard(board)
 }
@@ -40,12 +41,14 @@ export function initAbsoluteBoard(pieces: number[] = standardConf.initialPos, bo
  * 実質的にはそのまま返す
  * @param boardState
  */
-export function whiteViewAbsoluteBoard(boardState: BoardState): AbsoluteBoardState {
+export function whiteViewAbsoluteBoard(
+    boardState: BoardState
+): AbsoluteBoardState {
     return {
         points: () => boardState.points(),
         piecesAt: (n) => boardState.piecesAt(n),
         whiteBornOff: () => boardState.myBornOff(),
-        redBornOff: () => boardState.opponentBornOff()
+        redBornOff: () => boardState.opponentBornOff(),
     }
 }
 
@@ -54,12 +57,19 @@ export function whiteViewAbsoluteBoard(boardState: BoardState): AbsoluteBoardSta
  * 実質的には座標を反転、駒数も正負反転させて返す
  * @param boardState
  */
-export function redViewAbsoluteBoard(boardState: BoardState): AbsoluteBoardState {
+export function redViewAbsoluteBoard(
+    boardState: BoardState
+): AbsoluteBoardState {
     const boardSize = boardState.points().length - 1
     return {
-        points: () => boardState.points().slice().reverse().map(v => v === 0 ? v : -v),
+        points: () =>
+            boardState
+                .points()
+                .slice()
+                .reverse()
+                .map((v) => (v === 0 ? v : -v)),
         piecesAt: (n) => -boardState.piecesAt(boardSize - n),
         whiteBornOff: () => boardState.opponentBornOff(),
-        redBornOff: () => boardState.myBornOff()
+        redBornOff: () => boardState.myBornOff(),
     }
 }
