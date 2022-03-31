@@ -114,14 +114,10 @@ export function simpleEvalEngineWithEvaluator(ev: Evaluator): GammonEngine {
         initialized(): void {
             ev.initialize()
         },
-        cubeAction(
-            board: BoardState,
-        ): { isDouble: boolean } {
+        cubeAction(board: BoardState): { isDouble: boolean } {
             return { isDouble: ev.evaluate(board) > 0.4 }
         },
-        cubeResponse(
-            board: BoardState,
-        ): { isTake: boolean } {
+        cubeResponse(board: BoardState): { isTake: boolean } {
             return { isTake: ev.evaluate(board) > -0.5 }
         },
         checkerPlay(node: BoardStateNode): BoardStateNode {

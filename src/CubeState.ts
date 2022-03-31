@@ -51,11 +51,7 @@ export type CubeState = {
  * @param max キューブの最大値
  * @returns
  */
-export function cube(
-    value: number,
-    owner?: CubeOwner,
-    max = 512
-): CubeState {
+export function cube(value: number, owner?: CubeOwner, max = 512): CubeState {
     const isMax = max <= value
     const doubledValue = isMax ? value : ((value * 2) as number)
     return {

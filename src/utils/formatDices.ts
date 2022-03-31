@@ -16,10 +16,7 @@ import { DicePip } from '../Dices'
  * @param fmtDoublet trueの場合、dices[0]とdices[1]が同じ目であればゾロ目と見なして別形式で表記する
  * @returns
  */
-export function formatDices(
-    dices: DicePip[],
-    fmtDoublet = true
-): string {
+export function formatDices(dices: DicePip[], fmtDoublet = true): string {
     if (dices.length === 0) {
         return ''
     }

@@ -77,7 +77,7 @@ ${matchRecord.matchLength + ' point match'}
 function formatGameRecord<T>(
     gameRecord: GameRecord<T>,
     gameNum: number,
-    redPlayer= 'Red',
+    redPlayer = 'Red',
     whitePlayer = 'White'
 ): string[] {
     const columnWidth = 34
