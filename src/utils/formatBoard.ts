@@ -7,8 +7,8 @@ import { BoardState } from '../BoardState'
  * @returns lines of formatted text
  */
 export function formatBoard(board: BoardState): string[] {
-    const upperIndexRow = ' +12-11-10--9--8--7-------6--5--4--3--2--1-+   '
-    const lowerIndexRow = ' +13-14-15-16-17-18------19-20-21-22-23-24-+   '
+    const upperIndexRow = ' +13-14-15-16-17-18------19-20-21-22-23-24-+   '
+    const lowerIndexRow = ' +12-11-10--9--8--7-------6--5--4--3--2--1-+   '
     const cubeRow = '^|                  |BAR|                  |   '
     return [
         upperIndexRow,
