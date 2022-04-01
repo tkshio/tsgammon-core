@@ -1,5 +1,5 @@
-import { boardState } from '../BoardState'
-import { formatBoard } from '../utils/formatBoard'
+import { boardState } from '../../BoardState'
+import { formatBoard } from '../../utils/formatBoard'
 
 const formatBoardTestData = [
     {
