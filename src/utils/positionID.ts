@@ -41,61 +41,46 @@ export function encode(
 
                 const { lastBit, lastLen, dataView, pos } = prev
 
-                // n個のコマに対して、n個の1を書く
-                let bitLen = n
+                // バッファに書き込む量に達しない場合は、次に引き継ぐ
+                if (n + lastLen < 8) {
+                    // n1個の1（0->0, 1->1, 2->11, 3->111, 4->1111...）を用意
+                    const bitForNext = (1 << n) - 1
+                    const bitForNextLen = n + 1
 
-                let curLen = lastLen
-                let curPos = pos
-                let curBit = lastBit
-                let hasCleared = false
-
-                // 前回の残りと、新規追加の分を8bitずつdataViewに書き込む
-                while (bitLen + curLen >= 8) {
-                    const n1 = 8 - curLen
-
-                    // n1個の1（0->0, 1->1, 2->11, 3->111, 4->1111...）を用意して、
-                    // curBitの左側に追加する（二周目からは実質bitTosetのまま）
-                    // ドキュメントではリトルエンディアンで処理しているが、
-                    // ここでは最初からビッグエンディアンになるようにbit列を構成している
-                    const bitToSet = (1 << n1) - 1
-
-                    // TODO: というか2回目以降はループで回す必要がない
-                    // (n / 8の分だけ、255を書き込めばよいから)
-                    // 駒の数も15個までなので、ループはせいぜい2回だ
-                    const oct = (bitToSet << curLen) | curBit
-
-                    // 8bitをバッファに書き込み
-                    dataView.setUint8(curPos, oct)
-                    curPos++
-
-                    bitLen = bitLen - n1
-                    // ループの2回目以降は、残りのbitLenから8bitずつ書いていく
-                    curLen = 0
-                    curBit = 0
-                    // 前回の残りは8bitまたはそれ以下なので、一旦ループに入れば書き切れる
-                    hasCleared = true
+                    // 先頭には0をつけるので、長さは上記のbit列より1bit長くなる
+                    //     この先頭の0は、必ず次回のループ初回で書き込まれるか、
+                    //     ループをスルーしてその次へ引き継がれるかのいずれか
+                    return {
+                        // オリジナルの解説ではリトルエンディアンで処理しているが、
+                        // ビッグエンディアンで処理したいので、左に追加している
+                        lastBit: (bitForNext << lastLen) | lastBit, // n個の1
+                        lastLen: bitForNextLen + lastLen, // n+1
+                        dataView,
+                        pos,
+                    }
                 }
 
-                // バッファに書かなかった分を次に引き継ぐため、1のbit列に変換する
-                const bitForNext = (1 << bitLen) - 1
+                // 前回の残りと新規分とを合わせ、8bit分のデータを用意する
+                const n1 = 8 - lastLen
+                const oct = (((1 << n1) - 1) << lastLen) | lastBit
 
-                // 先頭には0をつけるので、長さは上記のbit列より1bit長くなる
-                //     この先頭の0は、必ず次回のループ初回で書き込まれるか、
-                //     ループをスルーしてその次へ引き継がれるかのいずれか
-                const bitForNextLen = bitLen + 1
+                // 8bitをバッファに書き込み
+                let curPos = pos
+                dataView.setUint8(curPos, oct)
+                curPos++
 
-                const { nextBit, nextLen } = hasCleared
-                    ? // ループに入ったなら、前回からの引き継ぎはもはや気にしなくて良い
-                      { nextBit: bitForNext, nextLen: bitForNextLen }
-                    : // ループに入っていないなら、前回からの引き継ぎに追加する
-                      {
-                          nextBit: (bitForNext << lastLen) | lastBit,
-                          nextLen: bitForNextLen + lastLen,
-                      }
+                // 残りのbitが8個より多いなら、8bit分の1を書いてしまう
+                let bitLen = n - n1
+                if (bitLen > 8) {
+                    dataView.setUint8(curPos, 255)
+                    curPos++
+                    bitLen -= 8
+                }
 
+                // バックギャモンの駒は1プレイヤー15個なので、bitLen < 8が保証される
                 return {
-                    lastBit: nextBit, // n個の1
-                    lastLen: nextLen, // n+1
+                    lastBit: (1 << bitLen) - 1, // n個の1
+                    lastLen: bitLen + 1, // n+1
                     dataView,
                     pos: curPos,
                 }
@@ -104,10 +89,11 @@ export function encode(
         )
 
     // バッファーがオーバーフローしているなら、エラーを返す
-    // （最後のバイトはまだ書かれていないことに注意）
+    // （最後のバイトはまだ書かれていない）
     if (v.pos >= 10) {
         return { isValid: false }
     }
+
     // 最後に残ったデータは、そのまま1バイトとして扱う
     v.dataView.setUint8(v.pos, v.lastBit)
 
