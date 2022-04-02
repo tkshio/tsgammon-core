@@ -1,33 +1,31 @@
 import { decode as decodeBase64 } from '@borderless/base64'
 import { boardState, BoardState } from '../BoardState'
 
-export function decodePosID(positionID: string):
-    | {
-          isValid: true
-          board: BoardState
-      }
-    | { isValid: false } {
+/**
+ * GNU Backgammon仕様のPositionIDから、盤面を生成する
+ *
+ * @param positionID PositionIDを示す文字列
+ * @returns 生成された盤面
+ */
+export function decodePosID(positionID: string): BoardState {
     const ret = decodePosIDAsArray(positionID)
-    return ret.isValid
-        ? {
-              isValid: true,
-              board: boardState(ret.pos, [ret.myBornOff, ret.oppBornOff]),
-          }
-        : ret
+    return boardState(ret.pos, [ret.myBornOff, ret.oppBornOff])
 }
 
-export function decodePosIDAsArray(positionID: string):
-    | {
-          isValid: true
-          pos: number[]
-          myBornOff: number
-          oppBornOff: number
-      }
-    | { isValid: false } {
-    if (positionID.length < 14) {
-        return { isValid: false }
-    }
-
+/**
+ * GNU Backgammon仕様のPositionIDから、駒の配置を表す配列を生成し、
+ * あわせて上がり済みの駒の数を算出する
+ *
+ * @param positionID PositionIDを示す文字列
+ * @returns pos 生成された配列
+ * @returns myBornOff  自駒の上がり済みの数（0-15）
+ * @returns oppBornOff 相手駒の上がり済みの数（0-15）
+ */
+export function decodePosIDAsArray(positionID: string): {
+    pos: number[]
+    myBornOff: number
+    oppBornOff: number
+} {
     const decoded = new Uint8Array(
         decodeBase64(positionID.substring(0, 14))
     ).reduce(
@@ -82,7 +80,6 @@ export function decodePosIDAsArray(positionID: string):
         .reduce((prev, cur) => prev - cur, 0)
 
     return {
-        isValid: true,
         pos: ret,
         myBornOff: 15 - myPieces,
         oppBornOff: 15 - oppPieces,

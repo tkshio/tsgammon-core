@@ -1,15 +1,23 @@
 import { encode as encodeBase64 } from '@borderless/base64'
 import { BoardState } from '../BoardState'
 
-export function encodePosID(
-    board: BoardState
-): { isValid: false } | { isValid: true; positionID: string } {
+/**
+ * 盤面からGNU Backgammon仕様のPositionIDを生成する。
+ *
+ * @param board 盤面
+ * @returns 生成されたPositionID
+ */
+export function encodePosID(board: BoardState): string {
     return encodePosIDFromArray(board.points())
 }
 
-export function encodePosIDFromArray(
-    posArr: number[]
-): { isValid: false } | { isValid: true; positionID: string } {
+/**
+ * 盤面を表す配列からGNU Backgammon仕様のPositionIDを生成する。
+ *
+ * @param posArr 盤面を表す配列
+ * @returns 生成されたPositionID
+ */
+export function encodePosIDFromArray(posArr: number[]): string {
     // PositionIDのエンコーディングは、インデックスを遡って駒を数えていく
     // [24,23,...,1,0 = bar]
     const myIndex = [...Array(25)].map((_, i, arr) => arr.length - i - 1)
@@ -95,24 +103,19 @@ export function encodePosIDFromArray(
             { lastBit: 0, lastLen: 0, dataView: new DataView(buffer), pos: 0 }
         )
 
-    // バッファーがオーバーフローしているなら、エラーを返す
-    // （最後のバイトはまだ書かれていない）
-    if (v.pos >= 10) {
-        return { isValid: false }
+    // バッファがオーバーフローしていなければ、
+    // 未出力の最後のバイトを書く
+    if (v.pos < 10) {
+        // 最後に残ったデータは、そのまま1バイトとして扱う
+        v.dataView.setUint8(v.pos, v.lastBit)
+
+        // 一応、バッファの空きも詰める
+        let pos = v.pos + 1
+        while (pos < 10) {
+            v.dataView.setUint8(pos, 0)
+            pos++
+        }
     }
 
-    // 最後に残ったデータは、そのまま1バイトとして扱う
-    v.dataView.setUint8(v.pos, v.lastBit)
-
-    // 一応、バッファの空きも詰める
-    let pos = v.pos + 1
-    while (pos < 10) {
-        v.dataView.setUint8(pos, 0)
-        pos++
-    }
-
-    return {
-        isValid: true,
-        positionID: encodeBase64(buffer).substring(0, 14),
-    }
+    return encodeBase64(buffer).substring(0, 14)
 }

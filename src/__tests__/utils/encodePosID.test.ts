@@ -1,6 +1,6 @@
 import { boardState } from '../../BoardState'
 import { standardConf } from '../../GameConf'
-import { encodePosID } from '../../utils/encodePosID'
+import { encodePosID, encodePosIDFromArray } from '../../utils/encodePosID'
 
 const positionIDTestData = [
     {
@@ -90,6 +90,8 @@ const positionIDTestData = [
         },
         expected: 'fgAAwH//twEAAA',
     },
+]
+const invalidData = [
     {
         title: 'returns invalidFlag when there are too many pieces',
         board: {
@@ -101,18 +103,24 @@ const positionIDTestData = [
                   0,
             ],
         },
-        expected: '',
+    },
+    {
+        title: 'encode uninitialized array',
+        board: {
+            // prettier-ignore
+            pos: new Array(5),
+        },
     },
 ]
 
 describe('encode PositionID', () => {
-    /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["testEncodePositionID"] }] */
-    test.each(positionIDTestData)('$title', (data) => {
-        testEncodePositionID(data)
-    })
+    /* eslint jest/expect-expect: ["error", { "assertFunctionNames":
+     ["encodePositionID","encodeInvalidData"] }] */
+    test.each(positionIDTestData)('$title', (data) => encodePositionID(data))
+    test.each(invalidData)('$title', (data) => encodeInvalidData(data))
 })
 
-function testEncodePositionID(data: {
+function encodePositionID(data: {
     board: {
         pos: number[]
         myBornOff?: number
@@ -123,9 +131,14 @@ function testEncodePositionID(data: {
     const { myBornOff = 0, oppBornOff = 0 } = data.board
 
     const board = boardState(data.board.pos, [myBornOff, oppBornOff])
-    expect(encodePosID(board)).toStrictEqual(
-        data.expected
-            ? { isValid: true, positionID: data.expected }
-            : { isValid: false }
-    )
+    expect(encodePosID(board)).toStrictEqual(data.expected)
+}
+
+function encodeInvalidData(data: {
+    board: {
+        pos: number[]
+    }
+}) {
+    // 何か返ってくれば良い
+    expect(encodePosIDFromArray(data.board.pos)).toBeTruthy()
 }

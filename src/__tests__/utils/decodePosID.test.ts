@@ -77,24 +77,18 @@ function testDecodePositionID(data: {
     oppBornOff?: number
 }) {
     const decoded = decodePosID(data.str)
-    expect(decoded.isValid).toEqual(true)
 
-    const pos = decoded.isValid ? decoded.board.points() : []
+    const pos = decoded.points()
     expect(pos).toHaveLength(26)
 
     const reenc = encodePosID(boardState(pos, [0, 0]))
-    expect(reenc).toEqual({
-        isValid: true,
-        positionID: data.expected ?? data.str.substring(0, 14),
-    })
+    expect(reenc).toEqual(data.expected ?? data.str.substring(0, 14))
 
     const { myBornOff = 0, oppBornOff = 0 } = data
-    const decodedBornOff = decoded.isValid
-        ? {
-              myBornOff: decoded.board.myBornOff(),
-              opponentBornOff: decoded.board.opponentBornOff(),
-          }
-        : { myBornOff: -1, expectedOppBornOff: -1 }
+    const decodedBornOff = {
+        myBornOff: decoded.myBornOff(),
+        opponentBornOff: decoded.opponentBornOff(),
+    }
     expect(decodedBornOff).toStrictEqual({
         myBornOff,
         opponentBornOff: oppBornOff,
@@ -102,15 +96,14 @@ function testDecodePositionID(data: {
 }
 function testInvalidCase(data: { str: string }) {
     const decoded = decodePosID(data.str)
-    expect(decoded.isValid).toEqual(false)
+    expect(decoded).toBeTruthy()
 }
 
 function testUnReencodable(data: { str: string }) {
     const decoded = decodePosID(data.str)
-    expect(decoded.isValid).toEqual(true)
-    const pos = decoded.isValid ? decoded.board.points() : []
+    const pos = decoded.points()
     expect(pos).toHaveLength(26)
 
     const reenc = encodePosID(boardState(pos, [0, 0]))
-    expect(reenc.isValid).toBeFalsy()
+    expect(reenc).toBeTruthy()
 }
