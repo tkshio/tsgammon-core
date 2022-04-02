@@ -1,3 +1,4 @@
+import { encode as encodeBase64 } from '@borderless/base64'
 import { BoardState } from '../BoardState'
 
 export function encode(
@@ -104,11 +105,9 @@ export function encode(
         pos++
     }
 
-    // TODO: Bufferを使うとブラウザで使えないので、修正が必要
-    const arr: Uint8Array = new Uint8Array(buffer)
     return {
         isValid: true,
-        positionID: Buffer.from(arr).toString('base64').substring(0, 14),
+        positionID: encodeBase64(buffer).substring(0, 14),
     }
 }
 
