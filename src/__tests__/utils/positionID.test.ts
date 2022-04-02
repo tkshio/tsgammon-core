@@ -64,6 +64,45 @@ const positionIDTestData = [
         },
         expected: '5wEAABsAAAAAAA',
     },
+    {
+        title: 'encodes a position with pieces over 8 on a single point',
+        board: {
+            // prettier-ignore
+            pos: [
+                11,
+                -9, 0, -6, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 
+                0,
+            ],
+        },
+        expected: '//kBAAA2AADwfw',
+    },
+    {
+        title: 'encodes a position with pieces over 8 on 2 consecutive points(opp bar and ace point)',
+        board: {
+            // prettier-ignore
+            pos: [
+                0,
+                0, -6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0,  0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 11, 
+                -9,
+            ],
+        },
+        expected: 'fgAAwH//twEAAA',
+    },
+    {
+        title: 'returns invalidFlag when there are too many pieces',
+        board: {
+            // prettier-ignore
+            pos: [
+                  0,
+                -20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 
+                  0,
+            ],
+        },
+        expected: '',
+    },
 ]
 
 describe('encode PositionID', () => {
@@ -84,5 +123,9 @@ function testEncodePositionID(data: {
     const { myBornOff = 0, oppBornOff = 0 } = data.board
 
     const board = boardState(data.board.pos, [myBornOff, oppBornOff])
-    expect(encode(board)).toBe(data.expected)
+    expect(encode(board)).toStrictEqual(
+        data.expected
+            ? { isValid: true, positionID: data.expected }
+            : { isValid: false }
+    )
 }

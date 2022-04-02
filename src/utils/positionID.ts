@@ -1,6 +1,8 @@
 import { BoardState } from '../BoardState'
 
-export function encode(board: BoardState) {
+export function encode(
+    board: BoardState
+): { isValid: false } | { isValid: true; positionID: string } {
     // PositionIDのエンコーディングは、インデックスを遡って駒を数えていく
     // [24,23,...,1,0 = bar]
     const myIndex = [...Array(25)].map((_, i, arr) => arr.length - i - 1)
@@ -101,6 +103,11 @@ export function encode(board: BoardState) {
             { lastBit: 0, lastLen: 0, dataView: new DataView(buffer), pos: 0 }
         )
 
+    // バッファーがオーバーフローしているなら、エラーを返す
+    // （最後のバイトはまだ書かれていないことに注意）
+    if (v.pos >= 10) {
+        return { isValid: false }
+    }
     // 最後に残ったデータは、そのまま1バイトとして扱う
     v.dataView.setUint8(v.pos, v.lastBit)
 
@@ -113,7 +120,10 @@ export function encode(board: BoardState) {
 
     // TODO: Bufferを使うとブラウザで使えないので、修正が必要
     const arr: Uint8Array = new Uint8Array(buffer)
-    return Buffer.from(arr).toString('base64').substring(0, 14)
+    return {
+        isValid: true,
+        positionID: Buffer.from(arr).toString('base64').substring(0, 14),
+    }
 }
 
 export function decode() {
