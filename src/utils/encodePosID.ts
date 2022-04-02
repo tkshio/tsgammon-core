@@ -1,7 +1,7 @@
 import { encode as encodeBase64 } from '@borderless/base64'
 import { BoardState } from '../BoardState'
 
-export function encode(
+export function encodePosID(
     board: BoardState
 ): { isValid: false } | { isValid: true; positionID: string } {
     // PositionIDのエンコーディングは、インデックスを遡って駒を数えていく
@@ -109,8 +109,4 @@ export function encode(
         isValid: true,
         positionID: encodeBase64(buffer).substring(0, 14),
     }
-}
-
-export function decode() {
-    //
 }
