@@ -4,17 +4,23 @@ import { BoardState } from '../BoardState'
 export function encodePosID(
     board: BoardState
 ): { isValid: false } | { isValid: true; positionID: string } {
+    return encodePosIDFromArray(board.points())
+}
+
+export function encodePosIDFromArray(
+    posArr: number[]
+): { isValid: false } | { isValid: true; positionID: string } {
     // PositionIDのエンコーディングは、インデックスを遡って駒を数えていく
     // [24,23,...,1,0 = bar]
     const myIndex = [...Array(25)].map((_, i, arr) => arr.length - i - 1)
     const myPieces = myIndex
-        .map((pos) => board.piecesAt(pos))
+        .map((pos) => posArr[pos])
         .map((n) => (n > 0 ? n : 0))
 
     // [1,2,...,24, 25=bar]
     const oppIndex = [...Array(25)].map((_, i) => i + 1)
     const oppPieces = oppIndex
-        .map((pos) => board.piecesAt(pos))
+        .map((pos) => posArr[pos])
         .map((n) => (n < 0 ? -n : 0))
 
     const buffer = new ArrayBuffer(10)
