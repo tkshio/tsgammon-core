@@ -20,3 +20,5 @@ workflows:
           # If you are using yarn, change the line below from "npm" to "yarn"
           pkg-manager: npm
           test-results-for: jest
+          test-results-path: report/jest/jest-test-results.xml
+
