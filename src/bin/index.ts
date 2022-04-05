@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-export {}
-
 import { simpleNNEngine } from '../engines/SimpleNNGammon'
 import {
     AbsoluteMove,
@@ -31,7 +29,7 @@ import { SGResult } from '../records/SGResult'
 import { formatMatchRecord } from '../records/utils/formatMatchRecord'
 
 const engine = simpleNNEngine
-const conf = standardConf
+const conf = { ...standardConf, jacobyRule: false }
 
 type Event = PlayEvent | EOGEvent
 type PlayEvent = {
