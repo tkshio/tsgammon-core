@@ -3,7 +3,13 @@
     "compilerOptions": {
         "outDir": "dist",
         "declaration": true,
+        "declarationMap": true,
         "noEmit": false
     },
-    "exclude": ["src/__tests__", "src/samples"]
+    "exclude": [
+        "src/__tests__",
+        "src/samples",
+        "node_modules",
+        "dist"
+    ]
 }

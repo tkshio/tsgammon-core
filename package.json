@@ -15,6 +15,9 @@
     "license": "Apache-2.0",
     "main": "index.js",
     "types": "index.d.ts",
+    "bin": {
+        "tsgammon-core": "bin/index.js"
+    },
     "dependencies": {
         "@borderless/base64": "^1.0.1",
         "typescript": "^4.6.3"
