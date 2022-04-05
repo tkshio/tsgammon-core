@@ -20,27 +20,37 @@ import { formatBoard } from '../utils/formatBoard'
 import { formatPly } from '../utils/formatPly'
 import { encodePosID } from '../utils/encodePosID'
 import { MoveFormatDirection } from '../utils/formatAbsMove'
+import { plyRecordForCheckerPlay, plyRecordForEoG } from '../records/PlyRecord'
+import {
+    addPlyRecord,
+    matchRecord,
+    MatchRecord,
+    setEoGRecord,
+} from '../records/MatchRecord'
+import { SGResult } from '../records/SGResult'
+import { formatMatchRecord } from '../records/utils/formatMatchRecord'
 
 const engine = simpleNNEngine
 const conf = standardConf
 
-type Event =
-    | {
-          tag: 'play'
-          before: BoardState
-          after: BoardState
-          ply: Ply
-      }
-    | {
-          tag: 'eog'
-          stake: Score
-          eogStatus: EOGStatus
-      }
+type Event = PlayEvent | EOGEvent
+type PlayEvent = {
+    tag: 'play'
+    before: BoardState
+    after: BoardState
+    ply: Ply
+}
+type EOGEvent = {
+    tag: 'eog'
+    stake: Score
+    eogStatus: EOGStatus
+    sgResult: SGResult
+}
 
 function* runAutoMatch(
     gameScoreBefore: Score = score(),
     diceSource: DiceSource = randomDiceSource
-): Generator<Event, Score, { node: BoardStateNode; lastPly: Ply }> {
+): Generator<Event, Score> {
     const initialBoardState = boardState(conf.initialPos)
     const roll = diceSource.openingRoll()
     let { boardStateNode: node, lastPly: ply } = doCheckerPlay(
@@ -73,7 +83,12 @@ function* runAutoMatch(
     )
 
     const gameScore = gameScoreBefore.add(stake)
-    yield { tag: 'eog', stake, eogStatus }
+    yield {
+        tag: 'eog',
+        stake,
+        eogStatus,
+        sgResult: ply.isRed ? SGResult.REDWON : SGResult.WHITEWON,
+    }
     return gameScore
 }
 
@@ -100,8 +115,8 @@ function isEoG(boardStateNode: BoardStateNode): boolean {
 }
 
 type Driver = {
-    doPlay: (evt: { before: BoardState; after: BoardState; ply: Ply }) => void
-    doEoG: (evt: { stake: Score; eogStatus: EOGStatus }) => void
+    doPlay: (evt: PlayEvent) => void
+    doEoG: (evt: EOGEvent) => void
     doResult: (evt: { gameScore: Score }) => void
 }
 
@@ -132,10 +147,34 @@ function runDriver(driver: Driver = defaultDriver) {
 }
 
 function xgDriver(): Driver {
+    const record: {
+        match: MatchRecord<undefined>
+    } = {
+        match: matchRecord(conf),
+    }
     return {
         ...defaultDriver,
+        doPlay: (evt) => {
+            record.match = addPlyRecord(
+                record.match,
+                plyRecordForCheckerPlay(evt.ply),
+                undefined
+            )
+        },
+        doEoG: (evt) => {
+            record.match = setEoGRecord(
+                record.match,
+                plyRecordForEoG(evt.stake, evt.sgResult)
+            )
+        },
+        doResult: () => {
+            formatMatchRecord(record.match)
+                .split('\n')
+                .forEach((l) => console.log(l))
+        },
     }
 }
+
 function boardDriver(): Driver {
     return {
         ...defaultDriver,
@@ -168,7 +207,7 @@ function main() {
     const arg = process.argv[2]
     if (arg === '-?' || arg === '--help') {
         console.log('usage:')
-        console.log('  -x: output as text log (xg/gnubg compatible) ')
+        console.log('  -x: output as text log (.mat format) ')
         console.log('  -b: output as visual board')
     } else if (arg.startsWith('-x')) {
         runDriver(xgDriver())
