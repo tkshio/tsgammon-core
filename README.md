@@ -1,6 +1,38 @@
 # tsgammon-core
 A Backgammon library for Typescript, formerly developed as a part of tsgammon-ui
 
+## demo
+````
+$ npm install tsgammon-core
+$ npm exec tsgammon-core -- -b
+
+...
+(snip)
+...
+
+red: Roll 54 Moves 23/Off
+
+ tsgammon        Position ID: AAAATt4fAAAAAA
+
+ +13-14-15-16-17-18------19-20-21-22-23-24-+   
+ |                  |   |                  |OOO
+ |                  |   |                  |OOO
+ |                  |   |                  |OOO
+ |                  |   |                  |OOO
+ |                  |   |                  |OOO
+^|                  |BAR|                  |   
+ |                  |   | 7                |   
+ |                  |   | X  X             |   
+ |                  |   | X  X           X |   
+ |                  |   | X  X           X |   
+ |                  |   | X  X     X     X |   
+ +12-11-10--9--8--7-------6--5--4--3--2--1-+   
+Red wins 2 pt. by Gammon
+Result: red 2 - white 0
+$
+````
+
+
 ## usage
 
 setup:
