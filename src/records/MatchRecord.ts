@@ -1,5 +1,5 @@
-import { GameConf } from '../GameConf'
-import { Score } from '../Score'
+import { GameConf, standardConf } from '../GameConf'
+import { score, Score } from '../Score'
 import {
     eogGameRecord,
     GameRecord,
@@ -23,6 +23,16 @@ export type MatchRecord<T> = {
     score: Score
     /** マッチポイント数、0の場合は無制限 */
     matchLength: number
+}
+
+export function matchRecord<T>(conf: GameConf = standardConf): MatchRecord<T> {
+    return {
+        conf,
+        gameRecords: [],
+        score: score(),
+        matchLength: 0,
+        curGameRecord: initGameRecord(score()),
+    }
 }
 
 /**
