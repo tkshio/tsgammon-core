@@ -16,7 +16,7 @@ import { DiceSource, randomDiceSource } from '../utils/DiceSource'
 import { formatStake } from '../utils/formatStake'
 import { formatBoard } from '../utils/formatBoard'
 import { formatPly } from '../utils/formatPly'
-import { encodePosID } from '../utils/encodePosID'
+import { toPositionID } from '../utils/toPositionID'
 import { MoveFormatDirection } from '../utils/formatAbsMove'
 import { plyRecordForCheckerPlay, plyRecordForEoG } from '../records/PlyRecord'
 import {
@@ -182,7 +182,7 @@ function boardDriver(): Driver {
             const whiteBoard = ply.isRed ? after.revert() : after
 
             // 移動後の盤面から、次の手番プレイヤーの視点でPosIDを生成
-            const posID = encodePosID(after.revert())
+            const posID = toPositionID(after.revert())
 
             // Moveも画面での座標に合わせて出力（redは1->24, whiteは24->1)
             const plyStr = formatPly(ply, MoveFormatDirection.ABSOLUTE_INV)

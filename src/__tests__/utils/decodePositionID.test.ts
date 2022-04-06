@@ -1,6 +1,6 @@
 import { boardState } from '../../BoardState'
-import { decodePosID } from '../../utils/decodePosID'
-import { encodePosID } from '../../utils/encodePosID'
+import { decodePositionID } from '../../utils/decodePositionID'
+import { toPositionID } from '../../utils/toPositionID'
 
 const decodePosIDTestData = [
     // positions relys on encodePosID()
@@ -76,12 +76,12 @@ function testDecodePositionID(data: {
     myBornOff?: number
     oppBornOff?: number
 }) {
-    const decoded = decodePosID(data.str)
+    const decoded = decodePositionID(data.str)
 
     const pos = decoded.points()
     expect(pos).toHaveLength(26)
 
-    const reenc = encodePosID(boardState(pos, [0, 0]))
+    const reenc = toPositionID(boardState(pos, [0, 0]))
     expect(reenc).toEqual(data.expected ?? data.str.substring(0, 14))
 
     const { myBornOff = 0, oppBornOff = 0 } = data
@@ -95,15 +95,15 @@ function testDecodePositionID(data: {
     })
 }
 function testInvalidCase(data: { str: string }) {
-    const decoded = decodePosID(data.str)
+    const decoded = decodePositionID(data.str)
     expect(decoded).toBeTruthy()
 }
 
 function testUnReencodable(data: { str: string }) {
-    const decoded = decodePosID(data.str)
+    const decoded = decodePositionID(data.str)
     const pos = decoded.points()
     expect(pos).toHaveLength(26)
 
-    const reenc = encodePosID(boardState(pos, [0, 0]))
+    const reenc = toPositionID(boardState(pos, [0, 0]))
     expect(reenc).toBeTruthy()
 }

@@ -1,4 +1,4 @@
-import { encode as encodeBase64 } from '@borderless/base64'
+import { encode as encodeAsBase64 } from '@borderless/base64'
 import { BoardState } from '../BoardState'
 
 /**
@@ -7,8 +7,8 @@ import { BoardState } from '../BoardState'
  * @param board 盤面
  * @returns 生成されたPositionID
  */
-export function encodePosID(board: BoardState): string {
-    return encodePosIDFromArray(board.points())
+export function toPositionID(board: BoardState): string {
+    return toPositionIDFromArray(board.points())
 }
 
 /**
@@ -17,7 +17,7 @@ export function encodePosID(board: BoardState): string {
  * @param posArr 盤面を表す配列
  * @returns 生成されたPositionID
  */
-export function encodePosIDFromArray(posArr: number[]): string {
+export function toPositionIDFromArray(posArr: number[]): string {
     // PositionIDのエンコーディングは、インデックスを遡って駒を数えていく
     // [24,23,...,1,0 = bar]
     const myIndex = [...Array(25)].map((_, i, arr) => arr.length - i - 1)
@@ -117,5 +117,5 @@ export function encodePosIDFromArray(posArr: number[]): string {
         }
     }
 
-    return encodeBase64(buffer).substring(0, 14)
+    return encodeAsBase64(buffer).substring(0, 14)
 }

@@ -1,6 +1,6 @@
 import { boardState } from '../../BoardState'
 import { standardConf } from '../../GameConf'
-import { encodePosID, encodePosIDFromArray } from '../../utils/encodePosID'
+import { toPositionID, toPositionIDFromArray } from '../../utils/toPositionID'
 
 const positionIDTestData = [
     {
@@ -131,7 +131,7 @@ function encodePositionID(data: {
     const { myBornOff = 0, oppBornOff = 0 } = data.board
 
     const board = boardState(data.board.pos, [myBornOff, oppBornOff])
-    expect(encodePosID(board)).toStrictEqual(data.expected)
+    expect(toPositionID(board)).toStrictEqual(data.expected)
 }
 
 function encodeInvalidData(data: {
@@ -140,5 +140,5 @@ function encodeInvalidData(data: {
     }
 }) {
     // 何か返ってくれば良い
-    expect(encodePosIDFromArray(data.board.pos)).toBeTruthy()
+    expect(toPositionIDFromArray(data.board.pos)).toBeTruthy()
 }

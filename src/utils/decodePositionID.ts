@@ -7,8 +7,8 @@ import { boardState, BoardState } from '../BoardState'
  * @param positionID PositionIDを示す文字列
  * @returns 生成された盤面
  */
-export function decodePosID(positionID: string): BoardState {
-    const ret = decodePosIDAsArray(positionID)
+export function decodePositionID(positionID: string): BoardState {
+    const ret = decodePositionIDtoArray(positionID)
     return boardState(ret.pos, [ret.myBornOff, ret.oppBornOff])
 }
 
@@ -21,7 +21,7 @@ export function decodePosID(positionID: string): BoardState {
  * @returns myBornOff  自駒の上がり済みの数（0-15）
  * @returns oppBornOff 相手駒の上がり済みの数（0-15）
  */
-export function decodePosIDAsArray(positionID: string): {
+export function decodePositionIDtoArray(positionID: string): {
     pos: number[]
     myBornOff: number
     oppBornOff: number
