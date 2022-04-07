@@ -11,7 +11,9 @@ export enum DIRECTION {
     ASC,
     DESC,
 }
-
+/**
+ * FIBS形式文字列の各項目を要素とする型
+ */
 export type FIBSBoard = {
     matchLen: number
     playerScore: number
@@ -36,6 +38,12 @@ export type FIBSBoard = {
     redoubles: number
 }
 
+/**
+ * 既定値を補ってFIBSBoardを生成する
+ *
+ * @param board
+ * @returns
+ */
 export function initBoard(board?: Partial<FIBSBoard>): FIBSBoard {
     return {
         matchLen: 9999,
@@ -70,12 +78,13 @@ export function initBoard(board?: Partial<FIBSBoard>): FIBSBoard {
     }
 }
 /**
+ * FIBS形式の文字列を生成する
  *
  * http://www.fibs.com/fibs_interface.html#board_state
  *
- * @param board
- * @param player
- * @param opponent
+ * @param board 局面
+ * @param player 自分の名前
+ * @param opponent 対戦相手の名前
  * @returns
  */
 export function encodeFIBSBoardString(

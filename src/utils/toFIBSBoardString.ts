@@ -12,11 +12,29 @@ import {
     DIRECTION,
 } from './FIBSBoardString'
 
+/**
+ * BoardState/BoardStateNode/number[]で表された状況を、FIBS Clientの仕様で
+ * 文字列（FIBS形式）に変換する
+ *
+ * http://www.fibs.com/fibs_interface.html#board_state
+ *
+ * ※ omitUnusedDiceを指定すると、使えないダイスは文字列に含めなくなる。
+ * 1つだけ駒を動かした状態を表現するのに使用しているが、通常は必要なく、
+ * 上記の仕様に合致しているかも不明瞭。
+ *
+ * @param arg 変換対象
+ * @param opt.colour 自分の駒をOにするかX（既定値）にするか
+ * @param opt.direction 自分の動かす向きを1->24と24->1（既定値）のどちらでエンコードするか
+ * @param opt.turn 手番はOかXか（省略時は自分=colourと同じ）
+ * @param opt.omitUnusedDice 使えないダイスロールを含めない
+ * @returns FIBS形式の文字列
+ */
 export function toFIBSBoard(
     arg: number[] | BoardState | BoardStateNode,
     opt: {
         colour?: COLOUR
         direction?: DIRECTION
+        turn?: TURN
         omitUnusedDice?: boolean
     } = {}
 ): string {
