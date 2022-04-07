@@ -1,3 +1,5 @@
+import { DicePip } from '../Dices'
+
 export enum TURN {
     X,
     O,
@@ -15,13 +17,15 @@ export enum DIRECTION {
  * FIBS形式文字列の各項目を要素とする型
  */
 export type FIBSBoard = {
+    player: string
+    opponent: string
     matchLen: number
     playerScore: number
     opponentScore: number
     pos: number[]
     turn: TURN
-    dice1: number
-    dice2: number
+    dice1: DicePip | 0
+    dice2: DicePip | 0
     cube: number
     playerMayDouble: boolean
     opponentMayDouble: boolean
@@ -46,6 +50,9 @@ export type FIBSBoard = {
  */
 export function initBoard(board?: Partial<FIBSBoard>): FIBSBoard {
     return {
+        player: 'You',
+        opponent: 'opponent',
+
         matchLen: 9999,
         playerScore: 0,
         opponentScore: 0,
@@ -87,11 +94,7 @@ export function initBoard(board?: Partial<FIBSBoard>): FIBSBoard {
  * @param opponent 対戦相手の名前
  * @returns
  */
-export function encodeFIBSBoardString(
-    board: FIBSBoard,
-    player = 'You',
-    opponent = 'opponent'
-): string {
+export function encodeFIBSBoardString(board: FIBSBoard): string {
     validate(board)
     const score3 = `${board.matchLen}:${board.playerScore}:${board.opponentScore}`
     const boardPos26 = `${board.pos.join(':')}`
@@ -123,7 +126,7 @@ export function encodeFIBSBoardString(
         board._didCrawford ? 0 : 0
     }`
     const redoubles1 = board.redoubles
-    return `board:${player}:${opponent}:${score3}:${boardPos26}:${turn}:${dice4}:${cube4}:${boardLayout4}:${pieces4}:${movable3}:${redoubles1}`
+    return `board:${board.player}:${board.opponent}:${score3}:${boardPos26}:${turn}:${dice4}:${cube4}:${boardLayout4}:${pieces4}:${movable3}:${redoubles1}`
 }
 
 function validate(board: FIBSBoard) {
