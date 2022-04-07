@@ -2,7 +2,6 @@ import { boardState } from '../BoardState'
 import {
     boardStateNode,
     BoardStateNode,
-    boardStateNodeFromArray,
     nodeWithEmptyDice,
 } from '../BoardStateNode'
 import { cube } from '../CubeState'
