@@ -1,6 +1,6 @@
 import { DiceRoll } from '../../Dices'
 import { standardConf } from '../../GameConf'
-import { COLOUR, DIRECTION, TURN } from '../../utils/FIBSBoardString'
+import { COLOUR, DIRECTION, TURN } from '../../utils/FIBSBoard'
 
 type TestData = {
     title: string

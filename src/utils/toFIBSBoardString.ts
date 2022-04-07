@@ -10,7 +10,7 @@ import {
     encodeFIBSBoardString,
     COLOUR,
     DIRECTION,
-} from './FIBSBoardString'
+} from './FIBSBoard'
 
 /**
  * BoardState/BoardStateNode/number[]で表された状況を、FIBS Clientの仕様で

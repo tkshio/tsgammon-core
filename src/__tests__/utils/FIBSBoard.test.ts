@@ -3,13 +3,15 @@ import {
     encodeFIBSBoardString,
     initBoard,
     TURN,
-} from '../../utils/FIBSBoardString'
+} from '../../utils/FIBSBoard'
 
 describe('encoder', () => {
     it('encodes example in spec description', () => {
         const player = 'You'
         const opponent = 'someplayer'
         const board = initBoard({
+            player,
+            opponent,
             matchLen: 3,
             colour: COLOUR.O,
             turn: TURN.O,
@@ -17,7 +19,7 @@ describe('encoder', () => {
             dice2: 2,
             canMove: 2,
         })
-        expect(encodeFIBSBoardString(board, player, opponent)).toStrictEqual(
+        expect(encodeFIBSBoardString(board)).toStrictEqual(
             'board:You:someplayer:3:0:0:0:-2:0:0:0:0:5:0:3:0:0:0:-5:5:0:0:0:-3:0:-5:0:0:0:0:2:0:1:6:2:0:0:1:1:1:0:1:-1:0:25:0:0:0:0:2:0:0:0'
         )
     }),
