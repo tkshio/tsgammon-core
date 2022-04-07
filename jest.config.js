@@ -2,7 +2,7 @@
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
-    testPathIgnorePatterns: ['<rootDir>/dist/'],
+    testPathIgnorePatterns: ['<rootDir>/dist/','<rootDir>/node_modules','.*data.ts',],
     reporters:[
         'default',
         ['jest-junit',{
