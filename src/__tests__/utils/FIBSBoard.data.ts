@@ -1,5 +1,25 @@
+import { DiceRoll } from '../../Dices'
 import { standardConf } from '../../GameConf'
 import { COLOUR, DIRECTION, TURN } from '../../utils/FIBSBoardString'
+
+type TestData = {
+    title: string
+    pos: number[]
+    fibs: string
+    myBearOff?: number
+    oppBearOff?: number
+    colour?: COLOUR
+    direction?: DIRECTION
+    turn?: TURN
+}
+
+type TestDataWithRoll = TestData & {
+    roll: DiceRoll
+}
+
+type TestDataAfterMove = TestDataWithRoll & {
+    moves: { from: number }[]
+}
 
 // prettier-ignore
 const ordinal_pos = [
@@ -25,7 +45,7 @@ const bearoff_pos = [
      0,
 ]
 
-export const testData = [
+export const testData: TestData[] = [
     {
         title: 'opening',
         pos: standardConf.initialPos,
@@ -202,5 +222,111 @@ export const testData = [
             '0:0:0:0:0:0',
         myBearOff: 5,
         oppBearOff: 12,
+    },
+]
+
+export const testDataWithRoll: TestDataWithRoll[] = [
+    {
+        title: 'opening with 3-1',
+        pos: standardConf.initialPos,
+        roll: { dice1: 3, dice2: 1 },
+        fibs:
+            'board:You:opponent:9999:0:0:' +
+            '0:2:0:0:0:0:-5:0:-3:0:0:0:5:-5:0:0:0:3:0:5:0:0:0:0:-2:0:' + // position
+            '-1:' +
+            '3:1:0:0:' + // player's dice rolls: opponents dice rolls
+            '1:1:1:0:' +
+            '-1:-1:0:25:0:0:0:0:' +
+            '2:' + // num of pieces you can move
+            '0:0:0',
+    },
+    {
+        title: 'opening with 1-3',
+        pos: standardConf.initialPos,
+        turn: TURN.O,
+        roll: { dice1: 1, dice2: 3 },
+        fibs:
+            'board:You:opponent:9999:0:0:' +
+            '0:2:0:0:0:0:-5:0:-3:0:0:0:5:-5:0:0:0:3:0:5:0:0:0:0:-2:0:' + // position
+            '1:' +
+            '0:0:1:3:' + // player's dice rolls: opponents dice rolls
+            '1:1:1:0:-1:-1:0:25:0:0:0:0:' +
+            '2:' + // num of pieces you can move
+            '0:0:0',
+    },
+    {
+        title: 'opening pos with 3-3',
+        pos: standardConf.initialPos,
+        roll: { dice1: 3, dice2: 3 },
+        fibs:
+            'board:You:opponent:9999:0:0:' +
+            '0:2:0:0:0:0:-5:0:-3:0:0:0:5:-5:0:0:0:3:0:5:0:0:0:0:-2:0:' + // position
+            '-1:' + //
+            '3:3:0:0:' + // player's dice rolls: opponents dice rolls
+            '1:1:1:0:-1:-1:0:25:0:0:0:0:' +
+            '4:' + // num of pieces you can move
+            '0:0:0',
+    },
+    {
+        title: 'forced pos (no move)',
+        // prettier-ignore
+        pos: [
+             1,
+            -2, -2, -2, -2, -2, -2,   0, 0, 0, 0, 0, 0,
+             0,  0,  0,  0,  0,  0,   0, 0, 0, 0, 0, 0,
+             0
+        ],
+        roll: { dice1: 1, dice2: 3 },
+        colour: COLOUR.O,
+        direction: DIRECTION.ASC,
+        fibs:
+            'board:You:opponent:9999:0:0:' +
+            '1:-2:-2:-2:-2:-2:-2:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:' + // position
+            '1:' +
+            '1:3:0:0:' + // player's dice rolls: opponents dice rolls
+            '1:1:1:0:1:1:25:0:0:0:1:0:' +
+            '0:' + // num of pieces you can move
+            '0:0:0',
+    },
+    {
+        title: 'forced pos (must use larger one)',
+        // prettier-ignore
+        pos: [
+            1,
+            0, -2,  0, -2, -2, -2,   0, 0, 0, 0, 0, 0,
+            0,  0,  0,  0,  0,  0,   0, 0, 0, 0, 0, 0,
+            0
+       ],
+        roll: { dice1: 1, dice2: 3 },
+        colour: COLOUR.O,
+        direction: DIRECTION.ASC,
+        fibs:
+            'board:You:opponent:9999:0:0:' +
+            '1:0:-2:0:-2:-2:-2:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:' + // position
+            '1:' +
+            '3:1:0:0:' + // player's dice rolls: opponents dice rolls
+            '1:1:1:0:1:1:25:0:0:0:1:0:' +
+            '1:' + // num of pieces you can move
+            '0:0:0',
+    },
+]
+
+export const testDataAfterMove: TestDataAfterMove[] = [
+    {
+        title: 'opening with 3-1',
+        pos: standardConf.initialPos,
+        roll: { dice1: 3, dice2: 1 },
+        colour: COLOUR.O,
+        direction: DIRECTION.ASC,
+        fibs:
+            'board:You:opponent:9999:0:0:' +
+            '0:2:0:0:0:0:-5:0:-3:0:0:0:5:-5:0:0:0:2:0:5:1:0:0:0:-2:0:' + // position
+            '1:' +
+            '1:0:0:0:' + // player's dice rolls: opponents dice rolls
+            '1:1:1:0:' +
+            '1:1:25:0:0:0:0:0:' +
+            '1:' + // num of pieces you can move
+            '0:0:0',
+        moves: [{ from: 17 }],
     },
 ]
