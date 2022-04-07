@@ -85,8 +85,8 @@ export function buildNodesForHeteroDice(
             major = () => NO_MOVE
             minor = () => NO_MOVE
             usableDice = [
-                { pip: majorPip, used: true },
-                { pip: minorPip, used: true },
+                { pip: dice1, used: true },
+                { pip: dice2, used: true },
             ]
         }
     }
