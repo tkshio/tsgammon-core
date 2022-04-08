@@ -1,15 +1,4 @@
-import { boardStateNodeFromArray } from '../BoardStateNode'
-import { collectMoves } from '../utils/collectMoves'
-import { DicePip } from '../Dices'
 import { Move } from '../Move'
-
-type Moves = [number, number, boolean?][]
-type BasicTestArg = {
-    pos: number[]
-    diceRoll: [DicePip, DicePip]
-    expectedMoves: Moves[]
-    expectedRedundancy?: boolean[]
-}
 
 export function move(from: number, to: number, isHit?: boolean): Move {
     return {

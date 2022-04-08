@@ -1,7 +1,6 @@
 import { boardStateNodeFromArray } from '../BoardStateNode'
 import { collectMoves } from '../utils/collectMoves'
 import { DicePip } from '../Dices'
-import { Move } from '../Move'
 import { move, sortMoves } from './BoardStateNode.common'
 
 type Moves = [number, number, boolean?][]
