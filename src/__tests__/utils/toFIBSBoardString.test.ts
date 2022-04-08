@@ -8,13 +8,18 @@ describe('encode BoardState', () => {
         const { myBearOff = 0, oppBearOff = 0 } = data
         const board = boardState(data.pos, [myBearOff, oppBearOff])
         const opt = {
+            player: data.player,
+            opponent: data.opponent,
             colour: data.colour,
             direction: data.direction,
             turn: data.turn,
         }
-        expect(toFIBSBoard({ board, cube: data.cube }, opt)).toStrictEqual(
-            data.fibs
-        )
+        expect(
+            toFIBSBoard(
+                { board, cube: data.cube, matchScore: data.matchScore },
+                opt
+            )
+        ).toStrictEqual(data.fibs)
     })
 })
 
@@ -28,12 +33,17 @@ describe('encode BoardStateNode', () => {
             [myBearOff, oppBearOff]
         )
         const opt = {
+            player: data.player,
+            opponent: data.opponent,
             colour: data.colour,
             direction: data.direction,
             turn: data.turn,
         }
         expect(
-            toFIBSBoard({ board: node, cube: data.cube }, opt)
+            toFIBSBoard(
+                { board: node, cube: data.cube, matchScore: data.matchScore },
+                opt
+            )
         ).toStrictEqual(data.fibs)
     })
 })
@@ -58,11 +68,18 @@ describe('encode intermediate state', () => {
             initialNode
         )
         const opt = {
+            player: data.player,
+            opponent: data.opponent,
             colour: data.colour,
             direction: data.direction,
             turn: data.turn,
             omitUnusedDice: true,
         }
-        expect(toFIBSBoard({ board: node }, opt)).toStrictEqual(data.fibs)
+        expect(
+            toFIBSBoard(
+                { board: node, cube: data.cube, matchScore: data.matchScore },
+                opt
+            )
+        ).toStrictEqual(data.fibs)
     })
 })

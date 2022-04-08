@@ -1,7 +1,8 @@
-import { Cube } from '../../Cube'
+import { FIBSCube } from '../../utils/FIBSCube'
 import { DiceRoll } from '../../Dices'
 import { standardConf } from '../../GameConf'
 import { COLOUR, DIRECTION, TURN } from '../../utils/FIBSBoard'
+import { FIBSScore } from '../../utils/FIBSState'
 
 type TestData = {
     title: string
@@ -12,7 +13,10 @@ type TestData = {
     colour?: COLOUR
     direction?: DIRECTION
     turn?: TURN
-    cube?: Cube
+    cube?: FIBSCube
+    player?: string
+    opponent?: string
+    matchScore?: FIBSScore
 }
 
 type TestDataWithRoll = TestData & {
@@ -264,6 +268,17 @@ export const testData: TestData[] = [
             '8:' + // cube value
             '0:0:' + // 1: may double, 0: not allowed to double(player:opponent:)
             '0:-1:-1:0:25:0:0:0:0:0:0:0:0',
+    },
+    {
+        title: 'matchScore and players name',
+        pos: standardConf.initialPos,
+        matchScore: { matchLen: 5, playerScore: 3, opponentScore: 2 },
+        player: 'White',
+        opponent: 'Red',
+        fibs:
+            'board:White:Red:5:3:2:' + // name and match score
+            '0:2:0:0:0:0:-5:0:-3:0:0:0:5:-5:0:0:0:3:0:5:0:0:0:0:-2:0:' + // position
+            '-1:0:0:0:0:1:1:1:0:-1:-1:0:25:0:0:0:0:0:0:0:0',
     },
 ]
 

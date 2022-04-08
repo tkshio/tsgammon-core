@@ -4,15 +4,14 @@ import {
     BoardStateNode,
     nodeWithEmptyDice,
 } from '../BoardStateNode'
-import { Cube } from '../Cube'
+import { FIBSCube } from './FIBSCube'
 import { DicePip } from '../Dices'
 import { COLOUR, DIRECTION, FIBSBoard, initBoard, TURN } from './FIBSBoard'
+import { FIBSScore, FIBSState } from './FIBSState'
 
-type FIBSState =
-    | { isValid: true; node: BoardStateNode; cube: Cube }
-    | { isValid: false }
-
-export function decodeFIBS(fibs: string): FIBSState {
+export function decodeFIBS(
+    fibs: string
+): { isValid: false } | ({ isValid: true } & FIBSState) {
     const arr = fibs.split(':')
 
     if (arr.length !== 53) {
@@ -25,9 +24,11 @@ export function decodeFIBS(fibs: string): FIBSState {
     }
     const player = arr[1]
     const opponent = arr[2]
+
     const matchLen = parseInt(arr[3])
     const playerScore = parseInt(arr[4])
     const opponentScore = parseInt(arr[5])
+
     const pos = arr.slice(6, 32).map((n) => parseInt(n))
     const turn =
         arr[32] === '-1'
@@ -58,9 +59,11 @@ export function decodeFIBS(fibs: string): FIBSState {
         }
         return isInvalid()
     }
+
     const cubeValue = parseInt(arr[37])
     const playerMayDouble = arr[38] === '1'
     const opponentMayDouble = arr[39] === '1'
+
     const colour =
         arr[41] === '-1' ? COLOUR.X : arr[41] === '1' ? COLOUR.O : isInvalid()
     const direction =
@@ -99,7 +102,8 @@ export function decodeFIBS(fibs: string): FIBSState {
 
     const node = toNode(fibsBoard)
     const cube = toCube(fibsBoard)
-    return { isValid: true, node, cube }
+    const matchScore = toMatchScore(fibsBoard)
+    return { isValid: true, player, opponent, node, cube, matchScore }
 }
 
 function toNode(fibs: FIBSBoard): BoardStateNode {
@@ -130,10 +134,17 @@ function toNode(fibs: FIBSBoard): BoardStateNode {
         : boardStateNode(board, { dice1, dice2 })
 }
 
-function toCube(fibs: FIBSBoard): Cube {
+function toCube(fibs: FIBSBoard): FIBSCube {
     return {
         cubeValue: fibs.cubeValue,
         playerMayDouble: fibs.playerMayDouble,
         opponentMayDouble: fibs.opponentMayDouble,
+    }
+}
+function toMatchScore(fibs: FIBSBoard): FIBSScore {
+    return {
+        matchLen: fibs.matchLen,
+        playerScore: fibs.playerScore,
+        opponentScore: fibs.opponentScore,
     }
 }

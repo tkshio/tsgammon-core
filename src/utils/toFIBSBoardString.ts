@@ -1,6 +1,6 @@
 import { boardState, BoardState } from '../BoardState'
 import { BoardStateNode, nodeWithEmptyDice } from '../BoardStateNode'
-import { Cube } from '../Cube'
+import { FIBSCube } from './FIBSCube'
 import { DicePip, DiceRoll } from '../Dices'
 
 import {
@@ -11,6 +11,7 @@ import {
     COLOUR,
     DIRECTION,
 } from './FIBSBoard'
+import { FIBSScore } from './FIBSState'
 
 /**
  * BoardState/BoardStateNode/number[]で表された状況を、FIBS Clientの仕様で
@@ -32,7 +33,10 @@ import {
 export function toFIBSBoard(
     arg: {
         board: number[] | BoardState | BoardStateNode
-        cube?: Cube
+        cube?: FIBSCube
+        player?: string
+        opponent?: string
+        matchScore?: FIBSScore
     },
     opt: {
         colour?: COLOUR
@@ -56,13 +60,24 @@ export function toFIBSBoard(
         opponentMayDouble: true,
         ...arg.cube,
     }
-    return encodeFIBSBoardString(boardStateToFIBSBoard(node, cube, opt))
+    const matchScore = {
+        matchLen: 9999,
+        playerScore: 0,
+        opponentScore: 0,
+        ...arg.matchScore,
+    }
+    return encodeFIBSBoardString(
+        boardStateToFIBSBoard(node, cube, matchScore, opt)
+    )
 }
 
 function boardStateToFIBSBoard(
     node: BoardStateNode,
-    cube: Cube,
+    cube: FIBSCube,
+    matchScore: FIBSScore,
     opt: {
+        player?: string
+        opponent?: string
         colour?: COLOUR
         direction?: DIRECTION
         turn?: TURN
@@ -70,6 +85,8 @@ function boardStateToFIBSBoard(
     }
 ): FIBSBoard {
     const {
+        player = 'You',
+        opponent = 'opponent',
         colour = COLOUR.X,
         direction = DIRECTION.DESC,
         omitUnusedDice = false,
@@ -107,12 +124,15 @@ function boardStateToFIBSBoard(
             : { home: 0, bar: 25 }
 
     return initBoard({
+        player,
+        opponent,
         turn,
         pos,
         ...diceRoll,
         playerOnHome,
         opponentOnHome,
         ...cube,
+        ...matchScore,
         colour,
         direction,
         home,
