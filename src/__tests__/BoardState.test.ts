@@ -13,14 +13,14 @@ test('initialize board', () => {
         pieces: number[],
         bornOffs: [number, number] = [0, 0]
     ) {
-        expect(board.points().map((value) => value)).toEqual(pieces)
+        expect(board.points.map((value) => value)).toEqual(pieces)
         expect(board.lastPiecePos()).toEqual(1)
         expect(board.isBearable()).toBeFalsy()
         standard.forEach((pieces, index) => {
             expect(board.piecesAt(index)).toEqual(pieces)
         })
-        expect(board.myBornOff()).toBe(bornOffs[0])
-        expect(board.opponentBornOff()).toBe(bornOffs[1])
+        expect(board.myBornOff).toBe(bornOffs[0])
+        expect(board.opponentBornOff).toBe(bornOffs[1])
         expect(board.eogStatus().isEndOfGame).toBeFalsy()
         expect(board.eogStatus().isGammon).toBeFalsy()
         expect(board.eogStatus().isBackgammon).toBeFalsy()
@@ -71,14 +71,14 @@ describe('Moving piece', () => {
         expect(board.isBearable()).toBeTruthy()
         const bornOff = board.movePiece(20, 5)
         expect(bornOff).not.toBe(board)
-        expect(bornOff.myBornOff()).toBe(1)
-        expect(bornOff.opponentBornOff()).toBe(0)
+        expect(bornOff.myBornOff).toBe(1)
+        expect(bornOff.opponentBornOff).toBe(0)
 
         // オーバーランはベアオフ扱い
         const overRun = board.movePiece(20, 6)
         expect(overRun).not.toBe(board)
-        expect(bornOff.myBornOff()).toBe(1)
-        expect(bornOff.opponentBornOff()).toBe(0)
+        expect(bornOff.myBornOff).toBe(1)
+        expect(bornOff.opponentBornOff).toBe(0)
     })
 })
 
