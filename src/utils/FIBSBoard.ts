@@ -26,7 +26,7 @@ export type FIBSBoard = {
     turn: TURN
     dice1: DicePip | 0
     dice2: DicePip | 0
-    cube: number
+    cubeValue: number
     playerMayDouble: boolean
     opponentMayDouble: boolean
     wasDoubled: boolean
@@ -66,7 +66,7 @@ export function initBoard(board?: Partial<FIBSBoard>): FIBSBoard {
         turn: TURN.OVER,
         dice1: 0,
         dice2: 0,
-        cube: 1,
+        cubeValue: 1,
         playerMayDouble: true,
         opponentMayDouble: true,
         wasDoubled: false,
@@ -109,7 +109,7 @@ export function encodeFIBSBoardString(board: FIBSBoard): string {
             : board.colour === COLOUR.X
             ? `${board.dice1}:${board.dice2}:0:0`
             : `0:0:${board.dice1}:${board.dice2}`
-    const cube4 = `${board.cube}:${board.playerMayDouble ? 1 : 0}:${
+    const cube4 = `${board.cubeValue}:${board.playerMayDouble ? 1 : 0}:${
         board.opponentMayDouble ? 1 : 0
     }:${board.wasDoubled ? 1 : 0}`
     const boardLayout4 = `${board.colour === COLOUR.O ? 1 : -1}:${

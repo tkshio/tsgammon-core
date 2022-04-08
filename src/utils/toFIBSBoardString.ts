@@ -1,6 +1,6 @@
 import { boardState, BoardState } from '../BoardState'
 import { BoardStateNode, nodeWithEmptyDice } from '../BoardStateNode'
-import { cube, CubeState } from '../CubeState'
+import { Cube } from '../Cube'
 import { DicePip, DiceRoll } from '../Dices'
 
 import {
@@ -30,7 +30,10 @@ import {
  * @returns FIBS形式の文字列
  */
 export function toFIBSBoard(
-    arg: number[] | BoardState | BoardStateNode,
+    arg: {
+        board: number[] | BoardState | BoardStateNode
+        cube?: Cube
+    },
     opt: {
         colour?: COLOUR
         direction?: DIRECTION
@@ -38,26 +41,33 @@ export function toFIBSBoard(
         omitUnusedDice?: boolean
     } = {}
 ): string {
-    const boardOrNode = Array.isArray(arg) ? boardState(arg) : arg
+    const boardOrNode = Array.isArray(arg.board)
+        ? boardState(arg.board)
+        : arg.board
 
     const flagged: BoardStateNode | (BoardState & { hasValue: false }) = {
         hasValue: false,
         ...boardOrNode,
     }
     const node = flagged.hasValue ? flagged : nodeWithEmptyDice(flagged)
-
-    return encodeFIBSBoardString(boardStateToFIBSBoard(node, opt, undefined))
+    const cube = {
+        cubeValue: 1,
+        playerMayDouble: true,
+        opponentMayDouble: true,
+        ...arg.cube,
+    }
+    return encodeFIBSBoardString(boardStateToFIBSBoard(node, cube, opt))
 }
 
 function boardStateToFIBSBoard(
     node: BoardStateNode,
+    cube: Cube,
     opt: {
         colour?: COLOUR
         direction?: DIRECTION
         turn?: TURN
         omitUnusedDice?: boolean
-    },
-    cubeState: CubeState = cube(1)
+    }
 ): FIBSBoard {
     const {
         colour = COLOUR.X,
@@ -102,7 +112,7 @@ function boardStateToFIBSBoard(
         ...diceRoll,
         playerOnHome,
         opponentOnHome,
-        cube: cubeState.value,
+        ...cube,
         colour,
         direction,
         home,

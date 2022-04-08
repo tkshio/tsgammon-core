@@ -12,7 +12,9 @@ describe('encode BoardState', () => {
             direction: data.direction,
             turn: data.turn,
         }
-        expect(toFIBSBoard(board, opt)).toStrictEqual(data.fibs)
+        expect(toFIBSBoard({ board, cube: data.cube }, opt)).toStrictEqual(
+            data.fibs
+        )
     })
 })
 
@@ -30,7 +32,9 @@ describe('encode BoardStateNode', () => {
             direction: data.direction,
             turn: data.turn,
         }
-        expect(toFIBSBoard(node, opt)).toStrictEqual(data.fibs)
+        expect(
+            toFIBSBoard({ board: node, cube: data.cube }, opt)
+        ).toStrictEqual(data.fibs)
     })
 })
 
@@ -59,6 +63,6 @@ describe('encode intermediate state', () => {
             turn: data.turn,
             omitUnusedDice: true,
         }
-        expect(toFIBSBoard(node, opt)).toStrictEqual(data.fibs)
+        expect(toFIBSBoard({ board: node }, opt)).toStrictEqual(data.fibs)
     })
 })

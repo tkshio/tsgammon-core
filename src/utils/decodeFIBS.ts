@@ -4,11 +4,13 @@ import {
     BoardStateNode,
     nodeWithEmptyDice,
 } from '../BoardStateNode'
-import { cube } from '../CubeState'
+import { Cube } from '../Cube'
 import { DicePip } from '../Dices'
 import { COLOUR, DIRECTION, FIBSBoard, initBoard, TURN } from './FIBSBoard'
 
-type FIBSState = { isValid: true; node: BoardStateNode } | { isValid: false }
+type FIBSState =
+    | { isValid: true; node: BoardStateNode; cube: Cube }
+    | { isValid: false }
 
 export function decodeFIBS(fibs: string): FIBSState {
     const arr = fibs.split(':')
@@ -56,7 +58,7 @@ export function decodeFIBS(fibs: string): FIBSState {
         }
         return isInvalid()
     }
-    const cubeState = cube(parseInt(arr[37]))
+    const cubeValue = parseInt(arr[37])
     const playerMayDouble = arr[38] === '1'
     const opponentMayDouble = arr[39] === '1'
     const colour =
@@ -85,7 +87,7 @@ export function decodeFIBS(fibs: string): FIBSState {
         turn,
         dice1,
         dice2,
-        cube: cubeState.value,
+        cubeValue: cubeValue,
         playerMayDouble,
         opponentMayDouble,
         colour,
@@ -96,7 +98,8 @@ export function decodeFIBS(fibs: string): FIBSState {
     })
 
     const node = toNode(fibsBoard)
-    return { isValid: true, node: node }
+    const cube = toCube(fibsBoard)
+    return { isValid: true, node, cube }
 }
 
 function toNode(fibs: FIBSBoard): BoardStateNode {
@@ -125,4 +128,12 @@ function toNode(fibs: FIBSBoard): BoardStateNode {
     return dice1 === 0 || dice2 === 0
         ? nodeWithEmptyDice(board)
         : boardStateNode(board, { dice1, dice2 })
+}
+
+function toCube(fibs: FIBSBoard): Cube {
+    return {
+        cubeValue: fibs.cubeValue,
+        playerMayDouble: fibs.playerMayDouble,
+        opponentMayDouble: fibs.opponentMayDouble,
+    }
 }

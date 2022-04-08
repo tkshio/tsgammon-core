@@ -1,3 +1,4 @@
+import { Cube } from '../../Cube'
 import { DiceRoll } from '../../Dices'
 import { standardConf } from '../../GameConf'
 import { COLOUR, DIRECTION, TURN } from '../../utils/FIBSBoard'
@@ -11,6 +12,7 @@ type TestData = {
     colour?: COLOUR
     direction?: DIRECTION
     turn?: TURN
+    cube?: Cube
 }
 
 type TestDataWithRoll = TestData & {
@@ -222,6 +224,46 @@ export const testData: TestData[] = [
             '0:0:0:0:0:0',
         myBearOff: 5,
         oppBearOff: 12,
+    },
+    {
+        title: 'opening pos with cube(player owns cube)',
+        pos: standardConf.initialPos,
+        cube: { cubeValue: 2, playerMayDouble: true, opponentMayDouble: false },
+        fibs:
+            'board:You:opponent:9999:0:0:' +
+            '0:2:0:0:0:0:-5:0:-3:0:0:0:5:-5:0:0:0:3:0:5:0:0:0:0:-2:0:' + // position
+            '-1:0:0:0:0:' +
+            '2:' + // cube value
+            '1:0:' + // 1: may double, 0: not allowed to double(player:opponent:)
+            '0:-1:-1:0:25:0:0:0:0:0:0:0:0',
+    },
+    {
+        title: 'opening pos with cube(opponent owns cube)',
+        pos: standardConf.initialPos,
+        cube: { cubeValue: 4, playerMayDouble: false, opponentMayDouble: true },
+        fibs:
+            'board:You:opponent:9999:0:0:' +
+            '0:2:0:0:0:0:-5:0:-3:0:0:0:5:-5:0:0:0:3:0:5:0:0:0:0:-2:0:' + // position
+            '-1:0:0:0:0:' +
+            '4:' + // cube value
+            '0:1:' + // 1: may double, 0: not allowed to double(player:opponent:)
+            '0:-1:-1:0:25:0:0:0:0:0:0:0:0',
+    },
+    {
+        title: 'opening pos with cube(nobody may double)',
+        pos: standardConf.initialPos,
+        cube: {
+            cubeValue: 8,
+            playerMayDouble: false,
+            opponentMayDouble: false,
+        },
+        fibs:
+            'board:You:opponent:9999:0:0:' +
+            '0:2:0:0:0:0:-5:0:-3:0:0:0:5:-5:0:0:0:3:0:5:0:0:0:0:-2:0:' + // position
+            '-1:0:0:0:0:' +
+            '8:' + // cube value
+            '0:0:' + // 1: may double, 0: not allowed to double(player:opponent:)
+            '0:-1:-1:0:25:0:0:0:0:0:0:0:0',
     },
 ]
 

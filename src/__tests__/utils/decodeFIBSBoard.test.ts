@@ -1,3 +1,4 @@
+import { Cube } from '../../Cube'
 import { decodeFIBS } from '../../utils/decodeFIBS'
 import { COLOUR, TURN } from '../../utils/FIBSBoard'
 import { testData, testDataWithRoll } from './FIBSBoard.data'
@@ -13,8 +14,9 @@ describe('decode', () => {
         const pos = adjustPos(data)
         expect(node.board.points()).toStrictEqual(pos)
         expect(node.dices).toStrictEqual([])
-    })
 
+        testCube(fibs.cube, data.cube)
+    })
     test.each(testDataWithRoll)('decodes $title', (data) => {
         const fibs = decodeFIBS(data.fibs)
 
@@ -35,8 +37,20 @@ describe('decode', () => {
         )
         expect(node.board.myBornOff()).toEqual(data.myBearOff ?? 0)
         expect(node.board.opponentBornOff()).toEqual(data.oppBearOff ?? 0)
+        testCube(fibs.cube, data.cube)
     })
 })
+
+function testCube(cube: Cube, expected?: Cube) {
+    const {
+        cubeValue = 1,
+        playerMayDouble = true,
+        opponentMayDouble = true,
+    } = { ...expected }
+    expect(cube.cubeValue).toBe(cubeValue)
+    expect(cube.playerMayDouble).toEqual(playerMayDouble)
+    expect(cube.opponentMayDouble).toEqual(opponentMayDouble)
+}
 
 // テスト条件で、手番プレイヤーが自分ではない場合、盤面を反転させる
 function adjustPos(data: {
