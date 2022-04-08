@@ -11,16 +11,13 @@ export interface BoardState {
     points: number[]
 
     /** 最後尾の駒の位置 */
-    lastPiecePos(): number
+    lastPiecePos: number
 
     /** ベアリングオフの行き先となる位置（標準は25） */
     bearOffPos: number
 
-    /** 指定の位置を相手側の視点で見た時の位置に変換する（e.g. 1=>24, 6=>18, ...）*/
-    invertPos(pos: number): number
-
     /** ベアリングオフできるならtrue */
-    isBearable(): boolean
+    isBearable: boolean
 
     /** 各ポイントの駒数を返す。正の数は自駒、負の数は相手駒 */
     piecesAt(n: number): number
@@ -49,18 +46,14 @@ export interface BoardState {
  * BoardStateの実装に必要な機能で、外部には公開する必要がないものの定義
  */
 type Board = {
-    lastPiecePosMemo(): number
-    calcLastPiecePos(): number
-
-    isBearableMemo(): boolean
-    calcIsBearable(): boolean
-
     isBackgammonAlso(): boolean
 
     pieceCount: number
+    opponentPieceCount: number
     myBornOff: number
     opponentBornOff: number
-    pieceCountOpponent: number
+
+    opponentLastPiecePos: number
 } & BoardState
 
 /**
@@ -118,19 +111,27 @@ function initBoardState(
     const myBornOff = bornOffs[0]
     const opponentBornOff = bornOffs[1]
     const pieceCount = countWhitePieces(points)
-    const pieceCountOpponent = countRedPieces(points)
+    const opponentPieceCount = countRedPieces(points)
     const bearOffPos = points.length - 1
+
+    const lastPiecePos = points.findIndex((n) => 0 < n)
+    const invertPos = (pos: number) => points.length - 1 - pos
+    const opponentLastPiecePos = invertPos(
+        points.findIndex((_, idx) => points[invertPos(idx)] < 0)
+    ) // 無理矢理だが、要するに最後の要素から逆順に、相手駒のある位置を探している
+
+    const isBearable = innerPos <= lastPiecePos
 
     return {
         points,
         pieceCount,
-        pieceCountOpponent,
+        opponentPieceCount,
         bearOffPos,
-        invertPos(pos) {
-            return this.points.length - 1 - pos
-        },
         myBornOff,
         opponentBornOff,
+        lastPiecePos,
+        opponentLastPiecePos,
+        isBearable,
         eogStatus() {
             const isEndOfGame = this.pieceCount === 0
             const isGammon = isEndOfGame && this.opponentBornOff === 0
@@ -151,54 +152,18 @@ function initBoardState(
                     .reduce((m, n) => m + n) < 0
             )
         },
-        lastPiecePosMemo() {
-            return this.calcLastPiecePos()
-        },
-        isBearableMemo() {
-            return this.calcIsBearable()
-        },
-        isBearable() {
-            return this.isBearableMemo()
-        },
-        calcIsBearable(): boolean {
-            const isBearable =
-                this.points
-                    // インナーボード外の自分の駒が存在しない
-                    .find((n, index) => index < innerPos && n > 0) === undefined
-
-            this.isBearableMemo = () => isBearable
-            return isBearable
-        },
-
-        lastPiecePos(): number {
-            return this.lastPiecePosMemo()
-        },
-
-        calcLastPiecePos(): number {
-            const lastPos = this.points.findIndex((n) => 0 < n)
-            this.lastPiecePosMemo = () => lastPos
-
-            return lastPos
-        },
         piecesAt(n: number): number {
             return this.points[n]
         },
         movePiece(from: number, pip: number): Board {
-            const moved = doMove(this, from, pip)
-            return moved === this
-                ? moved
-                : {
-                      ...moved,
-                      lastPiecePos() {
-                          return this.calcLastPiecePos()
-                      },
-                      isBearable() {
-                          return this.calcIsBearable()
-                      },
-                  }
+            return doMove(this, from, pip, innerPos)
         },
 
         revert(): Board {
+            const lastPiecePos = invertPos(this.opponentLastPiecePos)
+            const opponentLastPiecePos = invertPos(this.lastPiecePos)
+            const isBearable = innerPos <= lastPiecePos
+
             return {
                 ...this,
                 points: this.points.map((_, index) => {
@@ -209,22 +174,22 @@ function initBoardState(
                 }),
                 myBornOff: this.opponentBornOff,
                 opponentBornOff: this.myBornOff,
-                pieceCount: this.pieceCountOpponent,
-                pieceCountOpponent: this.pieceCount,
-
-                // TODO: 単純に再計算するのはもったいない
-                lastPiecePos() {
-                    return this.calcLastPiecePos()
-                },
-                isBearable() {
-                    return this.calcIsBearable()
-                },
+                pieceCount: this.opponentPieceCount,
+                opponentPieceCount: this.pieceCount,
+                lastPiecePos,
+                opponentLastPiecePos,
+                isBearable,
             }
         },
     }
 }
 
-function doMove(board: Board, from: number, pip: number): Board {
+function doMove(
+    board: Board,
+    from: number,
+    pip: number,
+    innerPos: number
+): Board {
     const boardSize = board.points.length - 1 // 25
     // 動かそうとする駒の位置が範囲外
     if (from < 0 || boardSize < from) {
@@ -248,28 +213,54 @@ function doMove(board: Board, from: number, pip: number): Board {
     const piecesAfter = board.points.slice()
     piecesAfter[from] = piecesAfter[from] - 1
 
+    // 必要なら自分の最後尾の駒の位置を更新する
+
     // 上がりなら、上がり数を更新して終了
     if (isBearOff) {
+        const lastPiecePos = recalcLastPiecePos(from, board, piecesAfter)
+
         return {
             ...board,
             points: piecesAfter,
             myBornOff: board.myBornOff + 1,
             pieceCount: board.pieceCount - 1,
+            lastPiecePos,
         }
     }
 
+    let opponentLastPiecePos
     // ヒット
     if (piecesAfter[to] === -1) {
         const bar = boardSize
 
         piecesAfter[to] = 0
         piecesAfter[bar] = piecesAfter[bar] - 1
+
+        // 相手の最後尾の駒の位置をバーに更新する
+        opponentLastPiecePos = boardSize
+    } else {
+        // ヒットでなければそのまま
+        opponentLastPiecePos = board.opponentLastPiecePos
     }
 
     // 移動先に駒を置く
     piecesAfter[to] = piecesAfter[to] + 1
+    const lastPiecePos = recalcLastPiecePos(from, board, piecesAfter)
+
+    // 上がれるかどうかの更新が必要なのは、上がりでない時だけ
+    const isBearable = innerPos <= lastPiecePos
+
     return {
         ...board,
         points: piecesAfter,
+        lastPiecePos,
+        opponentLastPiecePos,
+        isBearable,
     }
+}
+
+function recalcLastPiecePos(from: number, board: Board, piecesAfter: number[]) {
+    return from == board.lastPiecePos && board.points[from] == 1
+        ? piecesAfter.findIndex((n) => 0 < n)
+        : board.lastPiecePos
 }

@@ -46,14 +46,14 @@ export function isLegalMove(
     }
 
     // ベアオフする条件は満たされているか
-    if (!board.isBearable()) {
+    if (!board.isBearable) {
         return { isLegal: false }
     }
 
     const bearOffPos = board.bearOffPos
 
     // ちょうどで上がるか、そうでなければ最後尾からでなくてはいけない
-    return moveTo === bearOffPos || pos === board.lastPiecePos()
+    return moveTo === bearOffPos || pos === board.lastPiecePos
         ? {
               isLegal: true,
               move: {

@@ -14,8 +14,8 @@ test('initialize board', () => {
         bornOffs: [number, number] = [0, 0]
     ) {
         expect(board.points.map((value) => value)).toEqual(pieces)
-        expect(board.lastPiecePos()).toEqual(1)
-        expect(board.isBearable()).toBeFalsy()
+        expect(board.lastPiecePos).toEqual(1)
+        expect(board.isBearable).toBeFalsy()
         standard.forEach((pieces, index) => {
             expect(board.piecesAt(index)).toEqual(pieces)
         })
@@ -44,11 +44,14 @@ describe('Moving piece', () => {
         expect(revertAndHit.piecesAt(19)).toBe(4)
         expect(revertAndHit.piecesAt(21)).toBe(1)
         expect(revertAndHit.piecesAt(25)).toBe(-1)
+        expect(revertAndHit.revert().lastPiecePos).toBe(0)
 
         // reenter and hit
         const revertAndReenter = revertAndHit.revert().movePiece(0, 4)
         expect(revertAndReenter.piecesAt(4)).toBe(1)
         expect(revertAndReenter.piecesAt(25)).toBe(-1)
+        expect(revertAndReenter.lastPiecePos).toBe(1)
+        expect(revertAndReenter.revert().lastPiecePos).toBe(0)
     })
 
     test('ignore illegal move', () => {
@@ -68,7 +71,7 @@ describe('Moving piece', () => {
             0, 0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             /*bar*/ 0, 1, 0, 0, 0, 0, 0,
         ])
-        expect(board.isBearable()).toBeTruthy()
+        expect(board.isBearable).toBeTruthy()
         const bornOff = board.movePiece(20, 5)
         expect(bornOff).not.toBe(board)
         expect(bornOff.myBornOff).toBe(1)
@@ -89,15 +92,15 @@ describe('bear off', () => {
             /* bar */ 0, 0, 0, 0, 1, 1, 0,
         ]
         const board = boardState(pieces, [0, 0])
-        expect(board.isBearable()).toBeFalsy()
-        expect(board.isBearable()).toBeFalsy() // test twice for memoization
-        expect(board.lastPiecePos()).toBe(18)
-        expect(board.lastPiecePos()).toBe(18) // test twice for memoization
+        expect(board.isBearable).toBeFalsy()
+        expect(board.isBearable).toBeFalsy() // test twice for memoization
+        expect(board.lastPiecePos).toBe(18)
+        expect(board.lastPiecePos).toBe(18) // test twice for memoization
         const afterMove = board.movePiece(18, 1)
-        expect(afterMove.lastPiecePos()).toBe(19)
-        expect(afterMove.lastPiecePos()).toBe(19)
-        expect(afterMove.isBearable()).toBeTruthy()
-        expect(afterMove.isBearable()).toBeTruthy()
+        expect(afterMove.lastPiecePos).toBe(19)
+        expect(afterMove.lastPiecePos).toBe(19)
+        expect(afterMove.isBearable).toBeTruthy()
+        expect(afterMove.isBearable).toBeTruthy()
     })
 
     test("can't bear off (piece on the bar )", () => {
@@ -106,8 +109,8 @@ describe('bear off', () => {
             /* bar */ 0, 0, 0, 0, 1, 1, 0,
         ]
         const board = boardState(pieces, [0, 0])
-        expect(board.isBearable()).toBeFalsy()
-        expect(board.lastPiecePos()).toBe(0)
+        expect(board.isBearable).toBeFalsy()
+        expect(board.lastPiecePos).toBe(0)
     })
 })
 
