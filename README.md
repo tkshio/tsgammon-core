@@ -52,11 +52,11 @@ const node:BoardStateNode = boardStateNodeFromArray(
 
 list up moves:
 ```typescript
-const moves: Move[][] = collectMoves(node)
+const candidates: Move[][] = collectMoves(node)
     .filter(moves => !moves.isRedundant)
     .map(moves => moves.moves)
 
-moves.map(moves => console.log(formatMoves(moves)))
+candidates.map(moves => console.log(moves.map(move=>formatMove(move))))
 
 // [ '1/4', '1/2' ]
 // [ '1/4', '4/5' ]
