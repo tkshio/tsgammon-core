@@ -8,15 +8,17 @@ import { cube } from '../CubeState'
 import { DicePip } from '../Dices'
 import { COLOUR, DIRECTION, FIBSBoard, initBoard, TURN } from './FIBSBoard'
 
-export function decodeFIBS(fibs: string): BoardStateNode | { hasValue: false } {
+type FIBSState = { isValid: true; node: BoardStateNode } | { isValid: false }
+
+export function decodeFIBS(fibs: string): FIBSState {
     const arr = fibs.split(':')
 
     if (arr.length !== 53) {
-        return { hasValue: false }
+        return { isValid: false }
     }
-    const result = { hasValue: true }
+    const result = { isValid: true }
     function isInvalid(): undefined {
-        result.hasValue = false
+        result.isValid = false
         return undefined
     }
     const player = arr[1]
@@ -69,8 +71,8 @@ export function decodeFIBS(fibs: string): BoardStateNode | { hasValue: false } {
     const opponentOnHome = parseInt(arr[46])
     const redoubles = parseInt(arr[52])
 
-    if (!result.hasValue) {
-        return { hasValue: false }
+    if (!result.isValid) {
+        return { isValid: false }
     }
 
     const fibsBoard = initBoard({
@@ -94,7 +96,7 @@ export function decodeFIBS(fibs: string): BoardStateNode | { hasValue: false } {
     })
 
     const node = toNode(fibsBoard)
-    return node
+    return { isValid: true, node: node }
 }
 
 function toNode(fibs: FIBSBoard): BoardStateNode {

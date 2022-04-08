@@ -4,22 +4,24 @@ import { testData, testDataWithRoll } from './FIBSBoard.data'
 
 describe('decode', () => {
     test.each(testData)('decodes $title', (data) => {
-        const node = decodeFIBS(data.fibs)
+        const fibs = decodeFIBS(data.fibs)
 
-        if (!node.hasValue) {
+        if (!fibs.isValid) {
             throw new Error('invalid format')
         }
+        const node = fibs.node
         const pos = adjustPos(data)
         expect(node.board.points()).toStrictEqual(pos)
         expect(node.dices).toStrictEqual([])
     })
 
     test.each(testDataWithRoll)('decodes $title', (data) => {
-        const node = decodeFIBS(data.fibs)
+        const fibs = decodeFIBS(data.fibs)
 
-        if (!node.hasValue) {
+        if (!fibs.isValid) {
             throw new Error('invalid format')
         }
+        const node = fibs.node
         expect(node.board.points()).toStrictEqual(adjustPos(data))
         expect(node.dices.map((dice) => dice.pip).sort()).toStrictEqual(
             data.roll.dice1 === data.roll.dice2
