@@ -8,7 +8,7 @@ import { BoardState } from '../BoardState'
  * @returns 生成されたPositionID
  */
 export function toPositionID(board: BoardState): string {
-    return toPositionIDFromArray(board.points())
+    return toPositionIDFromArray(board.points)
 }
 
 /**

@@ -8,13 +8,13 @@ import { standardConf } from './GameConf'
  */
 export interface BoardState {
     /** 各ポイントの駒数を格納した配列。正の数は自駒、負の数は相手駒 */
-    points(): number[]
+    points: number[]
 
     /** 最後尾の駒の位置 */
     lastPiecePos(): number
 
     /** ベアリングオフの行き先となる位置（標準は25） */
-    bearOffPos(): number
+    bearOffPos: number
 
     /** 指定の位置を相手側の視点で見た時の位置に変換する（e.g. 1=>24, 6=>18, ...）*/
     invertPos(pos: number): number
@@ -26,10 +26,10 @@ export interface BoardState {
     piecesAt(n: number): number
 
     /** ベアリングオフ済みの自駒数を返す */
-    myBornOff(): number
+    myBornOff: number
 
     /** ベアリングオフ済みの相手駒数を返す */
-    opponentBornOff(): number
+    opponentBornOff: number
 
     /** 指定されたポイントの駒をpip分進めた盤面を返す。
      * ポイントに駒がなかったり、行き先がブロックされている・範囲外などの場合、自分自身が返ってくる */
@@ -57,10 +57,9 @@ type Board = {
 
     isBackgammonAlso(): boolean
 
-    pieces: number[]
     pieceCount: number
-    bornOff: number
-    bornOffOpponent: number
+    myBornOff: number
+    opponentBornOff: number
     pieceCountOpponent: number
 } & BoardState
 
@@ -111,49 +110,46 @@ export function boardState(
 }
 
 function initBoardState(
-    pieces: number[],
+    points: number[],
     bornOffs: [number, number] = [0, 0],
-    innerPos = 19
+    innerPos = 19,
+    outerPos = 7
 ): Board {
-    const bornOff = bornOffs[0]
-    const bornOffOpponent = bornOffs[1]
-    const pieceCount = countWhitePieces(pieces)
-    const pieceCountOpponent = countRedPieces(pieces)
+    const myBornOff = bornOffs[0]
+    const opponentBornOff = bornOffs[1]
+    const pieceCount = countWhitePieces(points)
+    const pieceCountOpponent = countRedPieces(points)
+    const bearOffPos = points.length - 1
 
     return {
-        pieces: pieces,
-        pieceCount: pieceCount,
-        pieceCountOpponent: pieceCountOpponent,
-        bearOffPos() {
-            return pieces.length - 1
-        },
+        points,
+        pieceCount,
+        pieceCountOpponent,
+        bearOffPos,
         invertPos(pos) {
-            return pieces.length - 1 - pos
+            return this.points.length - 1 - pos
         },
-        bornOff: bornOff,
-        bornOffOpponent: bornOffOpponent,
+        myBornOff,
+        opponentBornOff,
         eogStatus() {
             const isEndOfGame = this.pieceCount === 0
-            const isGammon = isEndOfGame && this.opponentBornOff() === 0
+            const isGammon = isEndOfGame && this.opponentBornOff === 0
             const isBackgammon = isGammon && this.isBackgammonAlso()
             return eog({
-                isEndOfGame: isEndOfGame,
-                isGammon: isGammon,
-                isBackgammon: isBackgammon,
+                isEndOfGame,
+                isGammon,
+                isBackgammon,
             })
         },
         isBackgammonAlso(): boolean {
-            const opponentOuterAndBar = [...Array(7)].map(
+            const opponentOuterAndBar = [...Array(outerPos)].map(
                 (_, index) => index + innerPos
             )
             return (
                 opponentOuterAndBar
-                    .map((pos) => this.piecesAt(pos))
+                    .map((pos) => this.points[pos])
                     .reduce((m, n) => m + n) < 0
             )
-        },
-        points(): number[] {
-            return this.pieces
         },
         lastPiecePosMemo() {
             return this.calcLastPiecePos()
@@ -166,7 +162,7 @@ function initBoardState(
         },
         calcIsBearable(): boolean {
             const isBearable =
-                this.pieces
+                this.points
                     // インナーボード外の自分の駒が存在しない
                     .find((n, index) => index < innerPos && n > 0) === undefined
 
@@ -179,19 +175,13 @@ function initBoardState(
         },
 
         calcLastPiecePos(): number {
-            const lastPos = this.pieces.findIndex((n) => 0 < n)
+            const lastPos = this.points.findIndex((n) => 0 < n)
             this.lastPiecePosMemo = () => lastPos
 
             return lastPos
         },
         piecesAt(n: number): number {
-            return this.pieces[n]
-        },
-        myBornOff(): number {
-            return this.bornOff
-        },
-        opponentBornOff(): number {
-            return this.bornOffOpponent
+            return this.points[n]
         },
         movePiece(from: number, pip: number): Board {
             const moved = doMove(this, from, pip)
@@ -211,14 +201,14 @@ function initBoardState(
         revert(): Board {
             return {
                 ...this,
-                pieces: this.pieces.map((_, index) => {
-                    const n = -this.pieces[pieces.length - 1 - index]
+                points: this.points.map((_, index) => {
+                    const n = -this.points[this.points.length - 1 - index]
 
                     // remove negative 0
                     return n === 0 ? 0 : n
                 }),
-                bornOff: this.bornOffOpponent,
-                bornOffOpponent: this.bornOff,
+                myBornOff: this.opponentBornOff,
+                opponentBornOff: this.myBornOff,
                 pieceCount: this.pieceCountOpponent,
                 pieceCountOpponent: this.pieceCount,
 
@@ -235,14 +225,14 @@ function initBoardState(
 }
 
 function doMove(board: Board, from: number, pip: number): Board {
-    const boardSize = board.pieces.length - 1 // 25
+    const boardSize = board.points.length - 1 // 25
     // 動かそうとする駒の位置が範囲外
     if (from < 0 || boardSize < from) {
         return board
     }
 
     // 動かそうとする場所に駒がない
-    const piecesToMove = board.pieces[from]
+    const piecesToMove = board.points[from]
     if (piecesToMove <= 0) {
         return board
     }
@@ -250,20 +240,20 @@ function doMove(board: Board, from: number, pip: number): Board {
     // ベアオフではなく、行先がブロックされている
     const to = from + pip > boardSize ? boardSize : from + pip
     const isBearOff = boardSize <= to
-    if (!isBearOff && board.pieces[to] < -1) {
+    if (!isBearOff && board.points[to] < -1) {
         return board
     }
 
     // 駒を取り上げる
-    const piecesAfter = board.pieces.slice()
+    const piecesAfter = board.points.slice()
     piecesAfter[from] = piecesAfter[from] - 1
 
     // 上がりなら、上がり数を更新して終了
     if (isBearOff) {
         return {
             ...board,
-            pieces: piecesAfter,
-            bornOff: board.bornOff + 1,
+            points: piecesAfter,
+            myBornOff: board.myBornOff + 1,
             pieceCount: board.pieceCount - 1,
         }
     }
@@ -280,6 +270,6 @@ function doMove(board: Board, from: number, pip: number): Board {
     piecesAfter[to] = piecesAfter[to] + 1
     return {
         ...board,
-        pieces: piecesAfter,
+        points: piecesAfter,
     }
 }

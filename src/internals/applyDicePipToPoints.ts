@@ -32,9 +32,8 @@ export function applyDicePipToPoints(
     }
 
     // 各ポイントについて、そこの駒を動かす手が有効なら、nodeBuilderを呼んで子局面を生成する
-    const nodesAndMarksForEachPoint: [BoardStateNode | NoMove, number][] = board
-        .points()
-        .map((_, index) => {
+    const nodesAndMarksForEachPoint: [BoardStateNode | NoMove, number][] =
+        board.points.map((_, index) => {
             // 各ポイントについて、指定のダイス目が使えるかどうか判断する
             const move = isLegalMove(board, index, dicePip)
 

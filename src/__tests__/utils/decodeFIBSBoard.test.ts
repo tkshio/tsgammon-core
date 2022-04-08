@@ -13,7 +13,7 @@ describe('decode', () => {
         }
         const node = fibs.node
         const pos = adjustPos(data)
-        expect(node.board.points()).toStrictEqual(pos)
+        expect(node.board.points).toStrictEqual(pos)
         expect(node.dices).toStrictEqual([])
 
         testCube(fibs.cube, data.cube)
@@ -26,7 +26,7 @@ describe('decode', () => {
             throw new Error('invalid format')
         }
         const node = fibs.node
-        expect(node.board.points()).toStrictEqual(adjustPos(data))
+        expect(node.board.points).toStrictEqual(adjustPos(data))
         expect(node.dices.map((dice) => dice.pip).sort()).toStrictEqual(
             data.roll.dice1 === data.roll.dice2
                 ? [
@@ -37,8 +37,8 @@ describe('decode', () => {
                   ]
                 : [data.roll.dice1, data.roll.dice2].sort()
         )
-        expect(node.board.myBornOff()).toEqual(data.myBearOff ?? 0)
-        expect(node.board.opponentBornOff()).toEqual(data.oppBearOff ?? 0)
+        expect(node.board.myBornOff).toEqual(data.myBearOff ?? 0)
+        expect(node.board.opponentBornOff).toEqual(data.oppBearOff ?? 0)
         testCube(fibs.cube, data.cube)
         testScore(fibs.matchScore, data.matchScore)
     })

@@ -78,7 +78,7 @@ function testDecodePositionID(data: {
 }) {
     const decoded = decodePositionID(data.str)
 
-    const pos = decoded.points()
+    const pos = decoded.points
     expect(pos).toHaveLength(26)
 
     const reenc = toPositionID(boardState(pos, [0, 0]))
@@ -86,8 +86,8 @@ function testDecodePositionID(data: {
 
     const { myBornOff = 0, oppBornOff = 0 } = data
     const decodedBornOff = {
-        myBornOff: decoded.myBornOff(),
-        opponentBornOff: decoded.opponentBornOff(),
+        myBornOff: decoded.myBornOff,
+        opponentBornOff: decoded.opponentBornOff,
     }
     expect(decodedBornOff).toStrictEqual({
         myBornOff,
@@ -101,7 +101,7 @@ function testInvalidCase(data: { str: string }) {
 
 function testUnReencodable(data: { str: string }) {
     const decoded = decodePositionID(data.str)
-    const pos = decoded.points()
+    const pos = decoded.points
     expect(pos).toHaveLength(26)
 
     const reenc = toPositionID(boardState(pos, [0, 0]))

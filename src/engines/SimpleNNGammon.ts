@@ -52,11 +52,7 @@ export const simpleNNEngine = simpleEvalEngine((board) => evaluate(board).e)
  * @param board 盤面
  */
 export function evaluate(board: BoardState): NNEval {
-    const e = evalWithNN(
-        board.points(),
-        board.myBornOff(),
-        board.opponentBornOff()
-    )
+    const e = evalWithNN(board.points, board.myBornOff, board.opponentBornOff)
     const [oppWin, oppGammon, myWin, myGammon] = e
     const evalRet = myWin + myGammon - oppWin - oppGammon
     return { e: evalRet, myWin, myGammon, oppWin, oppGammon }

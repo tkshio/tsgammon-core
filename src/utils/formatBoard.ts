@@ -31,7 +31,7 @@ export function formatBoard(board: BoardState): string[] {
             .map((_, i, arr) => arr.length - i)
             .map((pos) => board.piecesAt(pos))
         const onTheBar = board.piecesAt(25)
-        const bornOff = -board.opponentBornOff()
+        const bornOff = -board.opponentBornOff
         return row(pieces, n, onTheBar, bornOff, mayOverflow)
     }
     function lowerRow(n: number, mayOverflow = false) {
@@ -39,7 +39,7 @@ export function formatBoard(board: BoardState): string[] {
             .map((_, i) => i + 13)
             .map((pos) => board.piecesAt(pos))
         const onTheBar = board.piecesAt(0)
-        const bornOff = board.myBornOff()
+        const bornOff = board.myBornOff
         return row(pieces, n, onTheBar, bornOff, mayOverflow)
     }
 

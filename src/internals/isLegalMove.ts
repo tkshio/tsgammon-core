@@ -28,7 +28,7 @@ export function isLegalMove(
 
     const moveTo = pos + dicePip
     // ベアオフでない場合、行先がブロックされていなければ、合法なムーブ
-    if (0 < moveTo && moveTo < board.bearOffPos()) {
+    if (0 < moveTo && moveTo < board.bearOffPos) {
         const opponent = -board.piecesAt(moveTo)
         return opponent < 2
             ? {
@@ -50,7 +50,7 @@ export function isLegalMove(
         return { isLegal: false }
     }
 
-    const bearOffPos = board.bearOffPos()
+    const bearOffPos = board.bearOffPos
 
     // ちょうどで上がるか、そうでなければ最後尾からでなくてはいけない
     return moveTo === bearOffPos || pos === board.lastPiecePos()

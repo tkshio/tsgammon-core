@@ -10,13 +10,11 @@ import { BoardStateNode } from '../BoardStateNode'
 export function collectNodes(node: BoardStateNode): BoardStateNode[] {
     const hasUnusedDice = node.dices.find((dice) => !dice.used)
     if (hasUnusedDice) {
-        const major: BoardStateNode[] = node.board
-            .points()
+        const major: BoardStateNode[] = node.board.points
             .map((_, idx) => node.majorFirst(idx))
             .map((node) => (node.hasValue ? collectNodes(node) : []))
             .flat()
-        const minor: BoardStateNode[] = node.board
-            .points()
+        const minor: BoardStateNode[] = node.board.points
             .map((_, idx) => node.minorFirst(idx))
             .map((node) => (node.hasValue ? collectNodes(node) : []))
             .flat()

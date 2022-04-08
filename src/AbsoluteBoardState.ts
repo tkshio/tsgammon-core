@@ -45,10 +45,10 @@ export function whiteViewAbsoluteBoard(
     boardState: BoardState
 ): AbsoluteBoardState {
     return {
-        points: () => boardState.points(),
+        points: () => boardState.points,
         piecesAt: (n) => boardState.piecesAt(n),
-        whiteBornOff: () => boardState.myBornOff(),
-        redBornOff: () => boardState.opponentBornOff(),
+        whiteBornOff: () => boardState.myBornOff,
+        redBornOff: () => boardState.opponentBornOff,
     }
 }
 
@@ -60,16 +60,15 @@ export function whiteViewAbsoluteBoard(
 export function redViewAbsoluteBoard(
     boardState: BoardState
 ): AbsoluteBoardState {
-    const boardSize = boardState.points().length - 1
+    const boardSize = boardState.points.length - 1
     return {
         points: () =>
-            boardState
-                .points()
+            boardState.points
                 .slice()
                 .reverse()
                 .map((v) => (v === 0 ? v : -v)),
         piecesAt: (n) => -boardState.piecesAt(boardSize - n),
-        whiteBornOff: () => boardState.opponentBornOff(),
-        redBornOff: () => boardState.myBornOff(),
+        whiteBornOff: () => boardState.opponentBornOff,
+        redBornOff: () => boardState.myBornOff,
     }
 }

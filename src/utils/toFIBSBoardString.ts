@@ -108,7 +108,7 @@ function boardStateToFIBSBoard(
         : 0
 
     const posArr =
-        colour === COLOUR.O ? board.points() : board.points().map((p) => -p)
+        colour === COLOUR.O ? board.points : board.points.map((p) => -p)
 
     // 手番はデフォルトでは自分（COLOURで決まる）で、指定があればそれを優先
     const { turn = colour === COLOUR.O ? TURN.O : TURN.X } = opt
@@ -116,8 +116,8 @@ function boardStateToFIBSBoard(
         direction === DIRECTION.ASC
             ? posArr
             : posArr.map((_, i, arr) => posArr[arr.length - 1 - i])
-    const playerOnHome = board.myBornOff()
-    const opponentOnHome = board.opponentBornOff()
+    const playerOnHome = board.myBornOff
+    const opponentOnHome = board.opponentBornOff
     const { home, bar } =
         direction === DIRECTION.ASC
             ? { home: 25, bar: 0 }
