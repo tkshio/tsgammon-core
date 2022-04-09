@@ -31,6 +31,7 @@ jobs:
       name: node/default
       tag: '16.10'
     steps:
+      - run: echo "build package ..."
       - when:
           condition:
             equal: [dev, << pipeline.git.branch >>]
