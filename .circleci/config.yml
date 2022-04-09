@@ -31,24 +31,17 @@ jobs:
       name: node/default
       tag: '16.10'
     steps:
-      - run: echo "build package ..."
-      - when:
-          condition:
-            equal: [dev, << pipeline.git.branch >>]
-          steps:
-            - attach_workspace:
-                at: ~/project
-            - run:
-                name: Authenticate with registory
-                command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
-            - run:
-                name: Build Package
-                command: npm run build
-            - run:
-                name: Publish package
-                command: cd dist && npm pack
-            - store_artifacts:
-                path: ~/project/dist/tsgammon-core-$CIRCLE_TAG.tgz
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Authenticate with registory
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
+      - run:
+          name: Build Package
+          command: npm run build
+      - run:
+          name: Publish package
+          command: cd dist && npm pack
       
 workflows:
   run_test: # This is the name of the workflow, feel free to change it to better match your workflow.
@@ -63,6 +56,6 @@ workflows:
           - test
           filters:
             tags:
-              only: /^v.*/
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
             branches:
               ignore: /.*/
