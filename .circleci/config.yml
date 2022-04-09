@@ -41,7 +41,7 @@ jobs:
           command: npm run build
       - run:
           name: Publish package
-          command: cd dist && npm pack
+          command: cd dist && npm publish
       
 workflows:
   run_test: # This is the name of the workflow, feel free to change it to better match your workflow.
