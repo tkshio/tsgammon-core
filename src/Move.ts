@@ -3,20 +3,20 @@
  */
 export type Move = {
     /** 開始位置 */
-    from: number;
+    from: number
 
     /** 終了位置。オーバーランの場合、上がり位置は25より大きくなる。 */
-    to: number;
+    to: number
 
     /** 移動量 */
-    pip: number;
+    pip: number
 
-    /** ヒットの場合はtrue */    
-    isHit: boolean;
+    /** ヒットの場合はtrue */
+    isHit: boolean
 
     /** 上がりの場合はtrue */
-    isBearOff: boolean;
+    isBearOff: boolean
 
     /** 本来必要なダイスの目より大きい目で上がった場合はtrue */
-    isOverrun: boolean;
-};
+    isOverrun: boolean
+}

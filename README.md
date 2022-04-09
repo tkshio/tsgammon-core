@@ -1,6 +1,41 @@
 # tsgammon-core
 A Backgammon library for Typescript, formerly developed as a part of tsgammon-ui
 
+[![npm version](https://badge.fury.io/js/tsgammon-core.svg)](https://badge.fury.io/js/tsgammon-core)
+[![tkshio](https://circleci.com/gh/tkshio/tsgammon-core.svg?style=shield)](https://circleci.com/gh/tkshio/tsgammon-core)
+
+## demo
+````
+$ npm install tsgammon-core
+$ npm exec tsgammon-core -- -b
+
+...
+(snip)
+...
+
+red: Roll 54 Moves 23/Off
+
+ tsgammon        Position ID: AAAATt4fAAAAAA
+
+ +13-14-15-16-17-18------19-20-21-22-23-24-+   
+ |                  |   |                  |OOO
+ |                  |   |                  |OOO
+ |                  |   |                  |OOO
+ |                  |   |                  |OOO
+ |                  |   |                  |OOO
+^|                  |BAR|                  |   
+ |                  |   | 7                |   
+ |                  |   | X  X             |   
+ |                  |   | X  X           X |   
+ |                  |   | X  X           X |   
+ |                  |   | X  X     X     X |   
+ +12-11-10--9--8--7-------6--5--4--3--2--1-+   
+Red wins 2 pt. by Gammon
+Result: red 2 - white 0
+$
+````
+
+
 ## usage
 
 setup:
@@ -20,11 +55,11 @@ const node:BoardStateNode = boardStateNodeFromArray(
 
 list up moves:
 ```typescript
-const moves: Move[][] = collectMoves(node)
+const candidates: Move[][] = collectMoves(node)
     .filter(moves => !moves.isRedundant)
     .map(moves => moves.moves)
 
-moves.map(moves => console.log(formatMoves(moves)))
+candidates.map(moves => console.log(moves.map(move=>formatMove(move))))
 
 // [ '1/4', '1/2' ]
 // [ '1/4', '4/5' ]

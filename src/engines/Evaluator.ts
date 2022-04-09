@@ -1,5 +1,5 @@
-import { BoardState } from "../BoardState";
-import { BoardStateNode } from "../BoardStateNode";
+import { BoardState } from '../BoardState'
+import { BoardStateNode } from '../BoardStateNode'
 
 /**
  * 盤面の評価のみを行う思考エンジンが実装するインターフェース。
@@ -9,7 +9,7 @@ export type Evaluator = {
     /**
      * ゲームの開始前に一度呼ばれる
      */
-    initialize(): void;
+    initialize(): void
 
     /**
      * 盤面に対する評価値を返す。チェッカープレイでは、候補のうち、
@@ -20,13 +20,12 @@ export type Evaluator = {
      * @param boardState 盤面
      * @returns 評価値
      */
-    evaluate(boardState: BoardState): number;
+    evaluate(boardState: BoardState): number
 
     /**
      * ゲーム終了後に一度呼ばれる。
      *
      * @param boardStateNode 局面
      */
-    endOfGame(boardStateNode: BoardStateNode): void;
-
-};
+    endOfGame(boardStateNode: BoardStateNode): void
+}

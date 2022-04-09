@@ -1,6 +1,6 @@
 {
     "name": "tsgammon-core",
-    "version": "0.1.0",
+    "version": "0.2.0-0",
     "keywords": [
         "backgammon",
         "game",
@@ -13,20 +13,49 @@
         "url": "https://github.com/tkshio"
     },
     "license": "Apache-2.0",
-    "main":"index.js",
-    "types":"index.d.ts",
+    "main": "index.js",
+    "types": "index.d.ts",
+    "bin": {
+        "tsgammon-core": "bin/index.js"
+    },
     "dependencies": {
+        "@borderless/base64": "^1.0.1",
         "typescript": "^4.6.3"
     },
     "devDependencies": {
         "@types/jest": "^27.4.1",
+        "@typescript-eslint/eslint-plugin": "^5.17.0",
+        "@typescript-eslint/parser": "^5.17.0",
+        "copyfiles": "^2.4.1",
+        "eslint": "^8.12.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-jest": "^26.1.3",
+        "jest-junit": "^13.0.0",
+        "lint-staged": "^12.3.7",
+        "npm-run-all": "^4.1.5",
+        "prettier": "^2.6.1",
         "rimraf": "^3.0.2",
+        "simple-git-hooks": "^2.7.0",
         "ts-jest": "^27.1.4"
     },
     "scripts": {
+        "prepare": "simple-git-hooks",
         "test": "jest",
         "prebuild": "rimraf dist",
         "build": "tsc -p tsconfig.dist.json",
-        "postbuild": "cp package.json README.md LICENSE dist/"
+        "postbuild": "copyfiles -e \"src/__tests__/**/*\" -e \"src/samples/**/*\" \"src/**/*.ts\" package.json README.md LICENSE dist/",
+        "prettier": "prettier --write .",
+        "eslint": "eslint . --ext .ts,.tsx",
+        "lint-staged": "lint-staged",
+        "precommit": "run-s lint-staged test",
+        "prepush": "npm run test"
+    },
+    "simple-git-hooks": {
+        "pre-commit": "npm run precommit",
+        "pre-push": "npm run prepush"
+    },
+    "lint-staged": {
+        "*.ts": "eslint --cache",
+        "*.{ts,tsx,css,md}": "prettier --write"
     }
 }
