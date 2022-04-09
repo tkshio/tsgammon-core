@@ -35,7 +35,7 @@ jobs:
           at: ~/project
       - run:
           name: Authenticate with registory
-          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/project/.npmrc
       - run:
           name: Build Package
           command: npm run build
