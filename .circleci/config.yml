@@ -37,6 +37,9 @@ jobs:
           name: Authenticate with registory
           command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
       - run:
+          name: Build Package
+          command: npm run build
+      - run:
           name: Publish package
           command: cd dist && npm pack
       - store_artifacts:
