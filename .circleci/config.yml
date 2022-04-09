@@ -24,6 +24,7 @@ jobs:
           path: reports/jest/jest-test-results.xml
       - persist_to_workspace:
           root: ~/project
+          paths: [.]
 
   deploy:
     executor:
@@ -31,15 +32,15 @@ jobs:
       tag: '16.10'
     steps:
       - attach_workspace:
-        at: ~/project
+          at: ~/project
       - run:
-        name: Authenticate with registory
-        command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
+          name: Authenticate with registory
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
       - run:
-        name: Publish package
-        command: cd dist && npm pack
+          name: Publish package
+          command: cd dist && npm pack
       - store_artifacts:
-        path: ~/project/dist/tsgammon-core-$CIRCLE_TAG.tgz
+          path: ~/project/dist/tsgammon-core-$CIRCLE_TAG.tgz
       
 workflows:
   run_test: # This is the name of the workflow, feel free to change it to better match your workflow.
@@ -47,11 +48,11 @@ workflows:
     jobs:
       - test
       - deploy:
-        requires:
-          -test
-        filters:
+          requires:
+          - test
+          filters:
 #          tags:
 #            only: /^v.*/
-          branches:
-            only: dev_ci
+            branches:
+              only: dev_ci
 
