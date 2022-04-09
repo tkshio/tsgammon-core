@@ -1,6 +1,9 @@
 # tsgammon-core
 A Backgammon library for Typescript, formerly developed as a part of tsgammon-ui
 
+[![npm version](https://badge.fury.io/js/tsgammon-core.svg)](https://badge.fury.io/js/tsgammon-core)
+[![tkshio](https://circleci.com/gh/tkshio/tsgammon-core.svg?style=shield)](https://circleci.com/gh/tkshio/tsgammon-core)
+
 ## demo
 ````
 $ npm install tsgammon-core
