@@ -16,6 +16,9 @@ export interface BoardState {
     /** ベアリングオフの行き先となる位置（標準は25） */
     bearOffPos: number
 
+    /** 指定の位置を相手側の視点で見た時の位置に変換する（e.g. 1=>24, 6=>18, ...）*/
+    invertPos(pos: number): number
+
     /** ベアリングオフできるならtrue */
     isBearable: boolean
 
@@ -127,6 +130,7 @@ function initBoardState(
         pieceCount,
         opponentPieceCount,
         bearOffPos,
+        invertPos,
         myBornOff,
         opponentBornOff,
         lastPiecePos,
