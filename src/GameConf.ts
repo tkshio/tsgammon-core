@@ -13,7 +13,7 @@ export type GameConf = {
     cubeMax: number
 
     /**
-     * ジャコビールールを適用するかどうか（未実装）
+     * ジャコビールールを適用するかどうか
      */
     jacobyRule: boolean
 }
@@ -24,5 +24,5 @@ export const standardConf: GameConf = {
         0, -2, 0,
     ],
     cubeMax: 1024,
-    jacobyRule: true,
+    jacobyRule: false,
 }
