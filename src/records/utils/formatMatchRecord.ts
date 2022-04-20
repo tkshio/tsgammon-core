@@ -6,7 +6,7 @@ import { MatchRecord } from '../MatchRecord'
 import { Ply } from '../../Ply'
 import { SGResult } from '../SGResult'
 import { MoveFormatDirection } from '../../utils/formatAbsMove'
-import { EOGStatus } from '../../BoardState'
+import { EOGStatus } from '../../EOGStatus'
 
 /**
  * MatchRecordsをテキスト形式に変換する

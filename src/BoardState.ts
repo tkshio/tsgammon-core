@@ -1,4 +1,5 @@
 import { DicePip } from './Dices'
+import { eog, EOGStatus } from './EOGStatus'
 import { standardConf } from './GameConf'
 
 /**
@@ -58,31 +59,6 @@ type Board = {
 
     opponentLastPiecePos: number
 } & BoardState
-
-/**
- * 終局状態を示す
- */
-export type EOGStatus = {
-    isEndOfGame: boolean
-    isGammon: boolean
-    isBackgammon: boolean
-    calcStake(cubeValue: number, jacobyRule: boolean): number
-}
-
-export function eog(status?: Partial<EOGStatus>): EOGStatus {
-    return {
-        isEndOfGame: true,
-        isGammon: false,
-        isBackgammon: false,
-        calcStake(cubeValue = 1, jacobyRule = false) {
-            // Jacobyルールでは、キューブが動いていなければギャモン・バックギャモンは無視
-            return jacobyRule && cubeValue === 1
-                ? 1
-                : cubeValue * (this.isBackgammon ? 3 : this.isGammon ? 2 : 1)
-        },
-        ...status,
-    }
-}
 
 export function countWhitePieces(pieces: number[]) {
     return pieces.filter((n) => n > 0).reduce((n, m) => n + m, 0)

@@ -2,7 +2,7 @@ import { Ply } from '../Ply'
 import { SGResult } from './SGResult'
 import { CubeState } from '../CubeState'
 import { Score } from '../Score'
-import { EOGStatus } from '../BoardState'
+import { EOGStatus } from '../EOGStatus'
 
 /**
  * プレイヤーの一回の手番、または終局の記録を表す

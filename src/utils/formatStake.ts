@@ -1,4 +1,4 @@
-import { EOGStatus } from '../BoardState'
+import { EOGStatus } from '../EOGStatus'
 import { Score } from '../Score'
 
 /**

@@ -6,7 +6,8 @@ import {
     absoluteMovesRed,
     absoluteMovesWhite,
 } from '../AbsoluteMove'
-import { BoardState, boardState, EOGStatus } from '../BoardState'
+import { BoardState, boardState } from '../BoardState'
+import { EOGStatus } from '../EOGStatus'
 import { BoardStateNode, boardStateNode } from '../BoardStateNode'
 import { Dice, DiceRoll } from '../Dices'
 import { standardConf } from '../GameConf'
@@ -77,7 +78,7 @@ function* runAutoMatch(
     }
     const eogStatus = node.board.eogStatus()
     const stake = (ply.isRed ? scoreAsRed : scoreAsWhite)(
-        eogStatus.calcStake(1, conf.jacobyRule)
+        eogStatus.calcStake(1)
     )
 
     const gameScore = gameScoreBefore.add(stake)

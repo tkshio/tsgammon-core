@@ -37,7 +37,7 @@ function runAutoMatch() {
 
     const eogStatus = boardStateNode.board.eogStatus()
     const stake = (ply.isRed ? scoreAsRed : scoreAsWhite)(
-        eogStatus.calcStake(1, conf.jacobyRule)
+        eogStatus.calcStake(1)
     )
     console.log(formatStake(stake, eogStatus))
 
