@@ -6,6 +6,7 @@ import { MatchRecord } from '../MatchRecord'
 import { Ply } from '../../Ply'
 import { SGResult } from '../SGResult'
 import { MoveFormatDirection } from '../../utils/formatAbsMove'
+import { EOGStatus } from '../../BoardState'
 
 /**
  * MatchRecordsをテキスト形式に変換する
@@ -159,6 +160,7 @@ type WhiteRecord =
           tag: 'EOG'
           stake: Score
           sgResult: SGResult
+          eogStatus: EOGStatus
           isRed: boolean
       }
 

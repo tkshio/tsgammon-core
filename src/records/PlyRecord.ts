@@ -2,6 +2,7 @@ import { Ply } from '../Ply'
 import { SGResult } from './SGResult'
 import { CubeState } from '../CubeState'
 import { Score } from '../Score'
+import { EOGStatus } from '../BoardState'
 
 /**
  * プレイヤーの一回の手番、または終局の記録を表す
@@ -34,6 +35,7 @@ export type PlyRecordEoG = {
     tag: 'EOG'
     stake: Score
     sgResult: SGResult
+    eogStatus: EOGStatus
 }
 
 /**
@@ -54,16 +56,19 @@ export function plyRecordForCheckerPlay(ply: Ply): PlyRecordInPlay {
  *
  * @param stake 終局による得点
  * @param sgResult 勝者
+ * @param eogStatus 終局状態
  * @returns 終局の記録
  */
 export function plyRecordForEoG(
     stake: Score,
-    sgResult: SGResult
+    sgResult: SGResult,
+    eogStatus: EOGStatus
 ): PlyRecordEoG {
     return {
         tag: 'EOG',
         stake,
         sgResult,
+        eogStatus,
     }
 }
 

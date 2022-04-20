@@ -162,7 +162,7 @@ function xgDriver(): Driver {
         doEoG: (evt) => {
             record.match = setEoGRecord(
                 record.match,
-                plyRecordForEoG(evt.stake, evt.sgResult)
+                plyRecordForEoG(evt.stake, evt.sgResult, evt.eogStatus)
             )
         },
         doResult: () => {
