@@ -1,4 +1,4 @@
-import { BoardStateNode, NoMove, NO_MOVE } from '../BoardStateNode'
+import { BoardStateNode, NoMove, NO_MOVE, wrap } from '../BoardStateNode'
 import { findMove } from './findMove'
 /**
  * 指定された局面について、指定のポイントにブロックを築けるかどうかを返す
@@ -44,21 +44,6 @@ export function makePoint(
 }
 
 // apply(func)の形で記述するためのユーティリティ
-
-type Wrapped<T extends { hasValue: boolean }> = {
-    apply: (f: (a: T) => T | { hasValue: false }) => Wrapped<T>
-    unwrap: T | { hasValue: false }
-}
-
-function wrap<T extends { hasValue: true }>(
-    t: T | { hasValue: false }
-): Wrapped<T> {
-    return {
-        apply: (f: (arg: T) => T | { hasValue: false }) =>
-            wrap(t.hasValue ? f(t) : t),
-        unwrap: t,
-    }
-}
 
 function moveFinder(
     pos: number

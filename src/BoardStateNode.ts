@@ -122,3 +122,28 @@ function emptyNode(board: BoardState, dices: Dice[]): BoardStateNode {
 export function nodeWithEmptyDice(board: BoardState): BoardStateNode {
     return emptyNode(board, [])
 }
+
+export type Wrapped<T extends { hasValue: boolean }> = {
+    /**
+     * wrap()に渡した値、または直前のapply()/or()がhasValue=trueを満たすなら、指定された関数fを適用する。
+     */
+    apply: (f: (a: T) => T | { hasValue: false }) => Wrapped<T>
+    /**
+     * wrap()に渡した値、または直前のapply()/or()がhasValue=falseの場合のみ、指定された関数fを適用する
+     */
+    or: (f: (a: T) => T | { hasValue: false }) => Wrapped<T>
+    unwrap: T | { hasValue: false }
+}
+
+export function wrap<T extends { hasValue: true }>(
+    t: T | { hasValue: false },
+    was: T | { hasValue: false } = { hasValue: false }
+): Wrapped<T> {
+    return {
+        apply: (f: (arg: T) => T | { hasValue: false }) =>
+            wrap(t.hasValue ? f(t) : t, t),
+        or: (f: (arg: T) => T | { hasValue: false }) =>
+            wrap(t.hasValue ? t : was.hasValue ? f(was) : was, t),
+        unwrap: t,
+    }
+}
