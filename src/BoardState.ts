@@ -44,6 +44,15 @@ export interface BoardState {
      * 相手側が終局かどうかは影響しない。
      */
     eogStatus(): EOGStatus
+
+    /**
+     * 自分のピップカウント
+     */
+    myPipCount: number
+    /**
+     * 相手のピップカウント
+     */
+    opponentPipCount: number
 }
 
 /**
@@ -80,7 +89,9 @@ export function boardState(
 ): BoardState {
     return initBoardState(pieces, bornOffs)
 }
-
+function posInverterFor(points: number[]): (pos: number) => number {
+    return (pos: number) => points.length - 1 - pos
+}
 function initBoardState(
     points: number[],
     bornOffs: [number, number] = [0, 0],
@@ -93,13 +104,16 @@ function initBoardState(
     const opponentPieceCount = countRedPieces(points)
     const bearOffPos = points.length - 1
 
+    const reverted = revertPoints(points)
+    const invertPos = posInverterFor(points)
+
     const lastPiecePos = points.findIndex((n) => 0 < n)
-    const invertPos = (pos: number) => points.length - 1 - pos
-    const opponentLastPiecePos = invertPos(
-        points.findIndex((_, idx) => points[invertPos(idx)] < 0)
-    ) // 無理矢理だが、要するに最後の要素から逆順に、相手駒のある位置を探している
+    const opponentLastPiecePos = invertPos(reverted.findIndex((n) => 0 < n))
 
     const isBearable = innerPos <= lastPiecePos
+
+    const myPipCount = countPip(points)
+    const opponentPipCount = countPip(reverted)
 
     return {
         points,
@@ -146,12 +160,7 @@ function initBoardState(
 
             return {
                 ...this,
-                points: this.points.map((_, index) => {
-                    const n = -this.points[this.points.length - 1 - index]
-
-                    // remove negative 0
-                    return n === 0 ? 0 : n
-                }),
+                points: revertPoints(this.points),
                 myBornOff: this.opponentBornOff,
                 opponentBornOff: this.myBornOff,
                 pieceCount: this.opponentPieceCount,
@@ -159,9 +168,23 @@ function initBoardState(
                 lastPiecePos,
                 opponentLastPiecePos,
                 isBearable,
+                myPipCount: this.opponentPipCount,
+                opponentPipCount: this.myPipCount,
             }
         },
+        myPipCount,
+        opponentPipCount,
     }
+}
+
+function revertPoints(points: number[]): number[] {
+    const invertPos = posInverterFor(points)
+    return points.map((_, index) => {
+        const n = -points[invertPos(index)]
+
+        // remove negative 0
+        return n === 0 ? 0 : n
+    })
 }
 
 function doMove(
@@ -198,17 +221,19 @@ function doMove(
     // 上がりなら、上がり数を更新して終了
     if (isBearOff) {
         const lastPiecePos = recalcLastPiecePos(from, board, piecesAfter)
-
+        const myPipCount = board.myPipCount - (boardSize - from)
         return {
             ...board,
             points: piecesAfter,
             myBornOff: board.myBornOff + 1,
             pieceCount: board.pieceCount - 1,
             lastPiecePos,
+            myPipCount,
         }
     }
 
     let opponentLastPiecePos
+    let opponentPipCount = board.opponentPipCount
     // ヒット
     if (piecesAfter[to] === -1) {
         const bar = boardSize
@@ -218,6 +243,9 @@ function doMove(
 
         // 相手の最後尾の駒の位置をバーに更新する
         opponentLastPiecePos = boardSize
+
+        // ヒットした分のpipcountを更新
+        opponentPipCount += to
     } else {
         // ヒットでなければそのまま
         opponentLastPiecePos = board.opponentLastPiecePos
@@ -230,12 +258,16 @@ function doMove(
     // 上がれるかどうかの更新が必要なのは、上がりでない時だけ
     const isBearable = innerPos <= lastPiecePos
 
+    // 自分の分のピップカウントは進めた分だけ減る
+    const myPipCount = board.myPipCount - pip
     return {
         ...board,
         points: piecesAfter,
         lastPiecePos,
         opponentLastPiecePos,
         isBearable,
+        myPipCount,
+        opponentPipCount,
     }
 }
 
@@ -243,4 +275,11 @@ function recalcLastPiecePos(from: number, board: Board, piecesAfter: number[]) {
     return from == board.lastPiecePos && board.points[from] == 1
         ? piecesAfter.findIndex((n) => 0 < n)
         : board.lastPiecePos
+}
+
+function countPip(points: number[]) {
+    return points.reduce((prev, cur, idx) => {
+        prev += cur > 0 ? cur * (points.length - 1 - idx) : 0
+        return prev
+    }, 0)
 }
