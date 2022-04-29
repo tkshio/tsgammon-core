@@ -1,5 +1,5 @@
 import { GameConf, standardConf } from '../GameConf'
-import { score, Score } from '../Score'
+import { score as initScore, Score } from '../Score'
 import {
     eogGameRecord,
     GameRecord,
@@ -25,13 +25,17 @@ export type MatchRecord<T> = {
     matchLength: number
 }
 
-export function matchRecord<T>(conf: GameConf = standardConf): MatchRecord<T> {
+export function matchRecord<T>(
+    matchLength = 0,
+    conf: GameConf = standardConf,
+    score: Score = initScore()
+): MatchRecord<T> {
     return {
         conf,
         gameRecords: [],
-        score: score(),
-        matchLength: 0,
-        curGameRecord: initGameRecord(score()),
+        score,
+        matchLength,
+        curGameRecord: initGameRecord(score, false),
     }
 }
 
@@ -81,12 +85,18 @@ export function recordFinishedGame<T>(
             gameRecords: matchRecord.gameRecords.concat(
                 matchRecord.curGameRecord
             ),
-            curGameRecord: initGameRecord(matchRecord.score),
+            curGameRecord: initGameRecord(
+                matchRecord.score,
+                matchRecord.curGameRecord.isCrawfordNext
+            ),
         }
     } else {
         return {
             ...matchRecord,
-            curGameRecord: initGameRecord(matchRecord.score),
+            curGameRecord: initGameRecord(
+                matchRecord.score,
+                matchRecord.curGameRecord.isCrawford
+            ),
         }
     }
 }
@@ -132,11 +142,16 @@ export function setEoGRecord<T>(
     if (matchRecord.curGameRecord.isEoG) {
         return matchRecord
     }
-
-    const curGameRecord = eogGameRecord(matchRecord.curGameRecord, eogRecord)
+    const scoreAfter = matchRecord.score.add(eogRecord.stake)
+    const curGameRecord = eogGameRecord(
+        matchRecord.curGameRecord,
+        eogRecord,
+        scoreAfter,
+        matchRecord.matchLength
+    )
     return {
         ...matchRecord,
-        score: matchRecord.score.add(eogRecord.stake),
+        score: scoreAfter,
         curGameRecord,
     }
 }

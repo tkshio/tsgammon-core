@@ -149,7 +149,7 @@ function xgDriver(): Driver {
     const record: {
         match: MatchRecord<undefined>
     } = {
-        match: matchRecord(conf),
+        match: matchRecord(0, conf),
     }
     return {
         ...defaultDriver,
