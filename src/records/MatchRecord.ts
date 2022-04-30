@@ -23,6 +23,9 @@ export type MatchRecord<T> = {
     score: Score
     /** マッチポイント数、0の場合は無制限 */
     matchLength: number
+
+    /** マッチが終了していればtrue */
+    isEndOfMatch: boolean
 }
 
 export function matchRecord<T>(
@@ -36,9 +39,12 @@ export function matchRecord<T>(
         score,
         matchLength,
         curGameRecord: initGameRecord(score, false),
+        isEndOfMatch: isEndOfMatch(matchLength, score),
     }
 }
-
+function isEndOfMatch(matchLength: number, score: Score) {
+    return score.redScore >= matchLength || score.whiteScore >= matchLength
+}
 /**
  * 現在の記録について、一手番分の記録を追加して返す
  *
@@ -88,6 +94,10 @@ export function recordFinishedGame<T>(
             curGameRecord: initGameRecord(
                 matchRecord.score,
                 matchRecord.curGameRecord.isCrawfordNext
+            ),
+            isEndOfMatch: isEndOfMatch(
+                matchRecord.matchLength,
+                matchRecord.score
             ),
         }
     } else {

@@ -94,5 +94,11 @@ describe('matchRecord(crawford rule)', () => {
 
         const mRecord4 = recordFinishedGame(mRecord3EoG)
         expect(mRecord4.curGameRecord.isCrawford).toBeFalsy()
+        const mRecord4EoG = setEoGRecord(
+            mRecord4,
+            plyRecordForEoG(scoreAsWhite(1), SGResult.WHITEWON, eog())
+        )
+        const mRecordEoM = recordFinishedGame(mRecord4EoG)
+        expect(mRecordEoM.isEndOfMatch).toBeTruthy()
     })
 })
