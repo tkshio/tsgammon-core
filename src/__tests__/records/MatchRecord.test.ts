@@ -15,7 +15,7 @@ import { score, scoreAsRed, scoreAsWhite } from '../../Score'
 
 describe('MatchRecord', () => {
     test('holds match records length', () => {
-        const mRecord = matchRecord(5)
+        const mRecord = matchRecord(standardConf, 5)
         expect(mRecord.matchLength).toBe(5)
     })
     test('holds record for unlimited match when matchLength omitted', () => {
@@ -53,8 +53,8 @@ describe('MatchRecord', () => {
 
 describe('matchRecord(crawford rule)', () => {
     const mRecord = matchRecord(
-        3,
         standardConf,
+        3,
         score({ whiteScore: 1, redScore: 0 })
     )
     test('sets next game as crawford', () => {

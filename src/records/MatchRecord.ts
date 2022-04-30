@@ -1,5 +1,5 @@
 import { GameConf, standardConf } from '../GameConf'
-import { score as initScore, Score } from '../Score'
+import { score, Score } from '../Score'
 import {
     eogGameRecord,
     GameRecord,
@@ -20,7 +20,7 @@ export type MatchRecord<T> = {
     /** すでに終局したゲームの記録 */
     gameRecords: GameRecordEoG<T>[]
     /** 現時点の累計点 */
-    score: Score
+    matchScore: Score
     /** マッチポイント数、0の場合は無制限 */
     matchLength: number
 
@@ -29,17 +29,19 @@ export type MatchRecord<T> = {
 }
 
 export function matchRecord<T>(
-    matchLength = 0,
     conf: GameConf = standardConf,
-    score: Score = initScore()
+    matchLength = 0,
+    matchScore: Score = score(),
+    isCrawford = false
 ): MatchRecord<T> {
+    const curGameRecord = initGameRecord<T>(matchScore, isCrawford)
     return {
         conf,
         gameRecords: [],
-        score,
+        matchScore,
         matchLength,
-        curGameRecord: initGameRecord(score, false),
-        isEndOfMatch: isEndOfMatch(matchLength, score),
+        curGameRecord,
+        isEndOfMatch: isEndOfMatch(matchLength, matchScore),
     }
 }
 function isEndOfMatch(matchLength: number, score: Score) {
@@ -60,7 +62,7 @@ export function addPlyRecord<T>(
 ): MatchRecord<T> {
     return {
         ...matchRecord,
-        score: matchRecord.curGameRecord.scoreBefore,
+        matchScore: matchRecord.curGameRecord.scoreBefore,
         curGameRecord: {
             ...matchRecord.curGameRecord,
             plyRecords: matchRecord.curGameRecord.plyRecords.concat({
@@ -92,19 +94,15 @@ export function recordFinishedGame<T>(
                 matchRecord.curGameRecord
             ),
             curGameRecord: initGameRecord(
-                matchRecord.score,
+                matchRecord.matchScore,
                 matchRecord.curGameRecord.isCrawfordNext
-            ),
-            isEndOfMatch: isEndOfMatch(
-                matchRecord.matchLength,
-                matchRecord.score
             ),
         }
     } else {
         return {
             ...matchRecord,
             curGameRecord: initGameRecord(
-                matchRecord.score,
+                matchRecord.matchScore,
                 matchRecord.curGameRecord.isCrawford
             ),
         }
@@ -152,7 +150,7 @@ export function setEoGRecord<T>(
     if (matchRecord.curGameRecord.isEoG) {
         return matchRecord
     }
-    const scoreAfter = matchRecord.score.add(eogRecord.stake)
+    const scoreAfter = matchRecord.matchScore.add(eogRecord.stake)
     const curGameRecord = eogGameRecord(
         matchRecord.curGameRecord,
         eogRecord,
@@ -161,7 +159,8 @@ export function setEoGRecord<T>(
     )
     return {
         ...matchRecord,
-        score: scoreAfter,
+        matchScore: scoreAfter,
         curGameRecord,
+        isEndOfMatch: isEndOfMatch(matchRecord.matchLength, scoreAfter),
     }
 }
