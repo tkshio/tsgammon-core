@@ -11,7 +11,7 @@ export type CBState =
     | CBResponse
     | CBToRoll
     | CBEoG
-export type CBOpening = CBGameState & {
+export type CBOpening = _CBState & {
     tag: 'CBOpening'
 
     doStartCheckerPlayRed: () => CBInPlayRed
@@ -23,11 +23,11 @@ export type CBResponse = CBResponseRed | CBResponseWhite
 export type CBToRoll = CBToRollRed | CBToRollWhite
 export type CBInPlay = CBInPlayRed | CBInPlayWhite
 export type CBEoG = CBEoGRedWon | CBEoGWhiteWon
-export type CBGameState = {
+type _CBState = {
     cubeState: CubeState
 }
 
-type _CBAction = CBGameState & {
+type _CBAction = _CBState & {
     tag: 'CBAction'
 }
 
@@ -45,7 +45,7 @@ export type CBActionWhite = _CBAction & {
     doSkipCubeAction: () => CBToRollWhite
 }
 
-type _CBResponse = CBGameState & {
+type _CBResponse = _CBState & {
     tag: 'CBResponse'
     isRed: boolean
 }
@@ -63,7 +63,7 @@ export type CBResponseWhite = _CBResponse & {
 }
 type LastCubeAction = 'Take' | 'Skip'
 
-type _CBToRoll = CBGameState & {
+type _CBToRoll = _CBState & {
     tag: 'CBToRoll'
     lastAction: LastCubeAction
 }
@@ -76,7 +76,7 @@ export type CBToRollWhite = _CBToRoll & {
     doStartCheckerPlay: () => CBInPlayWhite
 }
 
-type _CBInPlay = CBGameState & {
+type _CBInPlay = _CBState & {
     tag: 'CBInPlay'
     mayDouble: boolean
 }
@@ -91,7 +91,7 @@ export type CBInPlayWhite = _CBInPlay & {
     doStartCubeAction: (skipCubeAction: boolean) => CBActionRed | CBToRollRed
 }
 
-type _CBEoG = CBGameState & {
+type _CBEoG = _CBState & {
     tag: 'CBEoG'
 
     eogStatus: EOGStatus

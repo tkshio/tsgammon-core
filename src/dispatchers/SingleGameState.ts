@@ -22,18 +22,18 @@ export type SGInPlay = SGInPlayRed | SGInPlayWhite
 export type SGToRoll = SGToRollRed | SGToRollWhite
 export type SGEoG = SGEoGRedWon | SGEoGWhiteWon
 
-export type SGGameState = {
+type _SGState = {
     absBoard: AbsoluteBoardState
     boardState: BoardState
 }
 
-export type SGOpening = Omit<SGGameState, 'lastPly'> & {
+export type SGOpening = Omit<_SGState, 'lastPly'> & {
     tag: 'SGOpening'
     dicePip?: DicePip
     doOpening: (openingRoll: DiceRoll) => SGInPlay | SGOpening
 }
 
-type _SGInPlay = SGGameState & {
+type _SGInPlay = _SGState & {
     tag: 'SGInPlay'
     dices: Dice[]
     curPly: Ply
@@ -60,7 +60,7 @@ export type SGInPlayWhite = _SGInPlay & {
     ) => SGToRollRed | SGEoGWhiteWon
 }
 
-type _SGToRoll = SGGameState & {
+type _SGToRoll = _SGState & {
     tag: 'SGToRoll'
     lastPly: Ply
 }
@@ -77,7 +77,7 @@ export type SGToRollWhite = _SGToRoll & {
     lastState: () => SGInPlayRed
 }
 
-export type _SGEoG = SGGameState & {
+export type _SGEoG = _SGState & {
     tag: 'SGEoG'
     dices: Dice[]
     stake: Score
