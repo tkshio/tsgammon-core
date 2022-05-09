@@ -132,9 +132,7 @@ export function toSGState(gameState: GameSetup = {}): SGState {
             const lastStateNode = nodeWithEmptyDice(board)
             return toRollStateRed(
                 lastStateNode.board.revert(),
-                gameState.lastPly ?? { moves: [], dices: [], isRed: false },
-                lastStateNode,
-                lastStateNode
+                gameState.lastPly
             )
         }
         case GameStatus.CUBEACTION_WHITE:
@@ -144,9 +142,7 @@ export function toSGState(gameState: GameSetup = {}): SGState {
             const lastStateNode = nodeWithEmptyDice(lastBoardState)
             return toRollStateWhite(
                 lastStateNode.board.revert(),
-                gameState.lastPly ?? { moves: [], dices: [], isRed: true },
-                lastStateNode,
-                lastStateNode
+                gameState.lastPly
             )
         }
         case GameStatus.INPLAY_RED:

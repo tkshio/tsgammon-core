@@ -9,7 +9,11 @@ import {
     makeMoveAbsoluteAsWhite,
 } from '../AbsoluteMove'
 import { BoardState } from '../BoardState'
-import { BoardStateNode, boardStateNode } from '../BoardStateNode'
+import {
+    BoardStateNode,
+    boardStateNode,
+    nodeWithEmptyDice,
+} from '../BoardStateNode'
 import { Dice, DicePip, DiceRoll } from '../Dices'
 import { EOGStatus } from '../EOGStatus'
 import { Move } from '../Move'
@@ -258,9 +262,9 @@ function buildDoCheckerCommit<TOROLL extends SGToRoll, EOG extends SGEoG>(
 
 export function toRollStateRed(
     boardState: BoardState,
-    lastPly: Ply,
-    lastNode: BoardStateNode,
-    revertTo: BoardStateNode
+    lastPly: Ply = { moves: [], dices: [], isRed: true },
+    lastNode: BoardStateNode = nodeWithEmptyDice(boardState.revert()),
+    revertTo: BoardStateNode = nodeWithEmptyDice(boardState.revert())
 ): SGToRollRed {
     const absBoard = redViewAbsoluteBoard(boardState)
     return {
@@ -280,9 +284,9 @@ export function toRollStateRed(
 
 export function toRollStateWhite(
     boardState: BoardState,
-    lastPly: Ply,
-    lastNode: BoardStateNode,
-    revertTo: BoardStateNode
+    lastPly: Ply = { moves: [], dices: [], isRed: false },
+    lastNode: BoardStateNode = nodeWithEmptyDice(boardState.revert()),
+    revertTo: BoardStateNode = nodeWithEmptyDice(boardState.revert())
 ): SGToRollWhite {
     const absBoard = whiteViewAbsoluteBoard(boardState)
     return {
