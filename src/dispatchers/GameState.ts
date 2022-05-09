@@ -4,6 +4,7 @@ import {
     CBInPlay,
     CBOpening,
     CBResponse,
+    CBToRoll,
 } from './CubeGameState'
 import { SGEoG, SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 
@@ -25,7 +26,7 @@ export type GSOpening = _GameState & {
 }
 export type GSInPlay = _GameState & {
     tag: 'GSInPlay'
-    cbState: CBAction | CBResponse | CBInPlay
+    cbState: CBAction | CBResponse | CBToRoll | CBInPlay
     sgState: SGInPlay | SGToRoll
 }
 export type GSEoG = _GameState & {
