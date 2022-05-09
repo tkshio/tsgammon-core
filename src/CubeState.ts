@@ -21,6 +21,12 @@ export type CubeState = {
     owner?: CubeOwner
 
     /**
+     * キューブの最大値
+     * @param
+     */
+    max: number
+
+    /**
      * キューブの最大値に達した (これ以上ダブルできない)ならtrue
      */
     isMax: boolean
@@ -57,6 +63,7 @@ export function cube(value: number, owner?: CubeOwner, max = 512): CubeState {
     return {
         value,
         owner,
+        max,
         isMax,
         double(newOwner: CubeOwner): CubeState {
             return cube(doubledValue, newOwner, max)
