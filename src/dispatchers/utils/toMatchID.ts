@@ -8,7 +8,6 @@ export function toMatchID(matchState: MatchState) {
     const { gameState } = matchState
     const cubeState =
         gameState.tag === 'GSInit' ? cube(1) : gameState.cbState.cubeState
-    const isRed = gameState.tag === 'GSInPlay' ? gameState.cbState.isRed : false
 
     // 1. Bit 1-4 contains the 2-logarithm of the cube value. For example, a 8-cube is encoded as 0011 binary (or 3), since 2 to the power of 3 is 8. The maximum value of the cube in with this encoding is 2 to the power of 15, i.e., a 32768-cube.
     const bit1_4 = Math.log2(cubeState.value)
@@ -22,7 +21,8 @@ export function toMatchID(matchState: MatchState) {
             : 3
 
     // 3. Bit 7 is the player on roll or the player who did roll (0 and 1 for player 0 and 1, respectively).
-    const bit7 = isRed ? 0 : 1
+    const bit7 =
+        gameState.tag === 'GSInPlay' ? (gameState.sgState.isRed ? 0 : 1) : 0
 
     // 4. Bit 8 is the Crawford flag: 1 if this game is the Crawford game, 0 otherwise.
     const bit8 = gameState.isCrawford ? 1 : 0
@@ -60,8 +60,8 @@ export function toMatchID(matchState: MatchState) {
 
     // Bit 16-18 and bit 19-21 is the first and second die, respectively. 0 if the dice has not yet be rolled, otherwise the binary encoding of the dice, e.g., if 5-2 was rolled bit 16-21 will be 101-010.
     const { dice1, dice2 } = dices(gameState)
-    const bit16_18 = dice1
-    const bit19_21 = dice2
+    const bit16_18 = dice1 > dice2 ? dice1 : dice2
+    const bit19_21 = dice1 > dice2 ? dice2 : dice1
 
     // Bit 22 to 36 is the match length. The maximum value for the match length is 32767. A match score of zero indicates that the game is a money game.
     const bit22_36 = matchState.matchLength
@@ -89,7 +89,23 @@ export function toMatchID(matchState: MatchState) {
     const buffer = new ArrayBuffer(9)
     const reducer = littleEndianReducer(buffer)
     toEnc.map(revertBits).reduce(reducer)
-    return encodeAsBase64(buffer).substring(0, 12)
+    return {
+        matchID: encodeAsBase64(buffer).substring(0, 12),
+        cube: bit1_4,
+        cubeOwner: bit5_6,
+        diceOwner: bit7,
+        crawford: bit8,
+        gameState: bit9_11,
+        turnOwner: bit12,
+        double: bit13,
+        resign: bit14_15,
+        dice1: bit16_18,
+        dice2: bit19_21,
+        matchLen: bit22_36,
+        score1: bit37_51,
+        score2: bit52_66,
+        bit: Array.from(new Uint8Array(buffer)).map((b) => b.toString(2)),
+    }
 }
 
 function dices(gameState: GameState): { dice1: number; dice2: number } {
@@ -102,7 +118,7 @@ function dices(gameState: GameState): { dice1: number; dice2: number } {
 }
 
 function isResignOffered(gameState: GameState) {
-    return false
+    return gameState.tag === 'GSEoG' && gameState.isWonByResign
 }
 
 function revertBits(v: Bit): Bit {
