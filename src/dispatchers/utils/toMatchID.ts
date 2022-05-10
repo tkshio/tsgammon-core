@@ -3,6 +3,7 @@ import { encode as encodeAsBase64 } from '@borderless/base64'
 import { cube, CubeOwner } from '../../CubeState'
 import { GameState } from '../GameState'
 import { MatchState } from '../MatchState'
+import { ResignOffer } from '../ResignState'
 
 export function toMatchID(matchState: MatchState) {
     const { gameState } = matchState
@@ -43,8 +44,12 @@ export function toMatchID(matchState: MatchState) {
     const bit12 =
         gameState.tag === 'GSInit' || gameState.tag === 'GSOpening'
             ? 0
-            : gameState.cbState.tag === 'CBEoG'
+            : gameState.tag === 'GSEoG'
             ? 0
+            : gameState.rsState.tag === 'RSOffered'
+            ? gameState.rsState.isRed
+                ? 0
+                : 1
             : gameState.cbState.isRed
             ? 0
             : 1
@@ -56,7 +61,7 @@ export function toMatchID(matchState: MatchState) {
             : 0
 
     // Bit 14-15 indicates whether an resignation was offered. 00 for no resignation, 01 for resign of a single game, 10 for resign of a gammon, or 11 for resign of a backgammon. The player offering the resignation is the inverse of bit 12, e.g., if player 0 resigns a gammon then bit 12 will be 1 (as it is now player 1 now has to decide whether to accept or reject the resignation) and bit 13-14 will be 10 for resign of a gammon.
-    const bit14_15 = isResignOffered(gameState) ? 1 : 0
+    const bit14_15 = isResignOffered(gameState)
 
     // Bit 16-18 and bit 19-21 is the first and second die, respectively. 0 if the dice has not yet be rolled, otherwise the binary encoding of the dice, e.g., if 5-2 was rolled bit 16-21 will be 101-010.
     const { dice1, dice2 } = dices(gameState)
@@ -123,7 +128,22 @@ function dices(gameState: GameState): { dice1: number; dice2: number } {
 }
 
 function isResignOffered(gameState: GameState) {
-    return gameState.tag === 'GSEoG' && gameState.isWonByResign
+    if (
+        gameState.tag == 'GSInit' ||
+        gameState.tag == 'GSEoG' ||
+        gameState.rsState.tag == 'RSNone'
+    ) {
+        return 0
+    }
+    const offer = gameState.rsState.offer
+    switch (offer) {
+        case ResignOffer.Single:
+            return 1
+        case ResignOffer.Gammon:
+            return 2
+        case ResignOffer.Backgammon:
+            return 3
+    }
 }
 
 function revertBits(v: Bit): Bit {

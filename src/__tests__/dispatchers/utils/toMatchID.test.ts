@@ -13,6 +13,11 @@ import {
 import { GameState } from '../../../dispatchers/GameState'
 import { MatchState } from '../../../dispatchers/MatchState'
 import {
+    ResignOffer,
+    rsNone,
+    rsOfferedRed,
+} from '../../../dispatchers/ResignState'
+import {
     inPlayStateRed,
     inPlayStateWhite,
     toRollStateRed,
@@ -33,6 +38,7 @@ describe('toMatchID()', () => {
             gameState: {
                 tag: 'GSInPlay',
                 isCrawford: false,
+                rsState: rsNone(),
                 cbState: cbInPlayWhite(cube(2, CubeOwner.RED, 16)),
                 sgState: inPlayStateWhite(boardState(), { dice1: 5, dice2: 2 }),
             },
@@ -46,6 +52,7 @@ describe('toMatchID()', () => {
     const _gameState: GameState = {
         tag: 'GSInPlay',
         isCrawford: false,
+        rsState: rsNone(),
         cbState: cbToRollRed(cube(1), 'Skip'),
         sgState: toRollStateRed(boardState()),
     }
@@ -247,6 +254,24 @@ describe('toMatchID()', () => {
 
         const { matchID } = toMatchID(matchState)
         expect(matchID).toEqual('sAEgAAAAAAAE')
+    })
+    test('white offers to resign a backgammon', () => {
+        const gameState: GameState = {
+            tag: 'GSInPlay',
+            isCrawford: false,
+            rsState: rsOfferedRed(ResignOffer.Backgammon),
+            cbState: cbToRollWhite(cube(1), 'Skip'),
+            sgState: toRollStateWhite(boardState()),
+        }
+        const matchState: MatchState = {
+            matchLength: 5,
+            matchScore: score(),
+            gameState,
+            isJacoby: false,
+        }
+
+        const { matchID } = toMatchID(matchState)
+        expect(matchID).toEqual('cGGgAAAAAAAE')
     })
 })
 

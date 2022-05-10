@@ -6,6 +6,7 @@ import {
     CBResponse,
     CBToRoll,
 } from './CubeGameState'
+import { RSNone, RSOffered } from './ResignState'
 import { SGEoG, SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 
 export type GameState = GSInit | GSOpening | GSInPlay | GSEoG
@@ -21,11 +22,13 @@ export type GSInit = _GameState & {
 
 export type GSOpening = _GameState & {
     tag: 'GSOpening'
+    rsState: RSNone
     cbState: CBOpening
     sgState: SGOpening
 }
 export type GSInPlay = _GameState & {
     tag: 'GSInPlay'
+    rsState: RSNone | RSOffered
     cbState: CBAction | CBResponse | CBToRoll | CBInPlay
     sgState: SGInPlay | SGToRoll
 }
