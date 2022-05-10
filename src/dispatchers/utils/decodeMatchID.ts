@@ -28,6 +28,8 @@ export function decodeMatchID(matchID: string) {
         ((decoded[7] & 255) << 5) |
         ((decoded[6] >> 3) & 31)
 
+    const noJacoby = (decoded[8] >> 2) & 1
+
     return {
         cube,
         cubeOwner,
@@ -42,5 +44,6 @@ export function decodeMatchID(matchID: string) {
         matchLen,
         score1,
         score2,
+        noJacoby,
     }
 }

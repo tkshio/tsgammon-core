@@ -17,6 +17,7 @@ describe('decodeMatchID()', () => {
             matchLen: 9,
             score1: 2,
             score2: 4,
+            noJacoby: 0,
         })
     })
 })

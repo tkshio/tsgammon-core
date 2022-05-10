@@ -5,4 +5,5 @@ export type MatchState = {
     matchLength: number
     matchScore: Score
     gameState: GameState
+    isJacoby: boolean
 }

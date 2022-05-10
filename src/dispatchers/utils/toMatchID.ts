@@ -70,6 +70,9 @@ export function toMatchID(matchState: MatchState) {
     const bit37_51 = matchState.matchScore.redScore
     const bit52_66 = matchState.matchScore.whiteScore
 
+    // Bit67 : no Jacoby: これはドキュメントに記載がない：Jacobyが無効（ポイントマッチ）なら1, 有効（マネーゲームなど）なら0
+    const bit67 = matchState.isJacoby ? 0 : 1
+
     const toEnc = [
         { bit: bit1_4, len: 4 },
         { bit: bit5_6, len: 2 },
@@ -84,6 +87,7 @@ export function toMatchID(matchState: MatchState) {
         { bit: bit22_36, len: 15 },
         { bit: bit37_51, len: 15 },
         { bit: bit52_66, len: 15 },
+        { bit: bit67 },
     ]
 
     const buffer = new ArrayBuffer(9)
@@ -104,6 +108,7 @@ export function toMatchID(matchState: MatchState) {
         matchLen: bit22_36,
         score1: bit37_51,
         score2: bit52_66,
+        noJacoby: bit67,
         bit: Array.from(new Uint8Array(buffer)).map((b) => b.toString(2)),
     }
 }

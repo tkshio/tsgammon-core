@@ -1,8 +1,11 @@
 import { boardState } from '../../../BoardState'
 import { cube, CubeOwner } from '../../../CubeState'
 import {
+    cbActionRed,
     cbActionWhite,
+    cbInPlayRed,
     cbInPlayWhite,
+    cbResponseRed,
     cbResponseWhite,
     cbToRollRed,
     cbToRollWhite,
@@ -10,11 +13,11 @@ import {
 import { GameState } from '../../../dispatchers/GameState'
 import { MatchState } from '../../../dispatchers/MatchState'
 import {
+    inPlayStateRed,
     inPlayStateWhite,
     toRollStateRed,
     toRollStateWhite,
 } from '../../../dispatchers/SingleGameState'
-import { decodeMatchID } from '../../../dispatchers/utils/decodeMatchID'
 import {
     Bit,
     littleEndianReducer,
@@ -33,11 +36,13 @@ describe('toMatchID()', () => {
                 cbState: cbInPlayWhite(cube(2, CubeOwner.RED, 16)),
                 sgState: inPlayStateWhite(boardState(), { dice1: 5, dice2: 2 }),
             },
+            isJacoby: false,
         }
 
         const matchID = toMatchID(matchState).matchID
-        expect(matchID).toEqual('QYkqASAAIAAA')
+        expect(matchID).toEqual('QYkqASAAIAAE')
     })
+
     const _gameState: GameState = {
         tag: 'GSInPlay',
         isCrawford: false,
@@ -48,6 +53,7 @@ describe('toMatchID()', () => {
         matchLength: 0,
         matchScore: score(),
         gameState: _gameState,
+        isJacoby: true,
     }
 
     test('encodes opening state of unlimited game with red6/white4', () => {
@@ -137,9 +143,7 @@ describe('toMatchID()', () => {
             gameState,
         }
 
-        const { matchID, ...matchInfo } = toMatchID(matchState)
-        console.log(matchInfo)
-        console.log(decodeMatchID('MBkAAAAAAAAA'))
+        const { matchID } = toMatchID(matchState)
         expect(matchID).toEqual('MBkAAAAAAAAA')
     })
     test('encodes white to play checker', () => {
@@ -169,6 +173,80 @@ describe('toMatchID()', () => {
 
         const { matchID } = toMatchID(matchState)
         expect(matchID).toEqual('UokOAAAAAAAA') // Gnu Backgammon doesn't change matchID
+    })
+
+    test('encodes red to roll', () => {
+        const gameState: GameState = {
+            ..._gameState,
+            cbState: cbToRollRed(cube(1), 'Skip'),
+            sgState: toRollStateRed(boardState()),
+        }
+        const matchState = {
+            ..._matchState,
+            gameState,
+        }
+
+        const { matchID } = toMatchID(matchState)
+        expect(matchID).toEqual('MAEAAAAAAAAA')
+    })
+    test('encodes red to play cube action', () => {
+        const gameState: GameState = {
+            ..._gameState,
+            cbState: cbActionRed(cube(1)),
+            sgState: toRollStateRed(boardState()),
+        }
+        const matchState = {
+            ..._matchState,
+            gameState,
+        }
+
+        const { matchID } = toMatchID(matchState)
+        expect(matchID).toEqual('MAEAAAAAAAAA')
+    })
+    test('encodes red to play cube response', () => {
+        const gameState: GameState = {
+            ..._gameState,
+            cbState: cbResponseRed(cube(1)),
+            sgState: toRollStateWhite(boardState()),
+        }
+        const matchState = {
+            ..._matchState,
+            gameState,
+        }
+
+        const { matchID } = toMatchID(matchState)
+        expect(matchID).toEqual('cBEAAAAAAAAA')
+    })
+    test('encodes red to play checker', () => {
+        const gameState: GameState = {
+            ..._gameState,
+            cbState: cbInPlayRed(cube(1)),
+            sgState: inPlayStateRed(boardState(), { dice1: 5, dice2: 3 }),
+        }
+        const matchState = {
+            ..._matchState,
+            gameState,
+        }
+
+        const { matchID } = toMatchID(matchState)
+        expect(matchID).toEqual('MIEOAAAAAAAA')
+    })
+    test('encodes crawford', () => {
+        const gameState: GameState = {
+            ..._gameState,
+            isCrawford: true,
+            cbState: cbToRollRed(cube(1), 'Skip'),
+            sgState: toRollStateRed(boardState()),
+        }
+        const matchState = {
+            ..._matchState,
+            matchLength: 1,
+            gameState,
+            isJacoby: false,
+        }
+
+        const { matchID } = toMatchID(matchState)
+        expect(matchID).toEqual('sAEgAAAAAAAE')
     })
 })
 
