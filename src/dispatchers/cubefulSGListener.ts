@@ -7,20 +7,12 @@ import { SGEoG, SGInPlay, SGToRoll } from './SingleGameState'
 export function cubefulSGListener(
     listeners: Partial<SingleGameListeners>,
     cbState: CBState,
-    skipCubeAction: boolean,
     dispatcher: CubeGameDispatcher
 ) {
-    return decorate(
-        listeners,
-        asSGListeners(cbState, skipCubeAction, dispatcher)
-    )
+    return decorate(listeners, asSGListeners(cbState, dispatcher))
 }
 
-function asSGListeners(
-    state: CBState,
-    skipCubeAction: boolean,
-    cbDispatcher: CubeGameDispatcher
-) {
+function asSGListeners(state: CBState, cbDispatcher: CubeGameDispatcher) {
     return {
         // オープニングロールがあった：手番を設定してInPlay状態に遷移
         onStartOpeningCheckerPlay: (sgInPlay: SGInPlay) => {
@@ -34,7 +26,7 @@ function asSGListeners(
         // チェッカープレイが終了した：キューブアクション状態またはロール待ち状態に遷移
         onAwaitRoll: (sgToRoll: SGToRoll) => {
             if (state.tag === 'CBInPlay') {
-                cbDispatcher.doStartCubeAction(state, skipCubeAction)
+                cbDispatcher.doStartCubeAction(state)
             } else {
                 console.warn('Unexpected state', state, sgToRoll)
             }
