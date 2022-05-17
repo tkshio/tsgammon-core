@@ -8,11 +8,20 @@ export function cubefulSGListener(
     listeners: Partial<SingleGameListeners>,
     cbState: CBState,
     dispatcher: CubeGameDispatcher
-) {
+): SingleGameListeners {
     return decorate(listeners, asSGListeners(cbState, dispatcher))
 }
 
-function asSGListeners(state: CBState, cbDispatcher: CubeGameDispatcher) {
+function asSGListeners(
+    state: CBState,
+    cbDispatcher: CubeGameDispatcher
+): Pick<
+    SingleGameListeners,
+    | 'onStartOpeningCheckerPlay'
+    | 'onAwaitRoll'
+    | 'onStartCheckerPlay'
+    | 'onEndOfGame'
+> {
     return {
         // オープニングロールがあった：手番を設定してInPlay状態に遷移
         onStartOpeningCheckerPlay: (sgInPlay: SGInPlay) => {
