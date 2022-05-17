@@ -1,6 +1,6 @@
 import { BoardStateNode } from '../BoardStateNode'
 import { DiceRoll } from '../Dices'
-import { DiceSource } from '../utils/DiceSource'
+import { DiceSource, randomDiceSource } from '../utils/DiceSource'
 import {
     singleGameDispatcher,
     SingleGameDispatcher,
@@ -23,7 +23,10 @@ export type RollReqs = {
 export function rollListeners(
     conf:
         | { isRollHandlerEnabled: false; diceSource: DiceSource }
-        | { isRollHandlerEnabled: true; rollListener: RollListener }
+        | { isRollHandlerEnabled: true; rollListener: RollListener } = {
+        isRollHandlerEnabled: false,
+        diceSource: randomDiceSource,
+    }
 ): RollListener {
     // diceSourceが指定されている場合は普通にロールを行い、そうでない場合は、listnerに任せる
     // rollListenerはStoriesなどによって自動的に指定される場合があるので、別途フラグを設けている
