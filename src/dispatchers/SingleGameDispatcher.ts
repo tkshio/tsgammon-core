@@ -119,7 +119,7 @@ export function decorate(
                           prev.onStartCheckerPlay(nextState)
                           onStartCheckerPlay(nextState)
                       }
-                    : prev.onStartOpeningCheckerPlay,
+                    : prev.onStartCheckerPlay,
                 onRerollOpening: onRerollOpening
                     ? (nextState: SGOpening) => {
                           prev.onRerollOpening(nextState)
