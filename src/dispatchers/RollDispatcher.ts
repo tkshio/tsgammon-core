@@ -1,11 +1,6 @@
 import { BoardStateNode } from '../BoardStateNode'
 import { DiceRoll } from '../Dices'
 import { DiceSource, randomDiceSource } from '../utils/DiceSource'
-import {
-    singleGameDispatcher,
-    SingleGameDispatcher,
-    SingleGameListeners,
-} from './SingleGameDispatcher'
 import { SGEoG, SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 
 export interface RollDispatcher {
@@ -55,35 +50,6 @@ export function rollDispatcher(listener: RollListener): RollDispatcher {
     return {
         doRollRequest: (rollReq: (dices: DiceRoll) => void): void => {
             listener.onRollRequest(rollReq)
-        },
-    }
-}
-
-export function singleGameDispatcherWithRD(
-    sgListeners: Partial<SingleGameListeners>,
-    rollHandler: RollListener
-): SingleGameDispatcherWithRD {
-    return addRoller(
-        singleGameDispatcher(sgListeners),
-        rollDispatcher(rollHandler)
-    )
-}
-
-export function addRoller(
-    sd: SingleGameDispatcher,
-    rDispatcher: RollDispatcher
-): SingleGameDispatcherWithRD {
-    return {
-        doCommitCheckerPlay: sd.doCommitCheckerPlay,
-        doOpeningRoll: (state: SGOpening) => {
-            rDispatcher.doRollRequest((dices: DiceRoll) => {
-                sd.doOpeningRoll(state, dices)
-            })
-        },
-        doRoll: (state: SGToRoll) => {
-            rDispatcher.doRollRequest((dices: DiceRoll) => {
-                sd.doRoll(state, dices)
-            })
         },
     }
 }

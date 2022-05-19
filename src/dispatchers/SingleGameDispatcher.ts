@@ -9,13 +9,34 @@ import {
 } from './SingleGameState'
 
 export type SingleGameDispatcher = {
-    doStartGame: () => void
-    doOpeningRoll: (state: SGOpening, dices: DiceRoll) => void
+    doStartGame: () => (
+        listener: Partial<Pick<SingleGameListeners, 'onStartGame'>>
+    ) => void
+    doOpeningRoll: (
+        state: SGOpening,
+        dices: DiceRoll
+    ) => (
+        listener: Partial<
+            Pick<
+                SingleGameListeners,
+                'onStartOpeningCheckerPlay' | 'onRerollOpening'
+            >
+        >
+    ) => void
     doCommitCheckerPlay: (
         state: SGInPlay,
         curBoardState: BoardStateNode
-    ) => SGToRoll | SGEoG
-    doRoll: (state: SGToRoll, dices: DiceRoll) => void
+    ) => (
+        listener: Partial<
+            Pick<SingleGameListeners, 'onEndOfGame' | 'onAwaitRoll'>
+        >
+    ) => void
+    doRoll: (
+        state: SGToRoll,
+        dices: DiceRoll
+    ) => (
+        listener: Partial<Pick<SingleGameListeners, 'onStartCheckerPlay'>>
+    ) => void
 }
 
 export type SingleGameListeners = {
@@ -27,24 +48,35 @@ export type SingleGameListeners = {
     onEndOfGame: (nextState: SGEoG) => void
 }
 
-export function singleGameDispatcher(
-    listeners: Partial<SingleGameListeners>
-): SingleGameDispatcher {
+export function singleGameDispatcher(): SingleGameDispatcher {
     const dispatcher = {
         doStartGame: () => {
-            if (listeners.onStartGame) {
-                listeners.onStartGame()
+            return (
+                listener: Partial<Pick<SingleGameListeners, 'onStartGame'>>
+            ) => {
+                if (listener.onStartGame) {
+                    listener.onStartGame()
+                }
             }
         },
         doOpeningRoll: (state: SGOpening, dices: DiceRoll) => {
             const nextState = state.doOpening(dices)
-            if (nextState.tag === 'SGInPlay') {
-                if (listeners.onStartOpeningCheckerPlay) {
-                    listeners.onStartOpeningCheckerPlay(nextState)
-                }
-            } else {
-                if (listeners.onRerollOpening) {
-                    listeners.onRerollOpening(nextState)
+            return (
+                listener: Partial<
+                    Pick<
+                        SingleGameListeners,
+                        'onStartOpeningCheckerPlay' | 'onRerollOpening'
+                    >
+                >
+            ) => {
+                if (nextState.tag === 'SGInPlay') {
+                    if (listener.onStartOpeningCheckerPlay) {
+                        listener.onStartOpeningCheckerPlay(nextState)
+                    }
+                } else {
+                    if (listener.onRerollOpening) {
+                        listener.onRerollOpening(nextState)
+                    }
                 }
             }
         },
@@ -54,21 +86,32 @@ export function singleGameDispatcher(
         ) => {
             const revertTo = state.revertTo
             const nextState = state.doCheckerPlayCommit(curBoardState, revertTo)
-            if (nextState.tag === 'SGEoG') {
-                if (listeners.onEndOfGame) {
-                    listeners.onEndOfGame(nextState)
-                }
-            } else {
-                if (listeners.onAwaitRoll) {
-                    listeners.onAwaitRoll(nextState)
+            return (
+                listener: Partial<
+                    Pick<SingleGameListeners, 'onEndOfGame' | 'onAwaitRoll'>
+                >
+            ) => {
+                if (nextState.tag === 'SGEoG') {
+                    if (listener.onEndOfGame) {
+                        listener.onEndOfGame(nextState)
+                    }
+                } else {
+                    if (listener.onAwaitRoll) {
+                        listener.onAwaitRoll(nextState)
+                    }
                 }
             }
-            return nextState
         },
         doRoll: (state: SGToRoll, dices: DiceRoll) => {
             const nextState = state.doRoll(dices)
-            if (listeners.onStartCheckerPlay) {
-                listeners.onStartCheckerPlay(nextState)
+            return (
+                listener: Partial<
+                    Pick<SingleGameListeners, 'onStartCheckerPlay'>
+                >
+            ) => {
+                if (listener.onStartCheckerPlay) {
+                    listener.onStartCheckerPlay(nextState)
+                }
             }
         },
     }
