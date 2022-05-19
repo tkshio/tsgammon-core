@@ -12,6 +12,7 @@ import {
 } from './CubeGameState'
 
 export type CubeGameDispatcher = {
+    doStartCubeGame: () => void
     // キューブアクション固有のU.I.から能動的に使用する操作
     doDouble: (state: CBAction) => void
     doSkipCubeAction: (state: CBAction) => void
@@ -30,6 +31,8 @@ export type CubeGameDispatcher = {
 }
 
 export type CubeGameListeners = {
+    onStartCubeGame: () => void
+
     onStartCubeAction: (nextState: CBAction) => void
     onAwaitCheckerPlay: (nextState: CBInPlay) => void
     onSkipCubeAction: (nextState: CBToRoll) => void
@@ -41,6 +44,9 @@ export type CubeGameListeners = {
 
 export function fill(listeners: Partial<CubeGameListeners>): CubeGameListeners {
     const doNothing: CubeGameListeners = {
+        onStartCubeGame: () => {
+            //
+        },
         onStartCubeAction: () => {
             //
         },
@@ -70,6 +76,7 @@ export function decorate(
     return listeners.reduce(
         (prev: CubeGameListeners, cur: Partial<CubeGameListeners>) => {
             const {
+                onStartCubeGame,
                 onStartCubeAction,
                 onAwaitCheckerPlay,
                 onDouble,
@@ -78,6 +85,11 @@ export function decorate(
                 onEndOfCubeGame,
             } = cur
             return {
+                onStartCubeGame: onStartCubeGame
+                    ? () => {
+                          prev.onStartCubeGame()
+                      }
+                    : prev.onStartCubeGame,
                 onStartCubeAction: onStartCubeAction
                     ? (nextState: CBAction) => {
                           prev.onStartCubeAction(nextState)
@@ -121,9 +133,11 @@ export function decorate(
 }
 
 export function setCBStateListener(
+    defaultState: CBOpening,
     setCBState: (cbState: CBState) => void
 ): CubeGameListeners {
     return {
+        onStartCubeGame: () => setCBState(defaultState),
         onStartCubeAction: setCBState,
         onAwaitCheckerPlay: setCBState,
         onDouble: setCBState,
@@ -138,6 +152,7 @@ export function cubeGameDispatcher(
     listeners: Partial<CubeGameListeners>
 ): CubeGameDispatcher {
     return {
+        doStartCubeGame,
         doDouble,
         doSkipCubeAction,
         doTake,
@@ -148,6 +163,11 @@ export function cubeGameDispatcher(
         doEndOfCubeGame,
     }
 
+    function doStartCubeGame() {
+        if (listeners.onStartCubeGame) {
+            listeners.onStartCubeGame()
+        }
+    }
     function doDouble(state: CBAction) {
         if (listeners.onDouble) {
             const nextState: CBResponse = state.doDouble()

@@ -9,6 +9,7 @@ import {
 } from './SingleGameState'
 
 export type SingleGameDispatcher = {
+    doStartGame: () => void
     doOpeningRoll: (state: SGOpening, dices: DiceRoll) => void
     doCommitCheckerPlay: (
         state: SGInPlay,
@@ -18,6 +19,7 @@ export type SingleGameDispatcher = {
 }
 
 export type SingleGameListeners = {
+    onStartGame: () => void
     onStartOpeningCheckerPlay: (nextState: SGInPlay) => void
     onStartCheckerPlay: (nextState: SGInPlay) => void
     onRerollOpening: (nextState: SGOpening) => void
@@ -29,6 +31,11 @@ export function singleGameDispatcher(
     listeners: Partial<SingleGameListeners>
 ): SingleGameDispatcher {
     const dispatcher = {
+        doStartGame: () => {
+            if (listeners.onStartGame) {
+                listeners.onStartGame()
+            }
+        },
         doOpeningRoll: (state: SGOpening, dices: DiceRoll) => {
             const nextState = state.doOpening(dices)
             if (nextState.tag === 'SGInPlay') {
@@ -72,6 +79,9 @@ export function fill(
     listeners: Partial<SingleGameListeners>
 ): SingleGameListeners {
     const doNothing: SingleGameListeners = {
+        onStartGame: () => {
+            //
+        },
         onStartOpeningCheckerPlay: () => {
             //
         },
@@ -101,6 +111,7 @@ export function decorate(
     return listners.reduce(
         (prev: SingleGameListeners, cur: Partial<SingleGameListeners>) => {
             const {
+                onStartGame,
                 onStartOpeningCheckerPlay,
                 onStartCheckerPlay,
                 onRerollOpening,
@@ -108,6 +119,12 @@ export function decorate(
                 onEndOfGame,
             } = cur
             return {
+                onStartGame: onStartGame
+                    ? () => {
+                          prev.onStartGame()
+                          onStartGame()
+                      }
+                    : prev.onStartGame,
                 onStartOpeningCheckerPlay: onStartOpeningCheckerPlay
                     ? (nextState: SGInPlay) => {
                           prev.onStartOpeningCheckerPlay(nextState)
@@ -145,9 +162,11 @@ export function decorate(
 }
 
 export function setSGStateListener(
+    defaultState: SGOpening,
     setState: (state: SGState) => void
 ): SingleGameListeners {
     return {
+        onStartGame: () => setState(defaultState),
         onStartOpeningCheckerPlay: setState,
         onStartCheckerPlay: setState,
         onRerollOpening: setState,
