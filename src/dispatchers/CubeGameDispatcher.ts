@@ -154,7 +154,6 @@ export function concatCBListeners(
                     : prev.onSkipCubeAction,
                 onEndOfCubeGame: onEndOfCubeGame
                     ? (nextState: CBEoG) => {
-                          console.log(nextState)
                           prev.onEndOfCubeGame(nextState)
                           onEndOfCubeGame(nextState)
                       }
