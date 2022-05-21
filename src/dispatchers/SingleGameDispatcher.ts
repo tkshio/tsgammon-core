@@ -205,11 +205,11 @@ export function concatSGListeners(
 }
 
 export function setSGStateListener(
-    defaultState: SGOpening,
+    defaultSGState: SGState,
     setState: (state: SGState) => void
 ): SingleGameListeners {
     return {
-        onStartGame: () => setState(defaultState),
+        onStartGame: () => setState(defaultSGState),
         onStartOpeningCheckerPlay: setState,
         onStartCheckerPlay: setState,
         onRerollOpening: setState,

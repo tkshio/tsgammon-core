@@ -154,6 +154,7 @@ export function concatCBListeners(
                     : prev.onSkipCubeAction,
                 onEndOfCubeGame: onEndOfCubeGame
                     ? (nextState: CBEoG) => {
+                          console.log(nextState)
                           prev.onEndOfCubeGame(nextState)
                           onEndOfCubeGame(nextState)
                       }
@@ -165,7 +166,7 @@ export function concatCBListeners(
 }
 
 export function setCBStateListener(
-    defaultState: CBOpening,
+    defaultState: CBState,
     setCBState: (cbState: CBState) => void
 ): CubeGameListeners {
     return {
