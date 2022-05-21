@@ -1,4 +1,4 @@
-import { decorate } from './SingleGameDispatcher'
+import { concatSGListeners } from './SingleGameDispatcher'
 import { CBState } from './CubeGameState'
 import { CubeGameDispatcher } from './CubeGameDispatcher'
 import { SingleGameListeners } from './SingleGameDispatcher'
@@ -9,7 +9,7 @@ export function cubefulSGListener(
     cbState: CBState,
     dispatcher: CubeGameDispatcher
 ): SingleGameListeners {
-    return decorate(listeners, asSGListeners(cbState, dispatcher))
+    return concatSGListeners(listeners, asSGListeners(cbState, dispatcher))
 }
 
 function asSGListeners(

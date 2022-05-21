@@ -147,7 +147,7 @@ export function fill(
     }
 }
 
-export function decorate(
+export function concatSGListeners(
     base: Partial<SingleGameListeners>,
     ...listners: Partial<SingleGameListeners>[]
 ): SingleGameListeners {

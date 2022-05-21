@@ -100,7 +100,7 @@ export function fill(listeners: Partial<CubeGameListeners>): CubeGameListeners {
     return { ...doNothing, ...listeners }
 }
 
-export function decorate(
+export function concatCBListeners(
     base: Partial<CubeGameListeners>,
     ...listeners: Partial<CubeGameListeners>[]
 ): CubeGameListeners {
@@ -119,6 +119,7 @@ export function decorate(
                 onStartCubeGame: onStartCubeGame
                     ? () => {
                           prev.onStartCubeGame()
+                          onStartCubeGame()
                       }
                     : prev.onStartCubeGame,
                 onStartCubeAction: onStartCubeAction
