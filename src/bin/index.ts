@@ -10,7 +10,7 @@ import { BoardState, boardState } from '../BoardState'
 import { EOGStatus } from '../EOGStatus'
 import { BoardStateNode, boardStateNode } from '../BoardStateNode'
 import { Dice, DiceRoll } from '../Dices'
-import { standardConf } from '../GameConf'
+import { GameConf, standardConf } from '../GameConf'
 import { Ply } from '../Ply'
 import { Score, score, scoreAsRed, scoreAsWhite } from '../Score'
 import { DiceSource, randomDiceSource } from '../utils/DiceSource'
@@ -23,11 +23,17 @@ import { plyRecordForCheckerPlay, plyRecordForEoG } from '../records/PlyRecord'
 import {
     addPlyRecord,
     matchRecord,
-    MatchRecord,
+    MatchRecordEoG,
+    MatchRecordInPlay,
     setEoGRecord,
 } from '../records/MatchRecord'
 import { SGResult } from '../records/SGResult'
 import { formatMatchRecord } from '../records/utils/formatMatchRecord'
+import {
+    matchStateEOG,
+    MatchStateEOG,
+    matchStateForUnlimitedMatch,
+} from '../dispatchers/MatchState'
 
 const engine = simpleNNEngine
 const conf = { ...standardConf, jacobyRule: false }
@@ -145,11 +151,13 @@ function runDriver(driver: Driver = defaultDriver) {
     driver.doResult({ gameScore })
 }
 
-function xgDriver(): Driver {
+function xgDriver(conf: GameConf): Driver {
+    const matchState = matchStateForUnlimitedMatch(score(), conf.jacobyRule)
     const record: {
-        match: MatchRecord<undefined>
+        match: MatchRecordInPlay<undefined>
+        eog?: MatchRecordEoG<undefined>
     } = {
-        match: matchRecord(conf),
+        match: matchRecord(conf, matchState),
     }
     return {
         ...defaultDriver,
@@ -161,13 +169,19 @@ function xgDriver(): Driver {
             )
         },
         doEoG: (evt) => {
-            record.match = setEoGRecord(
+            const matchEoG: MatchStateEOG = matchStateEOG(
+                record.match.matchState,
+                evt.stake,
+                evt.eogStatus
+            )
+            record.eog = setEoGRecord(
                 record.match,
+                matchEoG,
                 plyRecordForEoG(evt.stake, evt.sgResult, evt.eogStatus)
             )
         },
         doResult: () => {
-            formatMatchRecord(record.match)
+            formatMatchRecord(record.eog ?? record.match)
                 .split('\n')
                 .forEach((l) => console.log(l))
         },
@@ -209,7 +223,7 @@ function main() {
         console.log('  -x: output as text log (.mat format) ')
         console.log('  -b: output as visual board')
     } else if (arg.startsWith('-x')) {
-        runDriver(xgDriver())
+        runDriver(xgDriver(standardConf))
     } else if (arg.startsWith('-b')) {
         runDriver(boardDriver())
     } else {

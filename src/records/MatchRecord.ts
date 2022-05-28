@@ -1,9 +1,13 @@
+import {
+    MatchStateEOG,
+    matchStateInPlay,
+    MatchStateInPlay,
+} from '../dispatchers/MatchState'
 import { GameConf, standardConf } from '../GameConf'
-import { score, Score } from '../Score'
 import {
     eogGameRecord,
-    GameRecord,
     GameRecordEoG,
+    GameRecordInPlay,
     initGameRecord,
 } from './GameRecord'
 import { PlyRecordEoG, PlyRecordInPlay } from './PlyRecord'
@@ -12,41 +16,42 @@ import { PlyRecordEoG, PlyRecordInPlay } from './PlyRecord'
  * マッチ全体の記録
  * @template T 手番に紐づけて保持される、局面を表す任意のオブジェクトの型
  */
-export type MatchRecord<T> = {
+export type MatchRecord<T> = MatchRecordInPlay<T> | MatchRecordEoG<T>
+type _MatchRecord<T> = {
     /** ルールなど、ゲームの設定 */
     conf: GameConf
-    /** 現ゲームの記録：すなわち、現在進行中、または最後に終局したゲームの記録 */
-    curGameRecord: GameRecord<T>
     /** すでに終局したゲームの記録 */
     gameRecords: GameRecordEoG<T>[]
-    /** 現時点の累計点 */
-    matchScore: Score
-    /** マッチポイント数、0の場合は無制限 */
-    matchLength: number
+}
 
-    /** マッチが終了していればtrue */
-    isEndOfMatch: boolean
+export type MatchRecordInPlay<T> = _MatchRecord<T> & {
+    isEoG: false
+    matchState: MatchStateInPlay
+    /** 現ゲームの記録：すなわち、現在進行中、または最後に終局したゲームの記録 */
+    curGameRecord: GameRecordInPlay<T>
+}
+export type MatchRecordEoG<T> = _MatchRecord<T> & {
+    isEoG: true
+    matchState: MatchStateEOG
+
+    /** 現ゲームの記録：すなわち、現在進行中、または最後に終局したゲームの記録 */
+    curGameRecord: GameRecordEoG<T>
 }
 
 export function matchRecord<T>(
     conf: GameConf = standardConf,
-    matchLength = 0,
-    matchScore: Score = score(),
-    isCrawford = false
-): MatchRecord<T> {
-    const curGameRecord = initGameRecord<T>(matchScore, isCrawford)
+    matchState: MatchStateInPlay
+): MatchRecordInPlay<T> {
+    const curGameRecord = initGameRecord<T>(matchState)
     return {
+        isEoG: false,
         conf,
+        matchState,
         gameRecords: [],
-        matchScore,
-        matchLength,
         curGameRecord,
-        isEndOfMatch: isEndOfMatch(matchLength, matchScore),
     }
 }
-function isEndOfMatch(matchLength: number, score: Score) {
-    return score.redScore >= matchLength || score.whiteScore >= matchLength
-}
+
 /**
  * 現在の記録について、一手番分の記録を追加して返す
  *
@@ -56,13 +61,12 @@ function isEndOfMatch(matchLength: number, score: Score) {
  * @returns 更新後の記録
  */
 export function addPlyRecord<T>(
-    matchRecord: MatchRecord<T>,
+    matchRecord: MatchRecordInPlay<T>,
     plyRecord: PlyRecordInPlay,
     state: T
-): MatchRecord<T> {
+): MatchRecordInPlay<T> {
     return {
         ...matchRecord,
-        matchScore: matchRecord.curGameRecord.scoreBefore,
         curGameRecord: {
             ...matchRecord.curGameRecord,
             plyRecords: matchRecord.curGameRecord.plyRecords.concat({
@@ -85,27 +89,35 @@ export function addPlyRecord<T>(
  * @returns 更新後の記録
  */
 export function recordFinishedGame<T>(
-    matchRecord: MatchRecord<T>
+    matchRecord: MatchRecordEoG<T>
 ): MatchRecord<T> {
-    if (matchRecord.curGameRecord.isEoG) {
+    const { matchState } = matchRecord
+    if (matchRecord.matchState.isEoM) {
+        return matchRecord
+    } else {
+        const matchStateNext = matchStateInPlay(
+            matchState.matchLength,
+            matchState.scoreAfter,
+            matchState.stakeConf,
+            matchState.isCrawfordNext
+        )
         return {
             ...matchRecord,
+            isEoG: false,
+            matchState: matchStateNext,
             gameRecords: matchRecord.gameRecords.concat(
                 matchRecord.curGameRecord
             ),
-            curGameRecord: initGameRecord(
-                matchRecord.matchScore,
-                matchRecord.curGameRecord.isCrawfordNext
-            ),
+            curGameRecord: initGameRecord(matchStateNext),
         }
-    } else {
-        return {
-            ...matchRecord,
-            curGameRecord: initGameRecord(
-                matchRecord.matchScore,
-                matchRecord.curGameRecord.isCrawford
-            ),
-        }
+    }
+}
+export function discardCurrentGame<T>(
+    matchRecord: MatchRecordInPlay<T>
+): MatchRecordInPlay<T> {
+    return {
+        ...matchRecord,
+        curGameRecord: initGameRecord(matchRecord.matchState),
     }
 }
 
@@ -116,9 +128,9 @@ export function recordFinishedGame<T>(
  * @returns 更新後の記録
  */
 export function trimPlyRecords<T>(
-    matchRecord: MatchRecord<T>,
+    matchRecord: MatchRecordInPlay<T>,
     index: number
-): MatchRecord<T> {
+): MatchRecordInPlay<T> {
     if (0 <= index && index < matchRecord.curGameRecord.plyRecords.length) {
         return {
             ...matchRecord,
@@ -140,27 +152,24 @@ export function trimPlyRecords<T>(
  * 現在の記録について、現ゲームの記録に終局の記録を追加して返す
  *
  * @param matchRecord 現在の記録
+ * @param eogMatchState 終局時のMatchState
  * @param eogRecord 終局の記録
  * @returns 更新後の記録
  */
 export function setEoGRecord<T>(
-    matchRecord: MatchRecord<T>,
+    matchRecord: MatchRecordInPlay<T>,
+    eogMatchState: MatchStateEOG,
     eogRecord: PlyRecordEoG
-): MatchRecord<T> {
-    if (matchRecord.curGameRecord.isEoG) {
-        return matchRecord
-    }
-    const scoreAfter = matchRecord.matchScore.add(eogRecord.stake)
+): MatchRecordEoG<T> {
     const curGameRecord = eogGameRecord(
         matchRecord.curGameRecord,
         eogRecord,
-        scoreAfter,
-        matchRecord.matchLength
+        eogMatchState.scoreAfter
     )
     return {
         ...matchRecord,
-        matchScore: scoreAfter,
+        isEoG: true,
         curGameRecord,
-        isEndOfMatch: isEndOfMatch(matchRecord.matchLength, scoreAfter),
+        matchState: eogMatchState,
     }
 }

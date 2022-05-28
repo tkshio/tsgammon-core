@@ -1,6 +1,5 @@
 import { EOGStatus } from '../EOGStatus'
 import { Score, score } from '../Score'
-import { CBEoG } from './CubeGameState'
 import { StakeConf } from './StakeConf'
 
 export type MatchState = MatchStateInPlay | MatchStateEOG
@@ -54,9 +53,9 @@ export function matchStateInPlay(
 
 export function matchStateEOG(
     matchState: MatchState,
-    cbState: CBEoG
-): MatchState {
-    const { stake, eogStatus } = cbState.calcStake(matchState.stakeConf)
+    stake: Score,
+    eogStatus: EOGStatus
+): MatchStateEOG {
     const scoreAfter = matchState.scoreBefore.add(stake)
     return {
         ...matchState,

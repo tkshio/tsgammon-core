@@ -68,7 +68,7 @@ function formatHeaderPart<T>(
 ; [Beaver "Off"]
 ; [CubeLimit "${conf.cubeMax}"]
 
-${matchRecord.matchLength + ' point match'}
+${matchRecord.matchState.matchLength + ' point match'}
 
 `
     return header

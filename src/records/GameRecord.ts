@@ -1,6 +1,7 @@
 import { PlyStateRecord } from './PlyStateRecord'
 import { Score } from '../Score'
 import { PlyRecordEoG } from './PlyRecord'
+import { MatchState } from '../dispatchers/MatchState'
 
 /**
  * 1ゲーム分、すなわちオープニングロールからゲームが終局するまでの記録。
@@ -18,7 +19,7 @@ export type GameRecord<T> = GameRecordEoG<T> | GameRecordInPlay<T>
 export type GameRecordEoG<T> = _GameRecord<T> & {
     eogRecord: PlyRecordEoG
     isEoG: true
-    isCrawfordNext: boolean
+    scoreAfter: Score
 }
 
 /**
@@ -40,30 +41,14 @@ type _GameRecord<T> = {
  * @param scoreBefore ゲーム開始時の累計点
  * @returns 進行中のゲームの記録
  */
-export function initGameRecord<T>(
-    scoreBefore: Score,
-    isCrawford: boolean
-): GameRecordInPlay<T> {
+export function initGameRecord<T>(matchState: MatchState): GameRecordInPlay<T> {
+    const { scoreBefore, isCrawford } = matchState
     return {
         scoreBefore,
         isEoG: false,
         plyRecords: [],
         isCrawford,
     }
-}
-
-function isCrawfordNext(
-    scoreBefore: Score,
-    scoreAfter: Score,
-    matchLength: number
-): boolean {
-    return (
-        matchLength != 0 &&
-        scoreBefore.redScore < matchLength - 1 &&
-        scoreBefore.whiteScore < matchLength - 1 &&
-        (scoreAfter.redScore === matchLength - 1 ||
-            scoreAfter.whiteScore === matchLength - 1)
-    )
 }
 
 /**
@@ -76,17 +61,12 @@ function isCrawfordNext(
 export function eogGameRecord<T>(
     curGameRecord: GameRecordInPlay<T>,
     eogRecord: PlyRecordEoG,
-    scoreAfter: Score,
-    matchLength: number
+    scoreAfter: Score
 ): GameRecordEoG<T> {
     return {
         ...curGameRecord,
         isEoG: true,
         eogRecord,
-        isCrawfordNext: isCrawfordNext(
-            curGameRecord.scoreBefore,
-            scoreAfter,
-            matchLength
-        ),
+        scoreAfter,
     }
 }
