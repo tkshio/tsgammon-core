@@ -11,7 +11,12 @@ import {
     cbToRollWhite,
 } from '../../../dispatchers/CubeGameState'
 import { GameState } from '../../../dispatchers/GameState'
-import { MatchState } from '../../../dispatchers/MatchState'
+import {
+    MatchState,
+    matchStateForPointMatch,
+    matchStateInPlay,
+    MatchStateInPlay,
+} from '../../../dispatchers/MatchState'
 import {
     ResignOffer,
     rsNone,
@@ -32,42 +37,39 @@ import { score } from '../../../Score'
 
 describe('toMatchID()', () => {
     test('encodes matchState', () => {
-        const matchState: MatchState = {
+        const matchState: MatchStateInPlay = {
             matchLength: 9,
-            matchScore: score({ redScore: 2, whiteScore: 4 }),
-            gameState: {
-                tag: 'GSInPlay',
-                isCrawford: false,
-                rsState: rsNone(),
-                cbState: cbInPlayWhite(cube(2, CubeOwner.RED, 16)),
-                sgState: inPlayStateWhite(boardState(), { dice1: 5, dice2: 2 }),
-            },
-            isJacoby: false,
+            scoreBefore: score({ redScore: 2, whiteScore: 4 }),
+            stakeConf: { jacobyRule: false },
+            isCrawford: false,
+            isEoG: false,
+        }
+        const gameState: GameState = {
+            tag: 'GSInPlay',
+            rsState: rsNone(),
+            cbState: cbInPlayWhite(cube(2, CubeOwner.RED, 16)),
+            sgState: inPlayStateWhite(boardState(), { dice1: 5, dice2: 2 }),
         }
 
-        const matchID = toMatchID(matchState).matchID
+        const matchID = toMatchID(matchState, gameState).matchID
         expect(matchID).toEqual('QYkqASAAIAAE')
     })
 
     const _gameState: GameState = {
         tag: 'GSInPlay',
-        isCrawford: false,
         rsState: rsNone(),
         cbState: cbToRollRed(cube(1), 'Skip'),
         sgState: toRollStateRed(boardState()),
     }
-    const _matchState: MatchState = {
-        matchLength: 0,
-        matchScore: score(),
-        gameState: _gameState,
-        isJacoby: true,
-    }
+    const _matchState: MatchState = matchStateInPlay(0, score(), {
+        jacobyRule: true,
+    })
 
     test('encodes opening state of unlimited game with red6/white4', () => {
         const {
             matchID,
             //, ...matchInfo
-        } = toMatchID(_matchState)
+        } = toMatchID(_matchState, _gameState)
         //console.log(matchInfo)
         //console.log(decodeMatchID('MAEAAAAAAAAA'))
         expect(matchID).toEqual('MAEAAAAAAAAA')
@@ -79,10 +81,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('MgEAAAAAAAAA')
     })
     test('encodes cube owned by red', () => {
@@ -92,10 +93,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('AgEAAAAAAAAA')
     })
     test('encodes cube owned by white', () => {
@@ -105,10 +105,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('EgEAAAAAAAAA')
     })
     test('encodes white to roll', () => {
@@ -119,10 +118,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('UgkAAAAAAAAA')
     })
     test('encodes white to play cube action', () => {
@@ -133,10 +131,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('UgkAAAAAAAAA')
     })
     test('encodes white to play cube response', () => {
@@ -147,10 +144,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('MBkAAAAAAAAA')
     })
     test('encodes white to play checker', () => {
@@ -161,10 +157,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('UokOAAAAAAAA')
     })
     test("encodes white to play checker(reverted roll won't change matchID)", () => {
@@ -175,10 +170,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('UokOAAAAAAAA') // Gnu Backgammon doesn't change matchID
     })
 
@@ -190,10 +184,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('MAEAAAAAAAAA')
     })
     test('encodes red to play cube action', () => {
@@ -204,10 +197,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('MAEAAAAAAAAA')
     })
     test('encodes red to play cube response', () => {
@@ -218,10 +210,9 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('cBEAAAAAAAAA')
     })
     test('encodes red to play checker', () => {
@@ -232,45 +223,36 @@ describe('toMatchID()', () => {
         }
         const matchState = {
             ..._matchState,
-            gameState,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('MIEOAAAAAAAA')
     })
     test('encodes crawford', () => {
         const gameState: GameState = {
             ..._gameState,
-            isCrawford: true,
             cbState: cbToRollRed(cube(1), 'Skip'),
             sgState: toRollStateRed(boardState()),
         }
         const matchState = {
             ..._matchState,
             matchLength: 1,
-            gameState,
-            isJacoby: false,
+            stakeConf: { jacobyRule: false },
+            isCrawford: true,
         }
 
-        const { matchID } = toMatchID(matchState)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('sAEgAAAAAAAE')
     })
     test('white offers to resign a backgammon', () => {
         const gameState: GameState = {
             tag: 'GSInPlay',
-            isCrawford: false,
             rsState: rsOfferedRed(ResignOffer.Backgammon),
             cbState: cbToRollWhite(cube(1), 'Skip'),
             sgState: toRollStateWhite(boardState()),
         }
-        const matchState: MatchState = {
-            matchLength: 5,
-            matchScore: score(),
-            gameState,
-            isJacoby: false,
-        }
-
-        const { matchID } = toMatchID(matchState)
+        const matchState: MatchState = matchStateForPointMatch(5)
+        const { matchID } = toMatchID(matchState, gameState)
         expect(matchID).toEqual('cGGgAAAAAAAE')
     })
 })

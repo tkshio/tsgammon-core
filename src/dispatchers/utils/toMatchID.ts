@@ -5,8 +5,7 @@ import { GameState } from '../GameState'
 import { MatchState } from '../MatchState'
 import { ResignOffer } from '../ResignState'
 
-export function toMatchID(matchState: MatchState) {
-    const { gameState } = matchState
+export function toMatchID(matchState: MatchState, gameState: GameState) {
     const cubeState =
         gameState.tag === 'GSInit' ? cube(1) : gameState.cbState.cubeState
 
@@ -26,7 +25,7 @@ export function toMatchID(matchState: MatchState) {
         gameState.tag === 'GSInPlay' ? (gameState.sgState.isRed ? 0 : 1) : 0
 
     // 4. Bit 8 is the Crawford flag: 1 if this game is the Crawford game, 0 otherwise.
-    const bit8 = gameState.isCrawford ? 1 : 0
+    const bit8 = matchState.isCrawford ? 1 : 0
 
     // 5. Bit 9-11 is the game state: 000 for no game started, 001 for playing a game, 010 if the game is over, 011 if the game was resigned, or 100 if the game was ended by dropping a cube.
     const bit9_11 =
@@ -72,11 +71,14 @@ export function toMatchID(matchState: MatchState) {
     const bit22_36 = matchState.matchLength
 
     // Bit 37-51 and bit 52-66 is the score for player 0 and player 1 respectively. The maximum value of the match score is 32767.
-    const bit37_51 = matchState.matchScore.redScore
-    const bit52_66 = matchState.matchScore.whiteScore
+    const matchScore = matchState.isEoG
+        ? matchState.scoreAfter
+        : matchState.scoreBefore
+    const bit37_51 = matchScore.redScore
+    const bit52_66 = matchScore.whiteScore
 
     // Bit67 : no Jacoby: これはドキュメントに記載がない：Jacobyが無効（ポイントマッチ）なら1, 有効（マネーゲームなど）なら0
-    const bit67 = matchState.isJacoby ? 0 : 1
+    const bit67 = matchState.stakeConf.jacobyRule ? 0 : 1
 
     const toEnc = [
         { bit: bit1_4, len: 4 },

@@ -12,12 +12,11 @@ import { SGEoG, SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 export type GameState = GSInit | GSOpening | GSInPlay | GSEoG
 
 type _GameState = {
-    isCrawford: boolean
+    //
 }
 
 export type GSInit = _GameState & {
     tag: 'GSInit'
-    isCrawford: false
 }
 
 export type GSOpening = _GameState & {
