@@ -7,6 +7,7 @@ import {
     SGState,
     SGToRoll,
 } from './SingleGameState'
+import { concat0, concat1 } from './utils/concat'
 
 export type SingleGameDispatcher = {
     doStartGame: () => (
@@ -118,92 +119,36 @@ export function singleGameDispatcher(): SingleGameDispatcher {
     return dispatcher
 }
 
-export function fill(
-    listeners: Partial<SingleGameListeners>
-): SingleGameListeners {
-    const doNothing: SingleGameListeners = {
-        onStartGame: () => {
-            //
-        },
-        onStartOpeningCheckerPlay: () => {
-            //
-        },
-        onStartCheckerPlay: () => {
-            //
-        },
-        onRerollOpening: () => {
-            //
-        },
-        onAwaitRoll: () => {
-            //
-        },
-        onEndOfGame: () => {
-            //
-        },
-    }
-    return {
-        ...doNothing,
-        ...listeners,
-    }
-}
-
 export function concatSGListeners(
     base: Partial<SingleGameListeners>,
     ...listners: Partial<SingleGameListeners>[]
-): SingleGameListeners {
+): Partial<SingleGameListeners> {
     return listners.reduce(
-        (prev: SingleGameListeners, cur: Partial<SingleGameListeners>) => {
-            const {
-                onStartGame,
-                onStartOpeningCheckerPlay,
-                onStartCheckerPlay,
-                onRerollOpening,
-                onAwaitRoll,
-                onEndOfGame,
-            } = cur
+        (
+            prev: Partial<SingleGameListeners>,
+            cur: Partial<SingleGameListeners>
+        ) => {
             return {
-                onStartGame: onStartGame
-                    ? () => {
-                          prev.onStartGame()
-                          onStartGame()
-                      }
-                    : prev.onStartGame,
-                onStartOpeningCheckerPlay: onStartOpeningCheckerPlay
-                    ? (nextState: SGInPlay) => {
-                          prev.onStartOpeningCheckerPlay(nextState)
-                          onStartOpeningCheckerPlay(nextState)
-                      }
-                    : prev.onStartOpeningCheckerPlay,
-                onStartCheckerPlay: onStartCheckerPlay
-                    ? (nextState: SGInPlay) => {
-                          prev.onStartCheckerPlay(nextState)
-                          onStartCheckerPlay(nextState)
-                      }
-                    : prev.onStartCheckerPlay,
-                onRerollOpening: onRerollOpening
-                    ? (nextState: SGOpening) => {
-                          prev.onRerollOpening(nextState)
-                          onRerollOpening(nextState)
-                      }
-                    : prev.onRerollOpening,
-                onAwaitRoll: onAwaitRoll
-                    ? (nextState: SGToRoll) => {
-                          prev.onAwaitRoll(nextState)
-                          onAwaitRoll(nextState)
-                      }
-                    : prev.onAwaitRoll,
-                onEndOfGame: onEndOfGame
-                    ? (nextState: SGEoG) => {
-                          prev.onEndOfGame(nextState)
-                          onEndOfGame(nextState)
-                      }
-                    : prev.onEndOfGame,
+                onStartGame: concat0(prev?.onStartGame, cur?.onStartGame),
+                onStartOpeningCheckerPlay: concat1(
+                    prev?.onStartOpeningCheckerPlay,
+                    cur?.onStartOpeningCheckerPlay
+                ),
+                onStartCheckerPlay: concat1(
+                    prev?.onStartCheckerPlay,
+                    cur?.onStartCheckerPlay
+                ),
+                onRerollOpening: concat1(
+                    prev?.onRerollOpening,
+                    cur?.onRerollOpening
+                ),
+                onAwaitRoll: concat1(prev?.onAwaitRoll, cur?.onAwaitRoll),
+                onEndOfGame: concat1(prev?.onEndOfGame, cur?.onEndOfGame),
             }
         },
-        fill(base)
+        base
     )
 }
-
 export function setSGStateListener(
     defaultSGState: SGState,
     setState: (state: SGState) => void
