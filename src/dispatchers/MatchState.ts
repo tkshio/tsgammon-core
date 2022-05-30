@@ -2,7 +2,7 @@ import { EOGStatus } from '../EOGStatus'
 import { Score, score } from '../Score'
 import { StakeConf } from './StakeConf'
 
-export type MatchState = MatchStateInPlay | MatchStateEOG
+export type MatchState = MatchStateInPlay | MatchStateEoG
 
 type _MatchState = {
     matchLength: number
@@ -14,7 +14,7 @@ type _MatchState = {
 export type MatchStateInPlay = _MatchState & {
     isEoG: false
 }
-export type MatchStateEOG = _MatchState & {
+export type MatchStateEoG = _MatchState & {
     isEoG: true
     stake: Score
     scoreAfter: Score
@@ -51,11 +51,11 @@ export function matchStateInPlay(
     }
 }
 
-export function matchStateEOG(
+export function matchStateEoG(
     matchState: MatchState,
     stake: Score,
     eogStatus: EOGStatus
-): MatchStateEOG {
+): MatchStateEoG {
     const scoreAfter = matchState.scoreBefore.add(stake)
     return {
         ...matchState,

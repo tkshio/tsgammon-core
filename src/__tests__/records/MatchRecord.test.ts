@@ -1,5 +1,5 @@
 import {
-    matchStateEOG,
+    matchStateEoG,
     matchStateForPointMatch,
     matchStateForUnlimitedMatch,
     matchStateInPlay,
@@ -12,7 +12,7 @@ import {
     matchRecord,
     MatchRecordInPlay,
     recordFinishedGame,
-    setEoGRecord,
+    eogRecord,
 } from '../../records/MatchRecord'
 import {
     plyRecordForCheckerPlay,
@@ -44,16 +44,16 @@ describe('MatchRecord', () => {
             foo: 'bar',
         })
     })
-    const matchState = matchStateEOG(
+    const matchState = matchStateEoG(
         mRecordAfterPlay.matchState,
         score(),
         eog()
     )
-    const eogRecord = plyRecordForEoG(score(), SGResult.REDWON, eog())
-    const mRecordAfterEoG = setEoGRecord(
+    const plyRecordEoG = plyRecordForEoG(score(), SGResult.REDWON, eog())
+    const mRecordAfterEoG = eogRecord(
         mRecordAfterPlay,
         matchState,
-        eogRecord
+        plyRecordEoG
     )
     test('sets EoGRecord at end of game', () => {
         expect(mRecordAfterEoG.gameRecords.length).toBe(0)
@@ -74,12 +74,12 @@ describe('matchRecord(crawford rule)', () => {
         matchStateInPlay(3, score({ whiteScore: 1, redScore: 0 }))
     )
     test('sets next game as crawford', () => {
-        const eogMatchState = matchStateEOG(
+        const eogMatchState = matchStateEoG(
             mRecord.matchState,
             scoreAsRed(1),
             eog()
         )
-        const mRecordEoG = setEoGRecord(
+        const mRecordEoG = eogRecord(
             mRecord,
             eogMatchState,
             plyRecordForEoG(scoreAsRed(1), SGResult.REDWON, eog())
@@ -91,9 +91,9 @@ describe('matchRecord(crawford rule)', () => {
         const mRecord2 = recordFinishedGame(
             mRecordEoG
         ) as MatchRecordInPlay<undefined>
-        const mRecord2EoG = setEoGRecord(
+        const mRecord2EoG = eogRecord(
             mRecord2,
-            matchStateEOG(mRecord2.matchState, scoreAsWhite(1), eog()),
+            matchStateEoG(mRecord2.matchState, scoreAsWhite(1), eog()),
             plyRecordForEoG(scoreAsWhite(1), SGResult.WHITEWON, eog())
         )
         // Crawfordになった(1:1=>2:1)
@@ -104,9 +104,9 @@ describe('matchRecord(crawford rule)', () => {
         expect(mRecord3.curGameRecord.isCrawford).toBeTruthy()
 
         // 次からはCrawfordではない(2:1=>2:2)
-        const mRecord3EoG = setEoGRecord(
+        const mRecord3EoG = eogRecord(
             mRecord3,
-            matchStateEOG(mRecord3.matchState, scoreAsRed(1), eog()),
+            matchStateEoG(mRecord3.matchState, scoreAsRed(1), eog()),
             plyRecordForEoG(scoreAsRed(1), SGResult.REDWON, eog())
         )
         expect(mRecord3EoG.matchState.isCrawfordNext).toBeFalsy()
@@ -115,9 +115,9 @@ describe('matchRecord(crawford rule)', () => {
             mRecord3EoG
         ) as MatchRecordInPlay<undefined>
         expect(mRecord4.curGameRecord.isCrawford).toBeFalsy()
-        const mRecord4EoG = setEoGRecord(
+        const mRecord4EoG = eogRecord(
             mRecord4,
-            matchStateEOG(mRecord4.matchState, scoreAsWhite(1), eog()),
+            matchStateEoG(mRecord4.matchState, scoreAsWhite(1), eog()),
             plyRecordForEoG(scoreAsWhite(1), SGResult.WHITEWON, eog())
         )
         const mRecordEoM = recordFinishedGame(mRecord4EoG)

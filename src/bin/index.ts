@@ -25,13 +25,13 @@ import {
     matchRecord,
     MatchRecordEoG,
     MatchRecordInPlay,
-    setEoGRecord,
+    eogRecord,
 } from '../records/MatchRecord'
 import { SGResult } from '../records/SGResult'
 import { formatMatchRecord } from '../records/utils/formatMatchRecord'
 import {
-    matchStateEOG,
-    MatchStateEOG,
+    matchStateEoG,
+    MatchStateEoG,
     matchStateForUnlimitedMatch,
 } from '../dispatchers/MatchState'
 
@@ -169,12 +169,12 @@ function xgDriver(conf: GameConf): Driver {
             )
         },
         doEoG: (evt) => {
-            const matchEoG: MatchStateEOG = matchStateEOG(
+            const matchEoG: MatchStateEoG = matchStateEoG(
                 record.match.matchState,
                 evt.stake,
                 evt.eogStatus
             )
-            record.eog = setEoGRecord(
+            record.eog = eogRecord(
                 record.match,
                 matchEoG,
                 plyRecordForEoG(evt.stake, evt.sgResult, evt.eogStatus)

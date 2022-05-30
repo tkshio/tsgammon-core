@@ -19,7 +19,6 @@ export type GameRecord<T> = GameRecordEoG<T> | GameRecordInPlay<T>
 export type GameRecordEoG<T> = _GameRecord<T> & {
     eogRecord: PlyRecordEoG
     isEoG: true
-    scoreAfter: Score
 }
 
 /**
@@ -60,13 +59,11 @@ export function initGameRecord<T>(matchState: MatchState): GameRecordInPlay<T> {
  */
 export function eogGameRecord<T>(
     curGameRecord: GameRecordInPlay<T>,
-    eogRecord: PlyRecordEoG,
-    scoreAfter: Score
+    eogRecord: PlyRecordEoG
 ): GameRecordEoG<T> {
     return {
         ...curGameRecord,
         isEoG: true,
         eogRecord,
-        scoreAfter,
     }
 }
