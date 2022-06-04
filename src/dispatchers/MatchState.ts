@@ -7,6 +7,7 @@ export type MatchState = MatchStateInPlay | MatchStateEoG
 type _MatchState = {
     matchLength: number
     scoreBefore: Score
+    score: Score
     stakeConf: StakeConf
     isCrawford: boolean
 }
@@ -48,6 +49,7 @@ function matchStateInPlay(
         isEoG: false,
         matchLength,
         scoreBefore,
+        score: scoreBefore,
         stakeConf: { jacobyRule },
         isCrawford,
     }
@@ -62,7 +64,7 @@ export function matchStateEoG(
     return {
         ...matchState,
         isEoG: true,
-        scoreBefore: matchState.scoreBefore,
+        score: scoreAfter,
         stake,
         eogStatus,
         scoreAfter,

@@ -40,6 +40,7 @@ describe('toMatchID()', () => {
         const matchState: MatchStateInPlay = {
             matchLength: 9,
             scoreBefore: score({ redScore: 2, whiteScore: 4 }),
+            score: score({ redScore: 2, whiteScore: 4 }),
             stakeConf: { jacobyRule: false },
             isCrawford: false,
             isEoG: false,
