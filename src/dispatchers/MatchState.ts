@@ -26,27 +26,27 @@ export function matchStateForUnlimitedMatch(
     scoreBefore: Score = score(),
     jacobyRule = true
 ) {
-    return matchStateInPlay(0, scoreBefore, { jacobyRule })
+    return matchStateInPlay(0, scoreBefore, jacobyRule)
 }
 
 export function matchStateForPointMatch(
     matchLength: number,
     scoreBefore: Score = score()
 ): MatchStateInPlay {
-    return matchStateInPlay(matchLength, scoreBefore, { jacobyRule: false })
+    return matchStateInPlay(matchLength, scoreBefore, false)
 }
 
-export function matchStateInPlay(
+function matchStateInPlay(
     matchLength: number,
     scoreBefore: Score,
-    stakeConf: StakeConf = { jacobyRule: false },
+    jacobyRule: boolean,
     isCrawford = false
 ): MatchStateInPlay {
     return {
         isEoG: false,
         matchLength,
         scoreBefore,
-        stakeConf,
+        stakeConf: { jacobyRule },
         isCrawford,
     }
 }
@@ -71,6 +71,15 @@ export function matchStateEoG(
             scoreAfter
         ),
     }
+}
+
+export function matchStateNewGame(matchState: MatchStateEoG) {
+    return matchStateInPlay(
+        matchState.matchLength,
+        matchState.scoreAfter,
+        matchState.stakeConf.jacobyRule,
+        matchState.isCrawfordNext
+    )
 }
 
 function isCrawfordNext(

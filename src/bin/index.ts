@@ -1,39 +1,35 @@
 #!/usr/bin/env node
 
-import { simpleNNEngine } from '../engines/SimpleNNGammon'
 import {
     AbsoluteMove,
     absoluteMovesRed,
     absoluteMovesWhite,
 } from '../AbsoluteMove'
 import { BoardState, boardState } from '../BoardState'
-import { EOGStatus } from '../EOGStatus'
 import { BoardStateNode, boardStateNode } from '../BoardStateNode'
 import { Dice, DiceRoll } from '../Dices'
+import { matchStateForUnlimitedMatch } from '../dispatchers/MatchState'
+import { simpleNNEngine } from '../engines/SimpleNNGammon'
+import { EOGStatus } from '../EOGStatus'
 import { GameConf, standardConf } from '../GameConf'
 import { Ply } from '../Ply'
-import { Score, score, scoreAsRed, scoreAsWhite } from '../Score'
-import { DiceSource, randomDiceSource } from '../utils/DiceSource'
-import { formatStake } from '../utils/formatStake'
-import { formatBoard } from '../utils/formatBoard'
-import { formatPly } from '../utils/formatPly'
-import { toPositionID } from '../utils/toPositionID'
-import { MoveFormatDirection } from '../utils/formatAbsMove'
-import { plyRecordForCheckerPlay, plyRecordForEoG } from '../records/PlyRecord'
 import {
     addPlyRecord,
+    eogRecord,
     matchRecord,
     MatchRecordEoG,
     MatchRecordInPlay,
-    eogRecord,
 } from '../records/MatchRecord'
+import { plyRecordForCheckerPlay, plyRecordForEoG } from '../records/PlyRecord'
 import { SGResult } from '../records/SGResult'
 import { formatMatchRecord } from '../records/utils/formatMatchRecord'
-import {
-    matchStateEoG,
-    MatchStateEoG,
-    matchStateForUnlimitedMatch,
-} from '../dispatchers/MatchState'
+import { Score, score, scoreAsRed, scoreAsWhite } from '../Score'
+import { DiceSource, randomDiceSource } from '../utils/DiceSource'
+import { MoveFormatDirection } from '../utils/formatAbsMove'
+import { formatBoard } from '../utils/formatBoard'
+import { formatPly } from '../utils/formatPly'
+import { formatStake } from '../utils/formatStake'
+import { toPositionID } from '../utils/toPositionID'
 
 const engine = simpleNNEngine
 const conf = { ...standardConf, jacobyRule: false }
@@ -169,14 +165,8 @@ function xgDriver(conf: GameConf): Driver {
             )
         },
         doEoG: (evt) => {
-            const matchEoG: MatchStateEoG = matchStateEoG(
-                record.match.matchState,
-                evt.stake,
-                evt.eogStatus
-            )
             record.eog = eogRecord(
                 record.match,
-                matchEoG,
                 plyRecordForEoG(evt.stake, evt.sgResult, evt.eogStatus)
             )
         },

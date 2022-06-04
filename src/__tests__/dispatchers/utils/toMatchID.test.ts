@@ -14,7 +14,7 @@ import { GameState } from '../../../dispatchers/GameState'
 import {
     MatchState,
     matchStateForPointMatch,
-    matchStateInPlay,
+    matchStateForUnlimitedMatch,
     MatchStateInPlay,
 } from '../../../dispatchers/MatchState'
 import {
@@ -61,9 +61,7 @@ describe('toMatchID()', () => {
         cbState: cbToRollRed(cube(1), 'Skip'),
         sgState: toRollStateRed(boardState()),
     }
-    const _matchState: MatchState = matchStateInPlay(0, score(), {
-        jacobyRule: true,
-    })
+    const _matchState: MatchState = matchStateForUnlimitedMatch(score(), true)
 
     test('encodes opening state of unlimited game with red6/white4', () => {
         const {

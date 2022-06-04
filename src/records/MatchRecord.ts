@@ -1,7 +1,8 @@
 import {
+    matchStateEoG,
     MatchStateEoG,
-    matchStateInPlay,
     MatchStateInPlay,
+    matchStateNewGame,
 } from '../dispatchers/MatchState'
 import { GameConf, standardConf } from '../GameConf'
 import {
@@ -94,12 +95,7 @@ export function recordFinishedGame<T>(
     if (matchState.isEoM) {
         return matchRecord
     } else {
-        const matchStateNext = matchStateInPlay(
-            matchState.matchLength,
-            matchState.scoreAfter,
-            matchState.stakeConf,
-            matchState.isCrawfordNext
-        )
+        const matchStateNext = matchStateNewGame(matchState)
         return {
             ...matchRecord,
             isEoG: false,
@@ -136,12 +132,7 @@ export function trimPlyRecords<T>(
             : matchRecord.curGameRecord.plyRecords.length - 1
 
     const matchState: MatchStateInPlay = matchRecord.isEoG
-        ? matchStateInPlay(
-              matchRecord.matchState.matchLength,
-              matchRecord.matchState.scoreBefore,
-              matchRecord.matchState.stakeConf,
-              matchRecord.matchState.isCrawford
-          )
+        ? matchStateNewGame(matchRecord.matchState)
         : matchRecord.matchState
     return {
         ...matchRecord,
@@ -165,9 +156,14 @@ export function trimPlyRecords<T>(
  */
 export function eogRecord<T>(
     matchRecord: MatchRecordInPlay<T>,
-    matchState: MatchStateEoG,
     eogRecord: PlyRecordEoG
 ): MatchRecordEoG<T> {
+    const matchState = matchStateEoG(
+        matchRecord.matchState,
+        eogRecord.stake,
+        eogRecord.eogStatus
+    )
+
     const curGameRecord = eogGameRecord(matchRecord.curGameRecord, eogRecord)
     return {
         ...matchRecord,
