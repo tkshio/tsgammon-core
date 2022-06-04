@@ -8,7 +8,7 @@ import {
     addPlyRecord,
     discardCurrentGame,
     eogRecord,
-    matchRecord,
+    matchRecordInPlay,
     MatchRecordInPlay,
     recordFinishedGame,
 } from '../../records/MatchRecord'
@@ -21,14 +21,20 @@ import { score, scoreAsRed, scoreAsWhite } from '../../Score'
 
 describe('MatchRecord', () => {
     test('holds match records length', () => {
-        const mRecord = matchRecord(standardConf, matchStateForPointMatch(5))
+        const mRecord = matchRecordInPlay(
+            standardConf,
+            matchStateForPointMatch(5)
+        )
         expect(mRecord.matchState.matchLength).toBe(5)
     })
     test('holds record for unlimited match when matchLength omitted', () => {
-        const mRecord = matchRecord(undefined, matchStateForUnlimitedMatch())
+        const mRecord = matchRecordInPlay(
+            undefined,
+            matchStateForUnlimitedMatch()
+        )
         expect(mRecord.matchState.matchLength).toBe(0)
     })
-    const mRecord = matchRecord(undefined, matchStateForUnlimitedMatch())
+    const mRecord = matchRecordInPlay(undefined, matchStateForUnlimitedMatch())
     const ply = { moves: [], dices: [], isRed: true }
     const plyRecord = plyRecordForCheckerPlay(ply)
     const mRecordAfterPlay = addPlyRecord(mRecord, plyRecord, {
@@ -58,7 +64,7 @@ describe('MatchRecord', () => {
 })
 
 describe('matchRecord(crawford rule)', () => {
-    const mRecord = matchRecord(
+    const mRecord = matchRecordInPlay(
         standardConf,
         matchStateForPointMatch(3, score({ whiteScore: 1, redScore: 0 }))
     )

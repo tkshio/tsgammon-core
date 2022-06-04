@@ -40,7 +40,9 @@ type _GameRecord<T> = {
  * @param scoreBefore ゲーム開始時の累計点
  * @returns 進行中のゲームの記録
  */
-export function initGameRecord<T>(matchState: MatchState): GameRecordInPlay<T> {
+export function gameRecordInPlay<T>(
+    matchState: MatchState
+): GameRecordInPlay<T> {
     const { scoreBefore, isCrawford } = matchState
     return {
         scoreBefore,
@@ -57,7 +59,7 @@ export function initGameRecord<T>(matchState: MatchState): GameRecordInPlay<T> {
  * @param eogRecord ゲームの結果の記録
  * @returns 生成された終局後のゲームの記録
  */
-export function eogGameRecord<T>(
+export function gameRecordEoG<T>(
     curGameRecord: GameRecordInPlay<T>,
     eogRecord: PlyRecordEoG
 ): GameRecordEoG<T> {

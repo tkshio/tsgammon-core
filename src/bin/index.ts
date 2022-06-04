@@ -16,7 +16,7 @@ import { Ply } from '../Ply'
 import {
     addPlyRecord,
     eogRecord,
-    matchRecord,
+    matchRecordInPlay,
     MatchRecordEoG,
     MatchRecordInPlay,
 } from '../records/MatchRecord'
@@ -153,7 +153,7 @@ function xgDriver(conf: GameConf): Driver {
         match: MatchRecordInPlay<undefined>
         eog?: MatchRecordEoG<undefined>
     } = {
-        match: matchRecord(conf, matchState),
+        match: matchRecordInPlay(conf, matchState),
     }
     return {
         ...defaultDriver,

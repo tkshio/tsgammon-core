@@ -24,16 +24,18 @@ export type MatchStateEoG = _MatchState & {
 }
 export function matchStateForUnlimitedMatch(
     scoreBefore: Score = score(),
-    jacobyRule = true
+    jacobyRule = true,
+    isCrawford = false
 ) {
-    return matchStateInPlay(0, scoreBefore, jacobyRule)
+    return matchStateInPlay(0, scoreBefore, jacobyRule, isCrawford)
 }
 
 export function matchStateForPointMatch(
     matchLength: number,
-    scoreBefore: Score = score()
+    scoreBefore: Score = score(),
+    isCrawford = false
 ): MatchStateInPlay {
-    return matchStateInPlay(matchLength, scoreBefore, false)
+    return matchStateInPlay(matchLength, scoreBefore, false, isCrawford)
 }
 
 function matchStateInPlay(

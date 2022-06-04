@@ -6,10 +6,10 @@ import {
 } from '../dispatchers/MatchState'
 import { GameConf, standardConf } from '../GameConf'
 import {
-    eogGameRecord,
+    gameRecordEoG,
     GameRecordEoG,
     GameRecordInPlay,
-    initGameRecord,
+    gameRecordInPlay,
 } from './GameRecord'
 import { PlyRecordEoG, PlyRecordInPlay } from './PlyRecord'
 
@@ -38,11 +38,11 @@ export type MatchRecordEoG<T> = _MatchRecord<T> & {
     curGameRecord: GameRecordEoG<T>
 }
 
-export function matchRecord<T>(
+export function matchRecordInPlay<T>(
     conf: GameConf = standardConf,
     matchState: MatchStateInPlay
 ): MatchRecordInPlay<T> {
-    const curGameRecord = initGameRecord<T>(matchState)
+    const curGameRecord = gameRecordInPlay<T>(matchState)
     return {
         isEoG: false,
         conf,
@@ -103,7 +103,7 @@ export function recordFinishedGame<T>(
             gameRecords: matchRecord.gameRecords.concat(
                 matchRecord.curGameRecord
             ),
-            curGameRecord: initGameRecord(matchStateNext),
+            curGameRecord: gameRecordInPlay(matchStateNext),
         }
     }
 }
@@ -112,7 +112,7 @@ export function discardCurrentGame<T>(
 ): MatchRecordInPlay<T> {
     return {
         ...matchRecord,
-        curGameRecord: initGameRecord(matchRecord.matchState),
+        curGameRecord: gameRecordInPlay(matchRecord.matchState),
     }
 }
 
@@ -164,7 +164,7 @@ export function eogRecord<T>(
         eogRecord.eogStatus
     )
 
-    const curGameRecord = eogGameRecord(matchRecord.curGameRecord, eogRecord)
+    const curGameRecord = gameRecordEoG(matchRecord.curGameRecord, eogRecord)
     return {
         ...matchRecord,
         isEoG: true,
