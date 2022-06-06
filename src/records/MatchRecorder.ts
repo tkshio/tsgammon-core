@@ -1,4 +1,3 @@
-import { BoardStateNode } from '../BoardStateNode'
 import { BGState } from '../dispatchers/BGState'
 import { CubeGameListeners } from '../dispatchers/CubeGameDispatcher'
 import { CubeGameEventHandlers } from '../dispatchers/CubeGameEventHandlers'
@@ -32,9 +31,9 @@ export function matchRecorderAsSGAddOn(matchRecorder: MatchRecorder<SGState>): {
 } {
     return {
         eventHandlers: {
-            onCommit: (sgState: SGInPlay, node: BoardStateNode) => {
+            onCommit: (sgState: SGInPlay) => {
                 matchRecorder.recordPly(
-                    plyRecordForCheckerPlay(sgState.toPly(node)),
+                    plyRecordForCheckerPlay(sgState.curPly),
                     sgState
                 )
             },

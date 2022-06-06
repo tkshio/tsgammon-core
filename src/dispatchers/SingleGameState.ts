@@ -9,11 +9,7 @@ import {
     makeMoveAbsoluteAsWhite,
 } from '../AbsoluteMove'
 import { BoardState } from '../BoardState'
-import {
-    BoardStateNode,
-    boardStateNode,
-    nodeWithEmptyDice,
-} from '../BoardStateNode'
+import { BoardStateNode, boardStateNode } from '../BoardStateNode'
 import { Dice, DicePip, DiceRoll } from '../Dices'
 import { EOGStatus } from '../EOGStatus'
 import { Move } from '../Move'
@@ -74,13 +70,11 @@ type _SGToRoll = _SGState & {
 export type SGToRollRed = _SGToRoll & {
     isRed: true
     doRoll: (dices: DiceRoll) => SGInPlayRed
-    lastState: () => SGInPlayWhite
 }
 
 export type SGToRollWhite = _SGToRoll & {
     isRed: false
     doRoll: (dices: DiceRoll) => SGInPlayWhite
-    lastState: () => SGInPlayRed
 }
 
 export type _SGEoG = _SGState & {
@@ -93,13 +87,11 @@ export type _SGEoG = _SGState & {
 export type SGEoGRedWon = _SGEoG & {
     result: SGResult.REDWON
     isRed: true
-    lastState: () => SGInPlayRed
 }
 
 export type SGEoGWhiteWon = _SGEoG & {
     result: SGResult.WHITEWON
     isRed: false
-    lastState: () => SGInPlayWhite
 }
 
 export function openingState(
@@ -240,39 +232,27 @@ function inPlayStateWhiteFromNode(
 
 function buildDoCheckerCommit<TOROLL extends SGToRoll, EOG extends SGEoG>(
     toPly: (board: BoardStateNode) => Ply,
-    toRollState: (
-        boardState: BoardState,
-        lastPly: Ply,
-        lastNode: BoardStateNode,
-        revertTo: BoardStateNode
-    ) => TOROLL,
-    toEoGState: (
-        stakeValue: number,
-        lastPly: Ply,
-        committed: BoardStateNode,
-        revertTo: BoardStateNode
-    ) => EOG
-): (committed: BoardStateNode, revertTo: BoardStateNode) => EOG | TOROLL {
-    return (committed: BoardStateNode, revertTo: BoardStateNode) => {
+    toRollState: (boardState: BoardState, lastPly: Ply) => TOROLL,
+    toEoGState: (stakeValue: number, committed: BoardStateNode) => EOG
+): (committed: BoardStateNode) => EOG | TOROLL {
+    return (committed: BoardStateNode) => {
         const ply = toPly(committed)
         const boardState = committed.board
         const eogStatus = boardState.eogStatus()
 
         if (eogStatus.isEndOfGame) {
-            return toEoGState(1, ply, committed, revertTo)
+            return toEoGState(1, committed)
         } else {
             // 手番プレイヤーと相対表記の盤面とをそれぞれ入れ替える
             const nextBoardState = boardState.revert()
-            return toRollState(nextBoardState, ply, committed, revertTo)
+            return toRollState(nextBoardState, ply)
         }
     }
 }
 
 export function toRollStateRed(
     boardState: BoardState,
-    lastPly: Ply = { moves: [], dices: [], isRed: true },
-    lastNode: BoardStateNode = nodeWithEmptyDice(boardState.revert()),
-    revertTo: BoardStateNode = nodeWithEmptyDice(boardState.revert())
+    lastPly: Ply = { moves: [], dices: [], isRed: true }
 ): SGToRollRed {
     const absBoard = redViewAbsoluteBoard(boardState)
     return {
@@ -281,7 +261,6 @@ export function toRollStateRed(
         absBoard,
 
         isRed: true,
-        lastState: () => inPlayStateWhiteFromNode(lastNode, lastPly, revertTo),
         lastPly,
 
         doRoll: (dices: DiceRoll): SGInPlayRed => {
@@ -292,9 +271,7 @@ export function toRollStateRed(
 
 export function toRollStateWhite(
     boardState: BoardState,
-    lastPly: Ply = { moves: [], dices: [], isRed: false },
-    lastNode: BoardStateNode = nodeWithEmptyDice(boardState.revert()),
-    revertTo: BoardStateNode = nodeWithEmptyDice(boardState.revert())
+    lastPly: Ply = { moves: [], dices: [], isRed: false }
 ): SGToRollWhite {
     const absBoard = whiteViewAbsoluteBoard(boardState)
     return {
@@ -303,7 +280,6 @@ export function toRollStateWhite(
         absBoard,
 
         isRed: false,
-        lastState: () => inPlayStateRedFromNode(lastNode, lastPly, revertTo),
         lastPly,
 
         doRoll: (dices: DiceRoll): SGInPlayWhite => {
@@ -314,9 +290,7 @@ export function toRollStateWhite(
 
 export function eogStateRed(
     stakeValue: number,
-    lastPly: Ply,
-    committed: BoardStateNode,
-    revertTo: BoardStateNode
+    committed: BoardStateNode
 ): SGEoGRedWon {
     const board = committed.board
     const eogStatus = board.eogStatus()
@@ -331,15 +305,12 @@ export function eogStateRed(
         ),
         result: SGResult.REDWON,
         isRed: true,
-        lastState: () => inPlayStateRedFromNode(committed, lastPly, revertTo),
     }
 }
 
 export function eogStateWhite(
     stakeValue: number,
-    lastPly: Ply,
-    committed: BoardStateNode,
-    revertTo: BoardStateNode
+    committed: BoardStateNode
 ): SGEoGWhiteWon {
     const board = committed.board
     const eogStatus = board.eogStatus()
@@ -349,7 +320,6 @@ export function eogStateWhite(
         ...eogState(eogStatus, stake, whiteViewAbsoluteBoard(board), board),
         result: SGResult.WHITEWON,
         isRed: false,
-        lastState: () => inPlayStateWhiteFromNode(committed, lastPly, revertTo),
     }
 }
 

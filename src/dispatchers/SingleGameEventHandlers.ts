@@ -1,4 +1,3 @@
-import { BoardStateNode } from '../BoardStateNode'
 import { DiceRoll } from '../Dices'
 import {
     EventHandlerAddOn,
@@ -14,12 +13,12 @@ import {
     SingleGameListeners,
 } from './SingleGameDispatcher'
 import { SGInPlay, SGOpening, SGState, SGToRoll } from './SingleGameState'
-import { concat0, concat1, concat2 } from './utils/concat'
+import { concat0, concat1 } from './utils/concat'
 
 export type SingleGameEventHandlers = {
     onStartGame: () => void
 
-    onCommit: (sgState: SGInPlay, node: BoardStateNode) => void
+    onCommit: (sgState: SGInPlay) => void
     onRoll: (sgState: SGToRoll) => void
     onRollOpening: (sgState: SGOpening) => void
 }
@@ -69,8 +68,8 @@ export function sgEventHandlersBuilder(
                     const result = dispatcher.doStartGame()
                     result(listeners)
                 },
-                onCommit: (state, node) => {
-                    const result = dispatcher.doCommitCheckerPlay(state, node)
+                onCommit: (state) => {
+                    const result = dispatcher.doCommitCheckerPlay(state)
                     result(listeners)
                 },
                 onRoll: (sgState: SGToRoll) =>
@@ -100,7 +99,7 @@ function concatSGHandlers(
         ): Partial<SingleGameEventHandlers> => {
             return {
                 onStartGame: concat0(prev?.onStartGame, cur?.onStartGame),
-                onCommit: concat2(prev?.onCommit, cur?.onCommit),
+                onCommit: concat1(prev?.onCommit, cur?.onCommit),
                 onRoll: concat1(prev?.onRoll, cur?.onRoll),
                 onRollOpening: concat1(prev?.onRollOpening, cur?.onRollOpening),
             }

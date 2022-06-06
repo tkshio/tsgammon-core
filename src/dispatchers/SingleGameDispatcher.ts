@@ -1,4 +1,3 @@
-import { BoardStateNode } from '../BoardStateNode'
 import { DiceRoll } from '../Dices'
 import {
     SGEoG,
@@ -25,8 +24,7 @@ export type SingleGameDispatcher = {
         >
     ) => void
     doCommitCheckerPlay: (
-        state: SGInPlay,
-        curBoardState: BoardStateNode
+        state: SGInPlay
     ) => (
         listener: Partial<
             Pick<SingleGameListeners, 'onEndOfGame' | 'onAwaitRoll'>
@@ -81,12 +79,12 @@ export function singleGameDispatcher(): SingleGameDispatcher {
                 }
             }
         },
-        doCommitCheckerPlay: (
-            state: SGInPlay,
-            curBoardState: BoardStateNode
-        ) => {
+        doCommitCheckerPlay: (state: SGInPlay) => {
             const revertTo = state.revertTo
-            const nextState = state.doCheckerPlayCommit(curBoardState, revertTo)
+            const nextState = state.doCheckerPlayCommit(
+                state.boardStateNode,
+                revertTo
+            )
             return (
                 listener: Partial<
                     Pick<SingleGameListeners, 'onEndOfGame' | 'onAwaitRoll'>

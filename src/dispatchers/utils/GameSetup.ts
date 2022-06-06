@@ -155,22 +155,12 @@ export function toSGState(gameState: GameSetup = {}): SGState {
         case GameStatus.EOG_REDWON: {
             const lastBoardState = boardState(gameState.absPos).revert()
             const lastStateNode = nodeWithEmptyDice(lastBoardState)
-            return eogStateRed(
-                1,
-                gameState.lastPly ?? { moves: [], dices: [], isRed: false },
-                lastStateNode,
-                lastStateNode
-            )
+            return eogStateRed(1, lastStateNode)
         }
         case GameStatus.EOG_WHITEWON: {
             const lastBoardState = boardState(gameState.absPos).revert()
             const lastStateNode = nodeWithEmptyDice(lastBoardState)
-            return eogStateWhite(
-                1,
-                gameState.lastPly ?? { moves: [], dices: [], isRed: false },
-                lastStateNode,
-                lastStateNode
-            )
+            return eogStateWhite(1, lastStateNode)
         }
     }
 }

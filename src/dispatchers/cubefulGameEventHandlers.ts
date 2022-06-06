@@ -1,4 +1,3 @@
-import { BoardStateNode } from '../BoardStateNode'
 import { BGEventHandlers } from './BGEventHandlers'
 import { BGState } from './BGState'
 import { cubeGameDispatcher, CubeGameListeners } from './CubeGameDispatcher'
@@ -70,11 +69,8 @@ export function cubefulGameEventHandlers(
             sgEventHandlers(bgState.cbState).onRollOpening(bgState.sgState)
         },
 
-        onCommit: (
-            bgState: { cbState: CBInPlay; sgState: SGInPlay },
-            node: BoardStateNode
-        ) => {
-            sgEventHandlers(bgState.cbState).onCommit(bgState.sgState, node)
+        onCommit: (bgState: { cbState: CBInPlay; sgState: SGInPlay }) => {
+            sgEventHandlers(bgState.cbState).onCommit(bgState.sgState)
         },
 
         onRoll: (bgState: {

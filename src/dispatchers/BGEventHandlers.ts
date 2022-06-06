@@ -1,4 +1,3 @@
-import { BoardStateNode } from '../BoardStateNode'
 import {
     CBAction,
     CBInPlay,
@@ -13,10 +12,7 @@ import { SGInPlay, SGOpening, SGState, SGToRoll } from './SingleGameState'
 export type BGEventHandlers = {
     onRollOpening: (bgState: { cbState: CBOpening; sgState: SGOpening }) => void
 
-    onCommit: (
-        bgState: { cbState: CBInPlay; sgState: SGInPlay },
-        node: BoardStateNode
-    ) => void
+    onCommit: (bgState: { cbState: CBInPlay; sgState: SGInPlay }) => void
 
     onRoll: (bgState: {
         cbState: CBToRoll | CBAction
@@ -38,9 +34,9 @@ export function asSGEventHandlers(
         onStartGame: () => {
             handlers.onStartGame?.()
         },
-        onCommit: (sgState: SGInPlay, node: BoardStateNode) => {
+        onCommit: (sgState: SGInPlay) => {
             if (cbState.tag === 'CBInPlay') {
-                handlers.onCommit?.({ cbState, sgState }, node)
+                handlers.onCommit?.({ cbState, sgState })
             }
         },
         onRoll: (sgState: SGToRoll) => {
