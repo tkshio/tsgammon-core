@@ -34,38 +34,16 @@ export function checkerPlayDispatcher(
         doCommitCheckerPlay,
         doRedo,
     }
-
     function doCheckerPlay(
         state: CheckerPlayState,
         absPos: number,
         dices: Dice[]
     ) {
-        const pos = state.toPos(absPos)
-
-        // Board上の実配置に基づき、小さい目を先に使うかどうかを判定する
-        // ゾロ目でなく、両方使える時で、左側が小さい目の時だけ、
-        // 小さい方が優先
-        const useMinorFirst: boolean =
-            dices.length === 2 &&
-            dices[0].pip < dices[1].pip &&
-            !dices[0].used &&
-            !dices[1].used
-
-        const node = wrap(state.curBoardState)
-            .apply((node) => findMove(node, pos, useMinorFirst))
-            .or((node) => makePoint(node, pos)).unwrap
-        if (node.hasValue) {
-            const stateAfterMove: CheckerPlayState = {
-                ...state,
-                curBoardState: node,
-                absBoard: state.toAbsBoard(node.board),
-                curPly: state.toPly(node),
-                isUndoable: true,
-            }
-            listeners.onCheckerPlay(stateAfterMove)
+        const ret = applyCheckerPlay(state, absPos, dices)
+        if (ret.isValid) {
+            listeners.onCheckerPlay(ret.state)
         }
     }
-
     function doRevertDices(state: CheckerPlayState) {
         const reverted = { ...state, revertDicesFlag: !state.revertDicesFlag }
         listeners.onRevertDices(reverted)
@@ -100,6 +78,40 @@ export function checkerPlayDispatcher(
         listeners.onRedo(state)
     }
 }
+
+export function applyCheckerPlay(
+    state: CheckerPlayState,
+    absPos: number,
+    dices: Dice[]
+): { isValid: true; state: CheckerPlayState } | { isValid: false } {
+    const pos = state.toPos(absPos)
+
+    // Board上の実配置に基づき、小さい目を先に使うかどうかを判定する
+    // ゾロ目でなく、両方使える時で、左側が小さい目の時だけ、
+    // 小さい方が優先
+    const useMinorFirst: boolean =
+        dices.length === 2 &&
+        dices[0].pip < dices[1].pip &&
+        !dices[0].used &&
+        !dices[1].used
+
+    const node = wrap(state.curBoardState)
+        .apply((node) => findMove(node, pos, useMinorFirst))
+        .or((node) => makePoint(node, pos)).unwrap
+    return node.hasValue
+        ? {
+              isValid: true,
+              state: {
+                  ...state,
+                  curBoardState: node,
+                  absBoard: state.toAbsBoard(node.board),
+                  curPly: state.toPly(node),
+                  isUndoable: true,
+              },
+          }
+        : { isValid: false }
+}
+
 export function fill(
     listeners: Partial<CheckerPlayListeners>
 ): CheckerPlayListeners {

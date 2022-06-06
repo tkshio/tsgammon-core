@@ -16,13 +16,14 @@ import {
     plyRecordForTake,
     plyRecordForPass,
 } from './PlyRecord'
+import { PlyStateRecord } from './PlyStateRecord'
 import { SGResult } from './SGResult'
 
 export type MatchRecorder<T> = {
     recordPly: (plyRecord: PlyRecordInPlay, lastState: T) => void
     recordEoG: (plyRecord: PlyRecordEoG) => void
     resetCurGame: () => void
-    resumeTo: (index: number) => T
+    resumeTo: (index: number) => PlyStateRecord<T>
 }
 
 export function matchRecorderAsSGAddOn(matchRecorder: MatchRecorder<SGState>): {
