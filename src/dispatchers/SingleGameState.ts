@@ -54,6 +54,7 @@ export type SGInPlayRed = _SGInPlay & {
         boardStateNode: BoardStateNode,
         revertTo: BoardStateNode
     ) => SGToRollWhite | SGEoGRedWon
+    withNode: (boardStateNode: BoardStateNode) => SGInPlayRed
 }
 
 export type SGInPlayWhite = _SGInPlay & {
@@ -62,6 +63,7 @@ export type SGInPlayWhite = _SGInPlay & {
         boardStateNode: BoardStateNode,
         revertTo: BoardStateNode
     ) => SGToRollRed | SGEoGWhiteWon
+    withNode: (boardStateNode: BoardStateNode) => SGInPlayWhite
 }
 
 type _SGToRoll = _SGState & {
@@ -175,6 +177,9 @@ export function inPlayStateRedFromNode(
 
         isRed: true,
         doCheckerPlayCommit,
+        withNode: (node: BoardStateNode) => {
+            return inPlayStateRedFromNode(node, toPly(node), revertTo)
+        },
     }
 }
 
@@ -227,6 +232,9 @@ function inPlayStateWhiteFromNode(
 
         isRed: false,
         doCheckerPlayCommit,
+        withNode: (node: BoardStateNode) => {
+            return inPlayStateWhiteFromNode(node, toPly(node), revertTo)
+        },
     }
 }
 
