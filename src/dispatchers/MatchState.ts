@@ -77,6 +77,15 @@ export function matchStateEoG(
     }
 }
 
+export function matchStateLastGame(matchState: MatchStateEoG) {
+    return matchStateInPlay(
+        matchState.matchLength,
+        matchState.scoreBefore,
+        matchState.stakeConf.jacobyRule,
+        matchState.isCrawford
+    )
+}
+
 export function matchStateNewGame(matchState: MatchStateEoG) {
     return matchStateInPlay(
         matchState.matchLength,

@@ -2,6 +2,7 @@ import {
     matchStateEoG,
     MatchStateEoG,
     MatchStateInPlay,
+    matchStateLastGame,
     matchStateNewGame,
 } from '../dispatchers/MatchState'
 import { GameConf, standardConf } from '../GameConf'
@@ -132,7 +133,7 @@ export function trimPlyRecords<T>(
             : matchRecord.curGameRecord.plyRecords.length - 1
 
     const matchState: MatchStateInPlay = matchRecord.isEoG
-        ? matchStateNewGame(matchRecord.matchState)
+        ? matchStateLastGame(matchRecord.matchState)
         : matchRecord.matchState
     return {
         ...matchRecord,
