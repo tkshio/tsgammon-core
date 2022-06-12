@@ -1,4 +1,6 @@
 import { DiceRoll } from '../Dices'
+import { EOGStatus } from '../EOGStatus'
+import { SGResult } from '../records/SGResult'
 import {
     EventHandlerAddOn,
     EventHandlerBuilder,
@@ -21,6 +23,8 @@ export type SingleGameEventHandlers = {
     onCommit: (sgState: SGInPlay) => void
     onRoll: (sgState: SGToRoll) => void
     onRollOpening: (sgState: SGOpening) => void
+
+    onEndGame: (sgState: SGState, result: SGResult, eog: EOGStatus) => void
 }
 
 export type SGEventHandlerAddOn = EventHandlerAddOn<

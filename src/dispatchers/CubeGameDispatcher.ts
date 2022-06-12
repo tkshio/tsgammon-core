@@ -55,7 +55,7 @@ export type CubeGameDispatcher = {
     ) => void
     doEndOfCubeGame: (
         state: CBState,
-        result: SGResult.REDWON | SGResult.WHITEWON,
+        result: SGResult,
         eogStatus: EOGStatus
     ) => (
         listeners: Partial<Pick<CubeGameListeners, 'onEndOfCubeGame'>>
@@ -143,17 +143,13 @@ export function cubeGameDispatcher(
         return (
             listeners: Partial<Pick<CubeGameListeners, 'onStartCubeGame'>>
         ) => {
-            if (listeners.onStartCubeGame) {
-                listeners.onStartCubeGame()
-            }
+            listeners.onStartCubeGame?.()
         }
     }
     function doDouble(state: CBAction) {
         const nextState: CBResponse = state.doDouble()
         return (listeners: Partial<Pick<CubeGameListeners, 'onDouble'>>) => {
-            if (listeners.onDouble) {
-                listeners.onDouble(nextState)
-            }
+            listeners.onDouble?.(nextState)
         }
     }
 
@@ -162,18 +158,14 @@ export function cubeGameDispatcher(
         return (
             listeners: Partial<Pick<CubeGameListeners, 'onSkipCubeAction'>>
         ) => {
-            if (listeners.onSkipCubeAction) {
-                listeners.onSkipCubeAction(nextState)
-            }
+            listeners.onSkipCubeAction?.(nextState)
         }
     }
 
     function doTake(state: CBResponse) {
         const nextState: CBToRoll = state.doTake()
         return (listeners: Partial<Pick<CubeGameListeners, 'onTake'>>) => {
-            if (listeners.onTake) {
-                listeners.onTake(nextState)
-            }
+            listeners.onTake?.(nextState)
         }
     }
 
@@ -182,9 +174,7 @@ export function cubeGameDispatcher(
         return (
             listeners: Partial<Pick<CubeGameListeners, 'onEndOfCubeGame'>>
         ) => {
-            if (listeners.onEndOfCubeGame) {
-                listeners.onEndOfCubeGame(nextState)
-            }
+            listeners.onEndOfCubeGame?.(nextState)
         }
     }
 
@@ -200,13 +190,9 @@ export function cubeGameDispatcher(
             >
         ) => {
             if (nextState.tag === 'CBAction') {
-                if (listeners.onStartCubeAction) {
-                    listeners.onStartCubeAction(nextState)
-                }
+                listeners.onStartCubeAction?.(nextState)
             } else {
-                if (listeners.onSkipCubeAction) {
-                    listeners.onSkipCubeAction(nextState)
-                }
+                listeners.onSkipCubeAction?.(nextState)
             }
         }
     }
@@ -218,9 +204,7 @@ export function cubeGameDispatcher(
         return (
             listeners: Partial<Pick<CubeGameListeners, 'onAwaitCheckerPlay'>>
         ) => {
-            if (listeners.onAwaitCheckerPlay) {
-                listeners.onAwaitCheckerPlay(nextState)
-            }
+            listeners.onAwaitCheckerPlay?.(nextState)
         }
     }
 
@@ -229,15 +213,13 @@ export function cubeGameDispatcher(
         return (
             listeners: Partial<Pick<CubeGameListeners, 'onAwaitCheckerPlay'>>
         ) => {
-            if (listeners.onAwaitCheckerPlay) {
-                listeners.onAwaitCheckerPlay(nextState)
-            }
+            listeners.onAwaitCheckerPlay?.(nextState)
         }
     }
 
     function doEndOfCubeGame(
         state: CBState,
-        sgResult: SGResult.REDWON | SGResult.WHITEWON,
+        sgResult: SGResult,
         eogStatus: EOGStatus
     ) {
         const nextState: CBEoG = resultToCBEoG(
@@ -248,9 +230,7 @@ export function cubeGameDispatcher(
         return (
             listeners: Partial<Pick<CubeGameListeners, 'onEndOfCubeGame'>>
         ) => {
-            if (listeners.onEndOfCubeGame) {
-                listeners.onEndOfCubeGame(nextState)
-            }
+            listeners.onEndOfCubeGame?.(nextState)
         }
     }
 }

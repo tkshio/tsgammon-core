@@ -30,6 +30,10 @@ import {
     toRollStateRed,
     toRollStateWhite,
 } from '../SingleGameState'
+import {
+    redViewAbsoluteBoard,
+    whiteViewAbsoluteBoard,
+} from '../../AbsoluteBoardState'
 
 export enum GameStatus {
     OPENING,
@@ -154,13 +158,21 @@ export function toSGState(gameState: GameSetup = {}): SGState {
             return inPlayStateWhite(boardState(gameState.absPos), gameState)
         case GameStatus.EOG_REDWON: {
             const lastBoardState = boardState(gameState.absPos).revert()
-            const lastStateNode = nodeWithEmptyDice(lastBoardState)
-            return eogStateRed(1, lastStateNode)
+            return eogStateRed(
+                1,
+                eog(),
+                redViewAbsoluteBoard(lastBoardState),
+                lastBoardState
+            )
         }
         case GameStatus.EOG_WHITEWON: {
             const lastBoardState = boardState(gameState.absPos).revert()
-            const lastStateNode = nodeWithEmptyDice(lastBoardState)
-            return eogStateWhite(1, lastStateNode)
+            return eogStateWhite(
+                1,
+                eog(),
+                whiteViewAbsoluteBoard(lastBoardState),
+                lastBoardState
+            )
         }
     }
 }

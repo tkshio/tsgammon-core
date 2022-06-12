@@ -34,7 +34,7 @@ export type CubeGameEventHandlers = {
     onSkipCubeAction: (cbState: CBAction) => void
     onEndOfCubeGame: (
         cbState: CBState,
-        result: SGResult.REDWON | SGResult.WHITEWON,
+        result: SGResult,
         eogStatus: EOGStatus
     ) => void
 }
@@ -76,18 +76,22 @@ export function cbEventHandlersBuilder(
         handlers: CubeGameEventHandlers
     } {
         const { eventHandlers, listeners } = addOn
+        const base: CubeGameEventHandlers = {
+            onStartCubeGame,
+            onDouble,
+            onTake,
+            onPass,
+            onSkipCubeAction,
+            onStartCubeAction,
+            onStartOpeningCheckerPlay,
+            onStartCheckerPlay,
+            onEndOfCubeGame,
+        }
         return {
-            handlers: concatCBEventHandlers(eventHandlers, {
-                onStartCubeGame,
-                onDouble,
-                onTake,
-                onPass,
-                onSkipCubeAction,
-                onStartCubeAction,
-                onStartOpeningCheckerPlay,
-                onStartCheckerPlay,
-                onEndOfCubeGame,
-            }) as CubeGameEventHandlers,
+            handlers: concatCBEventHandlers(
+                eventHandlers,
+                base
+            ) as CubeGameEventHandlers,
         }
 
         function onStartCubeGame() {
@@ -131,7 +135,7 @@ export function cbEventHandlersBuilder(
 
         function onEndOfCubeGame(
             state: CBState,
-            sgResult: SGResult.REDWON | SGResult.WHITEWON,
+            sgResult: SGResult,
             eogStatus: EOGStatus
         ) {
             const result = dispatcher.doEndOfCubeGame(

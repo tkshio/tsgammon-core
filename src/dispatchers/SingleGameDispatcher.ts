@@ -1,5 +1,8 @@
 import { DiceRoll } from '../Dices'
+import { EOGStatus } from '../EOGStatus'
+import { SGResult } from '../records/SGResult'
 import {
+    resultToSGEoG,
     SGEoG,
     SGInPlay,
     SGOpening,
@@ -36,6 +39,11 @@ export type SingleGameDispatcher = {
     ) => (
         listener: Partial<Pick<SingleGameListeners, 'onStartCheckerPlay'>>
     ) => void
+    doEndOfGame: (
+        state: SGState,
+        result: SGResult,
+        eogStatus: EOGStatus
+    ) => (listeners: Partial<Pick<SingleGameListeners, 'onEndOfGame'>>) => void
 }
 
 export type SingleGameListeners = {
@@ -53,9 +61,7 @@ export function singleGameDispatcher(): SingleGameDispatcher {
             return (
                 listener: Partial<Pick<SingleGameListeners, 'onStartGame'>>
             ) => {
-                if (listener.onStartGame) {
-                    listener.onStartGame()
-                }
+                listener.onStartGame?.()
             }
         },
         doOpeningRoll: (state: SGOpening, dices: DiceRoll) => {
@@ -69,13 +75,9 @@ export function singleGameDispatcher(): SingleGameDispatcher {
                 >
             ) => {
                 if (nextState.tag === 'SGInPlay') {
-                    if (listener.onStartOpeningCheckerPlay) {
-                        listener.onStartOpeningCheckerPlay(nextState)
-                    }
+                    listener.onStartOpeningCheckerPlay?.(nextState)
                 } else {
-                    if (listener.onRerollOpening) {
-                        listener.onRerollOpening(nextState)
-                    }
+                    listener.onRerollOpening?.(nextState)
                 }
             }
         },
@@ -91,13 +93,9 @@ export function singleGameDispatcher(): SingleGameDispatcher {
                 >
             ) => {
                 if (nextState.tag === 'SGEoG') {
-                    if (listener.onEndOfGame) {
-                        listener.onEndOfGame(nextState)
-                    }
+                    listener.onEndOfGame?.(nextState)
                 } else {
-                    if (listener.onAwaitRoll) {
-                        listener.onAwaitRoll(nextState)
-                    }
+                    listener.onAwaitRoll?.(nextState)
                 }
             }
         },
@@ -108,9 +106,15 @@ export function singleGameDispatcher(): SingleGameDispatcher {
                     Pick<SingleGameListeners, 'onStartCheckerPlay'>
                 >
             ) => {
-                if (listener.onStartCheckerPlay) {
-                    listener.onStartCheckerPlay(nextState)
-                }
+                listener.onStartCheckerPlay?.(nextState)
+            }
+        },
+        doEndOfGame: (sgState: SGState, result: SGResult, eog: EOGStatus) => {
+            const nextState = resultToSGEoG(sgState, result, eog)
+            return (
+                listeners: Partial<Pick<SingleGameListeners, 'onEndOfGame'>>
+            ) => {
+                listeners.onEndOfGame?.(nextState)
             }
         },
     }

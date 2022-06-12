@@ -1,3 +1,5 @@
+import { EOGStatus } from '../EOGStatus'
+import { SGResult } from '../records/SGResult'
 import { BGEventHandlers } from './BGEventHandlers'
 import { BGState } from './BGState'
 import { cubeGameDispatcher, CubeGameListeners } from './CubeGameDispatcher'
@@ -93,6 +95,9 @@ export function cubefulGameEventHandlers(
         },
         onPass: (bgState: { cbState: CBResponse; sgState: SGState }) => {
             cbEventHandlers.onPass(bgState.cbState)
+        },
+        onEndGame: (bgState: BGState, result: SGResult, eog: EOGStatus) => {
+            cbEventHandlers.onEndOfCubeGame(bgState.cbState, result, eog)
         },
     }
     return {

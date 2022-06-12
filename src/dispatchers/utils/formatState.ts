@@ -84,9 +84,11 @@ function formatSGState(
             return formatPly(sgState.curPly)
         }
         case 'SGEoG': {
-            return `${sgState.isRed ? 'Red' : 'White'} wins ${
-                sgState.stake.value
-            }pt.`
+            return sgState.result === SGResult.NOGAME
+                ? 'No game'
+                : `${
+                      sgState.result === SGResult.REDWON ? 'Red' : 'White'
+                  } wins ${sgState.stake.value}pt.`
         }
     }
 }

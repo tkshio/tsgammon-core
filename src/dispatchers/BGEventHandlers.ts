@@ -1,3 +1,6 @@
+import { EOGStatus } from '../EOGStatus'
+import { SGResult } from '../records/SGResult'
+import { BGState } from './BGState'
 import {
     CBAction,
     CBInPlay,
@@ -24,6 +27,8 @@ export type BGEventHandlers = {
     onDouble: (bgState: { cbState: CBAction; sgState: SGState }) => void
     onTake: (bgState: { cbState: CBResponse; sgState: SGState }) => void
     onPass: (bgState: { cbState: CBResponse; sgState: SGState }) => void
+
+    onEndGame: (bgState: BGState, result: SGResult, eog: EOGStatus) => void
 }
 
 export function asSGEventHandlers(
@@ -48,6 +53,9 @@ export function asSGEventHandlers(
             if (cbState.tag === 'CBOpening') {
                 handlers.onRollOpening?.({ cbState, sgState })
             }
+        },
+        onEndGame: (sgState: SGState, result: SGResult, eog: EOGStatus) => {
+            handlers.onEndGame?.({ cbState, sgState }, result, eog)
         },
     }
 }

@@ -15,12 +15,12 @@ import { EOGStatus } from '../EOGStatus'
 import { Move } from '../Move'
 import { Ply } from '../Ply'
 import { SGResult } from '../records/SGResult'
-import { Score, scoreAsRed, scoreAsWhite } from '../Score'
+import { score, Score, scoreAsRed, scoreAsWhite } from '../Score'
 
 export type SGState = SGOpening | SGInPlay | SGToRoll | SGEoG
 export type SGInPlay = SGInPlayRed | SGInPlayWhite
 export type SGToRoll = SGToRollRed | SGToRollWhite
-export type SGEoG = SGEoGRedWon | SGEoGWhiteWon
+export type SGEoG = SGEoGRedWon | SGEoGWhiteWon | SGEoGNoGame
 
 type _SGState = {
     absBoard: AbsoluteBoardState
@@ -93,6 +93,9 @@ export type SGEoGWhiteWon = _SGEoG & {
     result: SGResult.WHITEWON
     isRed: false
 }
+export type SGEoGNoGame = _SGEoG & {
+    result: SGResult.NOGAME
+}
 
 export function openingState(
     boardState: BoardState,
@@ -152,7 +155,13 @@ export function inPlayStateRedFromNode(
     const doCheckerPlayCommit = buildDoCheckerCommit(
         toPly,
         toRollStateWhite,
-        eogStateRed
+        (stakeValue: number, eog: EOGStatus, committed: BoardStateNode) =>
+            eogStateRed(
+                stakeValue,
+                eog,
+                redViewAbsoluteBoard(committed.board),
+                committed.board
+            )
     )
 
     return {
@@ -207,7 +216,13 @@ function inPlayStateWhiteFromNode(
     const doCheckerPlayCommit = buildDoCheckerCommit(
         toPly,
         toRollStateRed,
-        eogStateWhite
+        (stakeValue: number, eog: EOGStatus, committed: BoardStateNode) =>
+            eogStateWhite(
+                stakeValue,
+                eog,
+                whiteViewAbsoluteBoard(committed.board),
+                committed.board
+            )
     )
 
     return {
@@ -233,7 +248,11 @@ function inPlayStateWhiteFromNode(
 function buildDoCheckerCommit<TOROLL extends SGToRoll, EOG extends SGEoG>(
     toPly: (board: BoardStateNode) => Ply,
     toRollState: (boardState: BoardState, lastPly: Ply) => TOROLL,
-    toEoGState: (stakeValue: number, committed: BoardStateNode) => EOG
+    toEoGState: (
+        stakeValue: number,
+        eog: EOGStatus,
+        committed: BoardStateNode
+    ) => EOG
 ): (committed: BoardStateNode) => EOG | TOROLL {
     return (committed: BoardStateNode) => {
         const ply = toPly(committed)
@@ -241,7 +260,7 @@ function buildDoCheckerCommit<TOROLL extends SGToRoll, EOG extends SGEoG>(
         const eogStatus = boardState.eogStatus()
 
         if (eogStatus.isEndOfGame) {
-            return toEoGState(1, committed)
+            return toEoGState(1, committed.board.eogStatus(), committed)
         } else {
             // 手番プレイヤーと相対表記の盤面とをそれぞれ入れ替える
             const nextBoardState = boardState.revert()
@@ -290,19 +309,14 @@ export function toRollStateWhite(
 
 export function eogStateRed(
     stakeValue: number,
-    committed: BoardStateNode
+    eogStatus: EOGStatus,
+    absBoard: AbsoluteBoardState,
+    boardState: BoardState
 ): SGEoGRedWon {
-    const board = committed.board
-    const eogStatus = board.eogStatus()
     const stake = scoreAsRed(eogStatus.calcStake(stakeValue))
 
     return {
-        ...eogState(
-            board.eogStatus(),
-            stake,
-            redViewAbsoluteBoard(board),
-            board
-        ),
+        ...eogState(eogStatus, stake, absBoard, boardState),
         result: SGResult.REDWON,
         isRed: true,
     }
@@ -310,19 +324,46 @@ export function eogStateRed(
 
 export function eogStateWhite(
     stakeValue: number,
-    committed: BoardStateNode
+    eogStatus: EOGStatus,
+    absBoard: AbsoluteBoardState,
+    boardState: BoardState
 ): SGEoGWhiteWon {
-    const board = committed.board
-    const eogStatus = board.eogStatus()
     const stake = scoreAsWhite(eogStatus.calcStake(stakeValue))
 
     return {
-        ...eogState(eogStatus, stake, whiteViewAbsoluteBoard(board), board),
+        ...eogState(eogStatus, stake, absBoard, boardState),
         result: SGResult.WHITEWON,
         isRed: false,
     }
 }
 
+function eogStateNogame(
+    eogStatus: EOGStatus,
+    absBoard: AbsoluteBoardState,
+    boardState: BoardState
+): SGEoG {
+    return {
+        ...eogState(eogStatus, score(), absBoard, boardState),
+        result: SGResult.NOGAME,
+    }
+}
+
+export function resultToSGEoG(
+    sgState: SGState,
+    sgResult: SGResult,
+    eogStatus: EOGStatus
+) {
+    const stakeValue = eogStatus.calcStake(1)
+    const { absBoard, boardState } = sgState
+    switch (sgResult) {
+        case SGResult.WHITEWON:
+            return eogStateWhite(stakeValue, eogStatus, absBoard, boardState)
+        case SGResult.REDWON:
+            return eogStateRed(stakeValue, eogStatus, absBoard, boardState)
+        case SGResult.NOGAME:
+            return eogStateNogame(eogStatus, absBoard, boardState)
+    }
+}
 function eogState(
     eogStatus: EOGStatus,
     stake: Score,

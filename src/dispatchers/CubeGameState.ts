@@ -1,7 +1,7 @@
 import { CubeOwner, CubeState } from '../CubeState'
 import { eog, EOGStatus } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
-import { Score, scoreAsRed, scoreAsWhite } from '../Score'
+import { score, Score, scoreAsRed, scoreAsWhite } from '../Score'
 import { applyStakeConf, StakeConf } from './StakeConf'
 
 export type CBState =
@@ -22,7 +22,7 @@ export type CBAction = CBActionRed | CBActionWhite
 export type CBResponse = CBResponseRed | CBResponseWhite
 export type CBToRoll = CBToRollRed | CBToRollWhite
 export type CBInPlay = CBInPlayRed | CBInPlayWhite
-export type CBEoG = CBEoGRedWon | CBEoGWhiteWon
+export type CBEoG = CBEoGRedWon | CBEoGWhiteWon | CBEoGNogame
 type _CBState = {
     cubeState: CubeState
 }
@@ -109,6 +109,9 @@ export type CBEoGRedWon = _CBEoG & {
 
 export type CBEoGWhiteWon = _CBEoG & {
     result: SGResult.WHITEWON
+}
+export type CBEoGNogame = _CBEoG & {
+    result: SGResult.NOGAME
 }
 
 export function cbOpening(cubeState: CubeState): CBOpening {
@@ -257,7 +260,7 @@ export function cbToRollWhite(
 
 export function resultToCBEoG(
     cubeState: CubeState,
-    sgResult: SGResult.WHITEWON | SGResult.REDWON,
+    sgResult: SGResult,
     eogStatus: EOGStatus
 ): CBEoG {
     switch (sgResult) {
@@ -265,6 +268,8 @@ export function resultToCBEoG(
             return cbEoGWhite(cubeState, eogStatus, false)
         case SGResult.REDWON:
             return cbEoGRed(cubeState, eogStatus, false)
+        case SGResult.NOGAME:
+            return cbEoGNogame(cubeState, eogStatus, false)
     }
 }
 
@@ -305,6 +310,27 @@ function cbEoGWhite(
             return {
                 ...applied,
                 stake: scoreAsWhite(applied.stake),
+            }
+        },
+    }
+}
+
+function cbEoGNogame(
+    cubeState: CubeState,
+    eogStatus: EOGStatus,
+    isWonByPass: boolean
+): CBEoGNogame {
+    return {
+        tag: 'CBEoG',
+        cubeState,
+        result: SGResult.NOGAME,
+        eogStatus,
+        isWonByPass,
+        calcStake: () => {
+            return {
+                stake: score(),
+                eogStatus,
+                jacobyApplied: false,
             }
         },
     }
