@@ -15,7 +15,7 @@ import {
     SingleGameListeners,
 } from './SingleGameDispatcher'
 import { SGInPlay, SGOpening, SGState, SGToRoll } from './SingleGameState'
-import { concat0, concat1 } from './utils/concat'
+import { concat0, concat1, concat3 } from './utils/concat'
 
 export type SingleGameEventHandlers = {
     onStartGame: () => void
@@ -66,27 +66,39 @@ export function sgEventHandlersBuilder(
         listeners: Partial<SingleGameListeners>
     }) {
         const { eventHandlers, listeners } = addOn
+        const base: SingleGameEventHandlers = {
+            onStartGame: () => {
+                const result = dispatcher.doStartGame()
+                result(listeners)
+            },
+            onCommit: (state) => {
+                const result = dispatcher.doCommitCheckerPlay(state)
+                result(listeners)
+            },
+            onRoll: (sgState: SGToRoll) =>
+                rollListener.onRollRequest((dices: DiceRoll) => {
+                    const result = dispatcher.doRoll(sgState, dices)
+                    result(listeners)
+                }),
+            onRollOpening: (sgState: SGOpening) =>
+                rollListener.onRollRequest((dices: DiceRoll) => {
+                    const result = dispatcher.doOpeningRoll(sgState, dices)
+                    result(listeners)
+                }),
+            onEndGame: (
+                sgState: SGState,
+                sgResult: SGResult,
+                eog: EOGStatus
+            ) => {
+                const result = dispatcher.doEndOfGame(sgState, sgResult, eog)
+                result(listeners)
+            },
+        }
         return {
-            handlers: concatSGHandlers(eventHandlers, {
-                onStartGame: () => {
-                    const result = dispatcher.doStartGame()
-                    result(listeners)
-                },
-                onCommit: (state) => {
-                    const result = dispatcher.doCommitCheckerPlay(state)
-                    result(listeners)
-                },
-                onRoll: (sgState: SGToRoll) =>
-                    rollListener.onRollRequest((dices: DiceRoll) => {
-                        const result = dispatcher.doRoll(sgState, dices)
-                        result(listeners)
-                    }),
-                onRollOpening: (sgState: SGOpening) =>
-                    rollListener.onRollRequest((dices: DiceRoll) => {
-                        const result = dispatcher.doOpeningRoll(sgState, dices)
-                        result(listeners)
-                    }),
-            }) as SingleGameEventHandlers,
+            handlers: concatSGHandlers(
+                eventHandlers,
+                base
+            ) as SingleGameEventHandlers,
             listeners,
         }
     }
@@ -106,6 +118,7 @@ function concatSGHandlers(
                 onCommit: concat1(prev?.onCommit, cur?.onCommit),
                 onRoll: concat1(prev?.onRoll, cur?.onRoll),
                 onRollOpening: concat1(prev?.onRollOpening, cur?.onRollOpening),
+                onEndGame: concat3(prev?.onEndGame, cur?.onEndGame),
             }
         },
         base
