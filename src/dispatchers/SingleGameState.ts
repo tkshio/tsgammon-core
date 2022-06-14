@@ -313,7 +313,7 @@ export function eogStateRed(
     absBoard: AbsoluteBoardState,
     boardState: BoardState
 ): SGEoGRedWon {
-    const stake = scoreAsRed(eogStatus.calcStake(stakeValue))
+    const stake = scoreAsRed(stakeValue)
 
     return {
         ...eogState(eogStatus, stake, absBoard, boardState),
@@ -328,7 +328,7 @@ export function eogStateWhite(
     absBoard: AbsoluteBoardState,
     boardState: BoardState
 ): SGEoGWhiteWon {
-    const stake = scoreAsWhite(eogStatus.calcStake(stakeValue))
+    const stake = scoreAsWhite(stakeValue)
 
     return {
         ...eogState(eogStatus, stake, absBoard, boardState),
