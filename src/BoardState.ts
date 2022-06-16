@@ -14,6 +14,9 @@ export interface BoardState {
     /** 最後尾の駒の位置 */
     lastPiecePos: number
 
+    /** 相手の最後尾の駒の位置 */
+    opponentLastPiecePos: number
+
     /** ベアリングオフの行き先となる位置（標準は25） */
     bearOffPos: number
 
@@ -53,20 +56,22 @@ export interface BoardState {
      * 相手のピップカウント
      */
     opponentPipCount: number
+
+    isEndOfGame(): boolean
+    isGammonish(): boolean
+    isBackgammonishAlso(): boolean
+
+    isRunningGame(): boolean
+
+    pieceCount: number
+    opponentPieceCount: number
 }
 
 /**
  * BoardStateの実装に必要な機能で、外部には公開する必要がないものの定義
  */
 type Board = {
-    isBackgammonAlso(): boolean
-
-    pieceCount: number
-    opponentPieceCount: number
-    myBornOff: number
-    opponentBornOff: number
-
-    opponentLastPiecePos: number
+    // all gone
 } & BoardState
 
 export function countWhitePieces(pieces: number[]) {
@@ -127,16 +132,22 @@ function initBoardState(
         opponentLastPiecePos,
         isBearable,
         eogStatus() {
-            const isEndOfGame = this.pieceCount === 0
-            const isGammon = isEndOfGame && this.opponentBornOff === 0
-            const isBackgammon = isGammon && this.isBackgammonAlso()
+            const isEndOfGame = this.isEndOfGame()
+            const isGammon = isEndOfGame && this.isGammonish()
+            const isBackgammon = isGammon && this.isBackgammonishAlso()
             return eog({
                 isEndOfGame,
                 isGammon,
                 isBackgammon,
             })
         },
-        isBackgammonAlso(): boolean {
+        isEndOfGame(): boolean {
+            return this.pieceCount === 0
+        },
+        isGammonish(): boolean {
+            return this.opponentBornOff === 0
+        },
+        isBackgammonishAlso(): boolean {
             const opponentOuterAndBar = [...Array(outerPos)].map(
                 (_, index) => index + innerPos
             )
@@ -145,6 +156,9 @@ function initBoardState(
                     .map((pos) => this.points[pos])
                     .reduce((m, n) => m + n) < 0
             )
+        },
+        isRunningGame(): boolean {
+            return this.lastPiecePos < this.opponentLastPiecePos
         },
         piecesAt(n: number): number {
             return this.points[n]
