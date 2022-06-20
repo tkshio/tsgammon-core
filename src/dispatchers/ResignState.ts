@@ -13,9 +13,9 @@ export type RSOfferedWhite = _RSOffered & { isRed: false }
 export type RSOfferedRed = _RSOffered & { isRed: true }
 
 export enum ResignOffer {
-    Single,
-    Gammon,
-    Backgammon,
+    Single = 1,
+    Gammon = 2,
+    Backgammon = 4,
 }
 export function rsNone(): RSNone {
     return {
