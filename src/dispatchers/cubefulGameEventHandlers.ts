@@ -35,14 +35,13 @@ export function cubefulGameEventHandlers(
     defaultState: BGState,
     setSGState: (sgState: SGState) => void,
     setCBState: (cbState: CBState) => void,
+
     rollListener: RollListener = rollListeners(),
     ...addOns: EventHandlerAddOn<
         CubeGameEventHandlers & SingleGameEventHandlers,
         CubeGameListeners & SingleGameEventHandlers
     >[]
-): {
-    handlers: BGEventHandlers
-} {
+): BGEventHandlers {
     const { cbState: defaultCBState, sgState: defaultSGState } = defaultState
 
     const { handlers: cbEventHandlers } = buildCBEventHandlers(
@@ -100,9 +99,8 @@ export function cubefulGameEventHandlers(
             cbEventHandlers.onEndOfCubeGame(bgState.cbState, result, eog)
         },
     }
-    return {
-        handlers,
-    }
+
+    return handlers
 }
 
 function cubefulSGListener(

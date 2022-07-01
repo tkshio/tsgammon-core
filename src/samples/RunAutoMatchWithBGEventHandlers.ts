@@ -80,7 +80,7 @@ function run() {
         gState.cb = state
     }
     const isCrawford = false
-    const { handlers } = cubefulGameEventHandlers(
+    const handlers = cubefulGameEventHandlers(
         isCrawford,
         defaultBGState(),
         setSGState,
