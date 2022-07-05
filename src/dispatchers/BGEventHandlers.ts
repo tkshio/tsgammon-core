@@ -1,6 +1,5 @@
 import { EOGStatus } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
-import { BGState } from './BGState'
 import {
     CBAction,
     CBInPlay,
@@ -27,8 +26,11 @@ export type BGEventHandlers = {
     onDouble: (bgState: { cbState: CBAction; sgState: SGState }) => void
     onTake: (bgState: { cbState: CBResponse; sgState: SGState }) => void
     onPass: (bgState: { cbState: CBResponse; sgState: SGState }) => void
-
-    onEndGame: (bgState: BGState, result: SGResult, eog: EOGStatus) => void
+    onEndGame: (
+        bgState: { cbState: CBState; sgState: SGState },
+        sgResult: SGResult,
+        eogStatus: EOGStatus
+    ) => void
 }
 
 export function asSGEventHandlers(

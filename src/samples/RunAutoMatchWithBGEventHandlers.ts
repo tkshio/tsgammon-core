@@ -4,9 +4,11 @@ import {
 } from '../dispatchers/BGEventHandlers'
 import { BGState } from '../dispatchers/BGState'
 import { cubefulGameEventHandlers } from '../dispatchers/cubefulGameEventHandlers'
+import { setCBStateListener } from '../dispatchers/CubeGameDispatcher'
 import { CBState } from '../dispatchers/CubeGameState'
 import { defaultBGState } from '../dispatchers/defaultStates'
 import { rollListeners } from '../dispatchers/RollDispatcher'
+import { setSGStateListener } from '../dispatchers/SingleGameDispatcher'
 import { SGState } from '../dispatchers/SingleGameState'
 import { toCBState, toSGState } from '../dispatchers/utils/GameSetup'
 import { simpleNNEngine } from '../engines/SimpleNNGammon'
@@ -82,10 +84,9 @@ function run() {
     const isCrawford = false
     const handlers = cubefulGameEventHandlers(
         isCrawford,
-        defaultBGState(),
-        setSGState,
-        setCBState,
-        rollListeners()
+        rollListeners(),
+        setCBStateListener(defaultBGState().cbState, setCBState),
+        setSGStateListener(defaultBGState().sgState, setSGState)
     )
 
     let cbState = gState.cb

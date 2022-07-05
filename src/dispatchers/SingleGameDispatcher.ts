@@ -9,7 +9,7 @@ import {
     SGState,
     SGToRoll,
 } from './SingleGameState'
-import { concat0, concat1 } from './utils/concat'
+import { concat0, concat1, concat2 } from './utils/concat'
 
 export type SingleGameDispatcher = {
     doStartGame: () => (
@@ -51,74 +51,69 @@ export type SingleGameListeners = {
     onStartOpeningCheckerPlay: (nextState: SGInPlay) => void
     onStartCheckerPlay: (nextState: SGInPlay) => void
     onRerollOpening: (nextState: SGOpening) => void
-    onAwaitRoll: (nextState: SGToRoll) => void
-    onEndOfGame: (nextState: SGEoG) => void
+    onAwaitRoll: (nextState: SGToRoll, lastState: SGInPlay) => void
+    onEndOfGame: (nextState: SGEoG, lastState?: SGInPlay) => void
 }
 
-export function singleGameDispatcher(): SingleGameDispatcher {
-    const dispatcher = {
-        doStartGame: () => {
-            return (
-                listener: Partial<Pick<SingleGameListeners, 'onStartGame'>>
-            ) => {
-                listener.onStartGame?.()
-            }
-        },
-        doOpeningRoll: (state: SGOpening, dices: DiceRoll) => {
-            const nextState = state.doOpening(dices)
-            return (
-                listener: Partial<
-                    Pick<
-                        SingleGameListeners,
-                        'onStartOpeningCheckerPlay' | 'onRerollOpening'
-                    >
+export const singleGameDispatcher = {
+    doStartGame: () => {
+        return (
+            listener: Partial<Pick<SingleGameListeners, 'onStartGame'>>
+        ) => {
+            listener.onStartGame?.()
+        }
+    },
+    doOpeningRoll: (state: SGOpening, dices: DiceRoll) => {
+        const nextState = state.doOpening(dices)
+        return (
+            listener: Partial<
+                Pick<
+                    SingleGameListeners,
+                    'onStartOpeningCheckerPlay' | 'onRerollOpening'
                 >
-            ) => {
-                if (nextState.tag === 'SGInPlay') {
-                    listener.onStartOpeningCheckerPlay?.(nextState)
-                } else {
-                    listener.onRerollOpening?.(nextState)
-                }
+            >
+        ) => {
+            if (nextState.tag === 'SGInPlay') {
+                listener.onStartOpeningCheckerPlay?.(nextState)
+            } else {
+                listener.onRerollOpening?.(nextState)
             }
-        },
-        doCommitCheckerPlay: (state: SGInPlay) => {
-            const revertTo = state.revertTo
-            const nextState = state.doCheckerPlayCommit(
-                state.boardStateNode,
-                revertTo
-            )
-            return (
-                listener: Partial<
-                    Pick<SingleGameListeners, 'onEndOfGame' | 'onAwaitRoll'>
-                >
-            ) => {
-                if (nextState.tag === 'SGEoG') {
-                    listener.onEndOfGame?.(nextState)
-                } else {
-                    listener.onAwaitRoll?.(nextState)
-                }
+        }
+    },
+    doCommitCheckerPlay: (state: SGInPlay) => {
+        const revertTo = state.revertTo
+        const nextState = state.doCheckerPlayCommit(
+            state.boardStateNode,
+            revertTo
+        )
+        return (
+            listener: Partial<
+                Pick<SingleGameListeners, 'onEndOfGame' | 'onAwaitRoll'>
+            >
+        ) => {
+            if (nextState.tag === 'SGEoG') {
+                listener.onEndOfGame?.(nextState, state)
+            } else {
+                listener.onAwaitRoll?.(nextState, state)
             }
-        },
-        doRoll: (state: SGToRoll, dices: DiceRoll) => {
-            const nextState = state.doRoll(dices)
-            return (
-                listener: Partial<
-                    Pick<SingleGameListeners, 'onStartCheckerPlay'>
-                >
-            ) => {
-                listener.onStartCheckerPlay?.(nextState)
-            }
-        },
-        doEndOfGame: (sgState: SGState, result: SGResult, eog: EOGStatus) => {
-            const nextState = resultToSGEoG(sgState, result, eog)
-            return (
-                listeners: Partial<Pick<SingleGameListeners, 'onEndOfGame'>>
-            ) => {
-                listeners.onEndOfGame?.(nextState)
-            }
-        },
-    }
-    return dispatcher
+        }
+    },
+    doRoll: (state: SGToRoll, dices: DiceRoll) => {
+        const nextState = state.doRoll(dices)
+        return (
+            listener: Partial<Pick<SingleGameListeners, 'onStartCheckerPlay'>>
+        ) => {
+            listener.onStartCheckerPlay?.(nextState)
+        }
+    },
+    doEndOfGame: (sgState: SGState, result: SGResult, eog: EOGStatus) => {
+        const nextState = resultToSGEoG(sgState, result, eog)
+        return (
+            listeners: Partial<Pick<SingleGameListeners, 'onEndOfGame'>>
+        ) => {
+            listeners.onEndOfGame?.(nextState)
+        }
+    },
 }
 
 export function concatSGListeners(
@@ -144,7 +139,7 @@ export function concatSGListeners(
                     prev?.onRerollOpening,
                     cur?.onRerollOpening
                 ),
-                onAwaitRoll: concat1(prev?.onAwaitRoll, cur?.onAwaitRoll),
+                onAwaitRoll: concat2(prev?.onAwaitRoll, cur?.onAwaitRoll),
                 onEndOfGame: concat1(prev?.onEndOfGame, cur?.onEndOfGame),
             }
         },

@@ -2,7 +2,11 @@ import { EOGStatus } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
 import { BGEventHandlers } from './BGEventHandlers'
 import { BGState } from './BGState'
-import { cubeGameDispatcher, CubeGameListeners } from './CubeGameDispatcher'
+import {
+    concatCBListeners,
+    cubeGameDispatcher,
+    CubeGameListeners,
+} from './CubeGameDispatcher'
 import {
     buildCBEventHandlers,
     CubeGameEventHandlers,
@@ -15,11 +19,10 @@ import {
     CBState,
     CBToRoll,
 } from './CubeGameState'
-import { EventHandlerAddOn } from './EventHandlerBuilder'
 import { RollListener, rollListeners } from './RollDispatcher'
+import { concatSGListeners, SingleGameListeners } from './SingleGameDispatcher'
 import {
-    buildSGEventHandlers,
-    SGEventHandlerAddOn,
+    singleGameEventHandlers,
     SingleGameEventHandlers,
 } from './SingleGameEventHandlers'
 import {
@@ -30,39 +33,56 @@ import {
     SGToRoll,
 } from './SingleGameState'
 
+export type BGEventHandlersExtensible = BGEventHandlers & {
+    addListeners: (
+        toAdd: Partial<SingleGameListeners & CubeGameListeners>
+    ) => BGEventHandlersExtensible
+}
+
 export function cubefulGameEventHandlers(
     isCrawford: boolean,
-    defaultState: BGState,
-    setSGState: (sgState: SGState) => void,
-    setCBState: (cbState: CBState) => void,
-
     rollListener: RollListener = rollListeners(),
-    ...addOns: EventHandlerAddOn<
-        CubeGameEventHandlers & SingleGameEventHandlers,
-        CubeGameListeners & SingleGameEventHandlers
-    >[]
-): BGEventHandlers {
-    const { cbState: defaultCBState, sgState: defaultSGState } = defaultState
-
-    const { handlers: cbEventHandlers } = buildCBEventHandlers(
-        cubeGameDispatcher(isCrawford),
-        defaultCBState,
-        setCBState,
-        ...addOns
+    cbListeners: Partial<CubeGameListeners>,
+    sgListeners: Partial<SingleGameListeners>
+): BGEventHandlersExtensible & {
+    sgListeners: Partial<SingleGameListeners>
+    cbListeners: Partial<CubeGameListeners>
+} {
+    const cbEventHandlers = buildCBEventHandlers(
+        cubeGameDispatcher,
+        cbListeners
     )
-
     const sgEventHandlers = (cbState?: CBState) =>
-        buildSGEventHandlers(
-            defaultSGState,
-            setSGState,
+        singleGameEventHandlers(
             rollListener,
             cbState
-                ? cubefulSGListener(cbState, cbEventHandlers)
-                : { eventHandlers: {}, listeners: {} },
-            ...addOns
-        ).handlers
+                ? concatSGListeners(
+                      cubefulSGListener(isCrawford, cbState, cbEventHandlers),
+                      sgListeners
+                  )
+                : sgListeners
+        )
 
-    const handlers = {
+    const handlers = buildBGEventHandlers(cbEventHandlers, sgEventHandlers)
+    function append(toAdd: Partial<SingleGameListeners & CubeGameListeners>) {
+        const addedCB = concatCBListeners(cbListeners, toAdd)
+        const addedSG = concatSGListeners(sgListeners, toAdd)
+
+        return cubefulGameEventHandlers(
+            isCrawford,
+            rollListener,
+            addedCB,
+            addedSG
+        )
+    }
+    return { ...handlers, addListeners: append, cbListeners, sgListeners }
+}
+
+function buildBGEventHandlers(
+    cbEventHandlers: CubeGameEventHandlers,
+    sgEventHandlers: (cbState?: CBState) => SingleGameEventHandlers
+): BGEventHandlers {
+    return {
         onRollOpening: (bgState: {
             cbState: CBOpening
             sgState: SGOpening
@@ -89,65 +109,57 @@ export function cubefulGameEventHandlers(
         onDouble: (bgState: { cbState: CBAction; sgState: SGState }) => {
             cbEventHandlers.onDouble(bgState.cbState)
         },
+
         onTake: (bgState: { cbState: CBResponse; sgState: SGState }) => {
             cbEventHandlers.onTake(bgState.cbState)
         },
+
         onPass: (bgState: { cbState: CBResponse; sgState: SGState }) => {
             cbEventHandlers.onPass(bgState.cbState)
         },
+
         onEndGame: (bgState: BGState, result: SGResult, eog: EOGStatus) => {
             cbEventHandlers.onEndOfCubeGame(bgState.cbState, result, eog)
         },
     }
-
-    return handlers
 }
 
 function cubefulSGListener(
+    skipCubeAction: boolean,
     state: CBState,
     eventHandlers: CubeGameEventHandlers
-): SGEventHandlerAddOn {
+): Partial<SingleGameListeners> {
     return {
-        eventHandlers: {},
-        listeners: {
-            // オープニングロールがあった：手番を設定してInPlay状態に遷移
-            onStartOpeningCheckerPlay: (sgInPlay: SGInPlay) => {
-                if (state.tag === 'CBOpening') {
-                    eventHandlers.onStartOpeningCheckerPlay(
-                        state,
-                        sgInPlay.isRed
-                    )
-                } else {
-                    console.warn('Unexpected state', state, sgInPlay)
-                }
-            },
+        // オープニングロールがあった：手番を設定してInPlay状態に遷移
+        onStartOpeningCheckerPlay: (sgInPlay: SGInPlay) => {
+            if (state.tag === 'CBOpening') {
+                eventHandlers.onStartOpeningCheckerPlay(state, sgInPlay.isRed)
+            } else {
+                console.warn('Unexpected state', state, sgInPlay)
+            }
+        },
 
-            // チェッカープレイが終了した：キューブアクション状態またはロール待ち状態に遷移
-            onAwaitRoll: (sgToRoll: SGToRoll) => {
-                if (state.tag === 'CBInPlay') {
-                    eventHandlers.onStartCubeAction(state)
-                } else {
-                    console.warn('Unexpected state', state, sgToRoll)
-                }
-            },
+        // チェッカープレイが終了した：キューブアクション状態またはロール待ち状態に遷移
+        onAwaitRoll: (sgToRoll: SGToRoll) => {
+            if (state.tag === 'CBInPlay') {
+                eventHandlers.onStartCubeAction(state, skipCubeAction)
+            } else {
+                console.warn('Unexpected state', state, sgToRoll)
+            }
+        },
 
-            // ロールがあった：InPlay状態に遷移
-            onStartCheckerPlay: (sgInPlay: SGInPlay) => {
-                if (state.tag === 'CBToRoll' || state.tag === 'CBAction') {
-                    eventHandlers.onStartCheckerPlay(state)
-                } else {
-                    console.warn('Unexpected state', state, sgInPlay)
-                }
-            },
+        // ロールがあった：InPlay状態に遷移
+        onStartCheckerPlay: (sgInPlay: SGInPlay) => {
+            if (state.tag === 'CBToRoll' || state.tag === 'CBAction') {
+                eventHandlers.onStartCheckerPlay(state)
+            } else {
+                console.warn('Unexpected state', state, sgInPlay)
+            }
+        },
 
-            // ゲームが終了した：キューブを加味したスコアを算出
-            onEndOfGame: (sgEoG: SGEoG) => {
-                eventHandlers.onEndOfCubeGame(
-                    state,
-                    sgEoG.result,
-                    sgEoG.eogStatus
-                )
-            },
+        // ゲームが終了した：キューブを加味したスコアを算出
+        onEndOfGame: (sgEoG: SGEoG) => {
+            eventHandlers.onEndOfCubeGame(state, sgEoG.result, sgEoG.eogStatus)
         },
     }
 }
