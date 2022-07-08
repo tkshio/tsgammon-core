@@ -1,13 +1,11 @@
 import { DiceRoll } from '../Dices'
-import { EOGStatus } from '../EOGStatus'
-import { SGResult } from '../records/SGResult'
 import { RollListener, rollListeners } from './RollDispatcher'
 import {
     concatSGListeners,
     singleGameDispatcher,
     SingleGameListeners,
 } from './SingleGameDispatcher'
-import { SGInPlay, SGOpening, SGState, SGToRoll } from './SingleGameState'
+import { SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 import { concat0, concat1 } from './utils/concat'
 
 export type SingleGameEventHandlers = {
@@ -16,7 +14,6 @@ export type SingleGameEventHandlers = {
     onCommit: (sgState: SGInPlay) => void
     onRoll: (sgState: SGToRoll) => void
     onRollOpening: (sgState: SGOpening) => void
-    onEndGame: (sgState: SGState, sgResult: SGResult, eog: EOGStatus) => void
 }
 
 export type SingleGameEventHandlersExtensible = SingleGameEventHandlers & {
@@ -67,14 +64,6 @@ function buildSGEventHandlers(
                 )
                 result(listeners)
             }),
-        onEndGame: (sgState: SGState, sgResult: SGResult, eog: EOGStatus) => {
-            const result = singleGameDispatcher.doEndOfGame(
-                sgState,
-                sgResult,
-                eog
-            )
-            result(listeners)
-        },
     }
 }
 

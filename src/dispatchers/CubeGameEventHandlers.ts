@@ -1,12 +1,9 @@
-import { EOGStatus } from '../EOGStatus'
-import { SGResult } from '../records/SGResult'
 import { CubeGameDispatcher, CubeGameListeners } from './CubeGameDispatcher'
 import {
     CBAction,
     CBInPlay,
     CBOpening,
     CBResponse,
-    CBState,
     CBToRoll,
 } from './CubeGameState'
 import { concat0, concat1, concat2 } from './utils/concat'
@@ -22,11 +19,6 @@ export type CubeGameEventHandlers = {
     onStartCheckerPlay: (cbState: CBToRoll | CBAction) => void
     onStartCubeAction: (cbState: CBInPlay, skipCubeAction: boolean) => void
     onSkipCubeAction: (cbState: CBAction) => void
-    onEndOfCubeGame: (
-        state: CBState,
-        result: SGResult,
-        eogStatus: EOGStatus
-    ) => void
 }
 
 export function buildCBEventHandlers(
@@ -42,7 +34,6 @@ export function buildCBEventHandlers(
         onStartCubeAction,
         onStartOpeningCheckerPlay,
         onStartCheckerPlay,
-        onEndOfCubeGame,
     }
 
     function onStartCubeGame() {
@@ -81,15 +72,6 @@ export function buildCBEventHandlers(
 
     function onStartCheckerPlay(state: CBAction | CBToRoll) {
         const result = dispatcher.doStartCheckerPlay(state)
-        result(listeners)
-    }
-
-    function onEndOfCubeGame(
-        state: CBState,
-        sgResult: SGResult,
-        eogStatus: EOGStatus
-    ) {
-        const result = dispatcher.doEndOfCubeGame(state, sgResult, eogStatus)
         result(listeners)
     }
 }

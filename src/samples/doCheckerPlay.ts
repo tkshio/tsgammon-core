@@ -15,7 +15,7 @@ export function doCheckerPlay(
         case 'SGInPlay': {
             const curNode = sgState.boardStateNode
             const nextNode = engine.checkerPlay(curNode)
-            sgEventHandlers.onCommit(sgState, nextNode)
+            sgEventHandlers.onCommit(sgState.withNode(nextNode))
             break
         }
         case 'SGToRoll': {
