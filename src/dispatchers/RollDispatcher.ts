@@ -31,8 +31,9 @@ export function rollListeners(
             ? (rollReq: (dices: DiceRoll) => void): void => {
                   conf.rollListener.onRollRequest(rollReq)
               }
-            : (rollReq: (dices: DiceRoll) => void): void => {
-                  rollReq(conf.diceSource.roll())
+            : async (rollReq: (dices: DiceRoll) => void): Promise<void> => {
+                  const roll = await conf.diceSource.roll()
+                  rollReq(roll)
               },
     }
 }
