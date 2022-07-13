@@ -1,3 +1,4 @@
+import { BGListeners } from './cubefulGameEventHandlers'
 import {
     CBAction,
     CBInPlay,
@@ -8,6 +9,7 @@ import {
 } from './CubeGameState'
 import { SingleGameEventHandlers } from './SingleGameEventHandlers'
 import { SGInPlay, SGOpening, SGState, SGToRoll } from './SingleGameState'
+import { concat1 } from './utils/concat'
 
 export type BGEventHandlers = {
     onRollOpening: (bgState: { cbState: CBOpening; sgState: SGOpening }) => void
@@ -21,7 +23,7 @@ export type BGEventHandlers = {
 
     onStartGame: () => void
 
-    onDouble: (bgState: { cbState: CBAction; sgState: SGState }) => void
+    onDouble: (bgState: { cbState: CBAction; sgState: SGToRoll }) => void
     onTake: (bgState: { cbState: CBResponse; sgState: SGState }) => void
     onPass: (bgState: { cbState: CBResponse; sgState: SGState }) => void
 }
@@ -49,5 +51,24 @@ export function asSGEventHandlers(
                 handlers.onRollOpening?.({ cbState, sgState })
             }
         },
+    }
+}
+
+export function concatBGListeners(
+    bg1: Partial<BGListeners>,
+    bg2: Partial<BGListeners>
+) {
+    return {
+        onStartCubeAction: concat1(
+            bg1.onStartCubeAction,
+            bg2.onStartCubeAction
+        ),
+        onSkipCubeAction: concat1(bg1.onSkipCubeAction, bg2.onSkipCubeAction),
+        onDouble: concat1(bg1.onDouble, bg2.onDouble),
+        onAwaitCheckerPlay: concat1(
+            bg1.onAwaitCheckerPlay,
+            bg2.onAwaitCheckerPlay
+        ),
+        onEndOfCubeGame: concat1(bg1.onEndOfCubeGame, bg2.onEndOfCubeGame),
     }
 }

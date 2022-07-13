@@ -1,17 +1,16 @@
 import { EOGStatus } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
-import { BGEventHandlers } from './BGEventHandlers'
+import { BGEventHandlers, concatBGListeners } from './BGEventHandlers'
 import {
     concatCBListeners,
+    CubeGameDispatcher,
     cubeGameDispatcher,
     CubeGameListeners,
 } from './CubeGameDispatcher'
-import {
-    buildCBEventHandlers,
-    CubeGameEventHandlers,
-} from './CubeGameEventHandlers'
+
 import {
     CBAction,
+    CBEoG,
     CBInPlay,
     CBOpening,
     CBResponse,
@@ -37,19 +36,18 @@ export type BGEventHandlersExtensible = BGEventHandlers & {
     addListeners: (
         toAdd: Partial<SingleGameListeners & CubeGameListeners>
     ) => BGEventHandlersExtensible
+    addBGListeners: (toAdd: Partial<BGListeners>) => BGEventHandlersExtensible
 }
 
 export function cubefulGameEventHandlers(
     isCrawford: boolean,
     rollListener: RollListener = rollListeners(),
     ...listeners: Partial<SingleGameListeners & CubeGameListeners>[]
-): BGEventHandlersExtensible & {
-    sgListeners: Partial<SingleGameListeners>
-    cbListeners: Partial<CubeGameListeners>
-} {
+): BGEventHandlersExtensible {
     return _cubefulGameEventHandlers(
         isCrawford,
         rollListener,
+        {},
         {},
         {},
         ...listeners
@@ -58,6 +56,7 @@ export function cubefulGameEventHandlers(
 function _cubefulGameEventHandlers(
     isCrawford: boolean,
     rollListener: RollListener = rollListeners(),
+    bgListeners: Partial<BGListeners>,
     _sgListeners: Partial<SingleGameListeners>,
     _cbListeners: Partial<CubeGameListeners>,
     ...listeners: Partial<SingleGameListeners & CubeGameListeners>[]
@@ -69,51 +68,103 @@ function _cubefulGameEventHandlers(
         (prev, cur) => concatCBListeners(prev, cur),
         _cbListeners
     )
-    const cbEventHandlers = buildCBEventHandlers(
-        cubeGameDispatcher,
-        cbListeners
-    )
-    const { onEndOfCubeGame } = eogEventHandlers(listeners)
+
     const sgListeners = listeners.reduce(
         (prev, cur) => concatSGListeners(prev, cur),
         _sgListeners
     )
 
+    const { onEndOfCubeGame } = eogEventHandlers(listeners)
+
     const sgEventHandlers = (cbState?: CBState) =>
         singleGameEventHandlers(
             rollListener,
-            cbState
-                ? concatSGListeners(
-                      cubefulSGListener(
-                          isCrawford,
-                          cbState,
-                          cbEventHandlers,
-                          onEndOfCubeGame
-                      ),
-                      sgListeners
-                  )
-                : sgListeners
+            cubefulSGListener(
+                sgListeners,
+                isCrawford,
+                cbState,
+                onEndOfCubeGame,
+                cbListeners,
+                bgListeners
+            )
         )
 
-    const handlers = buildBGEventHandlers(cbEventHandlers, sgEventHandlers)
+    const handlers = buildBGEventHandlers(
+        cbListeners,
+        bgListeners,
+        sgEventHandlers
+    )
     function append(
         ...toAdd: Partial<SingleGameListeners & CubeGameListeners>[]
     ) {
-        return cubefulGameEventHandlers(
+        return _cubefulGameEventHandlers(
             isCrawford,
             rollListener,
+            bgListeners,
             sgListeners,
             cbListeners,
             ...toAdd
         )
     }
-    return { ...handlers, addListeners: append, cbListeners, sgListeners }
+    function addBGListeners(toAdd: Partial<BGListeners>) {
+        return _cubefulGameEventHandlers(
+            isCrawford,
+            rollListener,
+            concatBGListeners(bgListeners, toAdd),
+            sgListeners,
+            cbListeners
+        )
+    }
+    return {
+        ...handlers,
+        addListeners: append,
+        addBGListeners,
+        cbListeners,
+        sgListeners,
+    }
 }
 
+function buildCBOnlyHandler(
+    dispatcher: CubeGameDispatcher,
+    listeners: Partial<CubeGameListeners>,
+    bgListeners: Partial<BGListeners>
+): CBOnlyHandler {
+    function onDouble(bgState: { cbState: CBAction; sgState: SGToRoll }) {
+        const result = dispatcher.doDouble(bgState.cbState)
+        result(listeners)
+        result({
+            onDouble: (nextState: CBResponse) => {
+                bgListeners.onDouble?.({
+                    cbState: nextState,
+                    sgState: bgState.sgState,
+                })
+            },
+        })
+    }
+
+    function onTake(state: CBResponse) {
+        const result = dispatcher.doTake(state)
+        result(listeners)
+    }
+
+    function onPass(state: CBResponse) {
+        const result = dispatcher.doPass(state)
+        result(listeners)
+    }
+
+    return { onDouble, onTake, onPass }
+}
 function buildBGEventHandlers(
-    cbEventHandlers: CubeGameEventHandlers,
+    cbListeners: Partial<CubeGameListeners>,
+    bgListeners: Partial<BGListeners>,
     sgEventHandlers: (cbState?: CBState) => SingleGameEventHandlers
 ): BGEventHandlers {
+    const cbEventHandlers = buildCBOnlyHandler(
+        cubeGameDispatcher,
+        cbListeners,
+        bgListeners
+    )
+
     return {
         onRollOpening: (bgState: {
             cbState: CBOpening
@@ -135,11 +186,10 @@ function buildBGEventHandlers(
 
         onStartGame: () => {
             sgEventHandlers().onStartGame()
-            cbEventHandlers.onStartCubeGame()
         },
 
-        onDouble: (bgState: { cbState: CBAction; sgState: SGState }) => {
-            cbEventHandlers.onDouble(bgState.cbState)
+        onDouble: (bgState: { cbState: CBAction; sgState: SGToRoll }) => {
+            cbEventHandlers.onDouble(bgState)
         },
 
         onTake: (bgState: { cbState: CBResponse; sgState: SGState }) => {
@@ -152,21 +202,111 @@ function buildBGEventHandlers(
     }
 }
 
+type InternalCBHandler = {
+    onStartCubeGame: () => {
+        accept: (...listeners: Partial<CubeGameListeners>[]) => void
+    }
+    onStartOpeningCheckerPlay: (
+        state: CBOpening,
+        isRed: boolean
+    ) => { accept: (...listeners: Partial<CubeGameListeners>[]) => void }
+
+    onStartCheckerPlay: (state: CBToRoll | CBAction) => {
+        accept: (...listeners: Partial<CubeGameListeners>[]) => void
+    }
+    onStartCubeAction: (
+        state: CBInPlay,
+        skipCubeAction: boolean
+    ) => {
+        accept: (...listeners: Partial<CubeGameListeners>[]) => void
+    }
+}
+
+type CBOnlyHandler = {
+    onDouble: (bgState: { cbState: CBAction; sgState: SGToRoll }) => void
+    onTake: (state: CBResponse) => void
+    onPass: (state: CBResponse) => void
+}
+
+export type BGListeners = {
+    onStartCubeGame: () => void
+    onStartCubeAction: (bgState: {
+        cbState: CBAction
+        sgState: SGToRoll
+    }) => void
+    onSkipCubeAction: (bgState: {
+        cbState: CBToRoll
+        sgState: SGToRoll
+    }) => void
+    onDouble: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => void
+    onAwaitCheckerPlay: (bgState: {
+        cbState: CBInPlay
+        sgState: SGInPlay
+    }) => void
+    onEndOfCubeGame: (bgState: { cbState: CBEoG; sgState: SGEoG }) => void
+}
+
 function cubefulSGListener(
+    sgListener: Partial<SingleGameListeners>,
+    skipCubeAction: boolean,
+    state: CBState | undefined,
+    onEndOfCubeGame: (
+        state: CBInPlay,
+        sgResult: SGResult,
+        eogStatus: EOGStatus
+    ) => void,
+
+    cbListeners: Partial<CubeGameListeners>,
+    bgListeners: Partial<BGListeners>
+): Partial<SingleGameListeners> {
+    if (state === undefined) {
+        return sgListener
+    }
+    return concatSGListeners(
+        sgListener,
+        appendCBListeners(
+            skipCubeAction,
+            state,
+            onEndOfCubeGame,
+            cbListeners,
+            bgListeners
+        )
+    )
+}
+
+function appendCBListeners(
     skipCubeAction: boolean,
     state: CBState,
-    eventHandlers: CubeGameEventHandlers,
     onEndOfCubeGame: (
-        state: CBState,
+        state: CBInPlay,
         sgResult: SGResult,
-        eog: EOGStatus
-    ) => void
-): Partial<SingleGameListeners> {
+        eogStatus: EOGStatus
+    ) => void,
+    cbListeners: Partial<CubeGameListeners>,
+    bgListeners: Partial<BGListeners>
+) {
+    const cbHandlers: InternalCBHandler = buildInternalCBHandlers()
     return {
+        onStartGame: () => {
+            cbHandlers.onStartCubeGame().accept({
+                onStartCubeGame: () => {
+                    bgListeners.onStartCubeGame?.()
+                },
+            })
+        },
         // オープニングロールがあった：手番を設定してInPlay状態に遷移
         onStartOpeningCheckerPlay: (sgInPlay: SGInPlay) => {
             if (state.tag === 'CBOpening') {
-                eventHandlers.onStartOpeningCheckerPlay(state, sgInPlay.isRed)
+                cbHandlers
+                    .onStartOpeningCheckerPlay(state, sgInPlay.isRed)
+                    .accept(cbListeners, {
+                        onAwaitCheckerPlay: (nextState: CBInPlay) => {
+                            bgListeners.onAwaitCheckerPlay?.({
+                                cbState: nextState,
+                                sgState: sgInPlay,
+                            })
+                        },
+                    })
             } else {
                 console.warn('Unexpected state', state, sgInPlay)
             }
@@ -175,7 +315,22 @@ function cubefulSGListener(
         // チェッカープレイが終了した：キューブアクション状態またはロール待ち状態に遷移
         onAwaitRoll: (sgToRoll: SGToRoll) => {
             if (state.tag === 'CBInPlay') {
-                eventHandlers.onStartCubeAction(state, skipCubeAction)
+                cbHandlers
+                    .onStartCubeAction(state, skipCubeAction)
+                    .accept(cbListeners, {
+                        onStartCubeAction: (nextState: CBAction) => {
+                            bgListeners.onStartCubeAction?.({
+                                cbState: nextState,
+                                sgState: sgToRoll,
+                            })
+                        },
+                        onSkipCubeAction: (nextState: CBToRoll) => {
+                            bgListeners.onSkipCubeAction?.({
+                                cbState: nextState,
+                                sgState: sgToRoll,
+                            })
+                        },
+                    })
             } else {
                 console.warn('Unexpected state', state, sgToRoll)
             }
@@ -184,7 +339,14 @@ function cubefulSGListener(
         // ロールがあった：InPlay状態に遷移
         onStartCheckerPlay: (sgInPlay: SGInPlay) => {
             if (state.tag === 'CBToRoll' || state.tag === 'CBAction') {
-                eventHandlers.onStartCheckerPlay(state)
+                cbHandlers.onStartCheckerPlay(state).accept(cbListeners, {
+                    onAwaitCheckerPlay: (nextState: CBInPlay) => {
+                        bgListeners.onAwaitCheckerPlay?.({
+                            cbState: nextState,
+                            sgState: sgInPlay,
+                        })
+                    },
+                })
             } else {
                 console.warn('Unexpected state', state, sgInPlay)
             }
@@ -192,7 +354,63 @@ function cubefulSGListener(
 
         // ゲームが終了した：キューブを加味したスコアを算出
         onEndOfGame: (sgEoG: SGEoG) => {
-            onEndOfCubeGame(state, sgEoG.result, sgEoG.eogStatus)
+            if (state.tag === 'CBInPlay') {
+                onEndOfCubeGame(state, sgEoG.result, sgEoG.eogStatus)
+            } else {
+                console.warn('Unexpected state', state, sgEoG)
+            }
         },
+    }
+}
+
+function buildInternalCBHandlers(): InternalCBHandler {
+    const dispatcher: CubeGameDispatcher = cubeGameDispatcher
+
+    function onStartCubeGame() {
+        return {
+            accept: (...listeners: Partial<CubeGameListeners>[]) => {
+                const result = dispatcher.doStartCubeGame()
+                listeners.forEach(result)
+            },
+        }
+    }
+    function onStartOpeningCheckerPlay(state: CBOpening, isRed: boolean) {
+        return {
+            accept: (...listeners: Partial<CubeGameListeners>[]) => {
+                const result = dispatcher.doStartOpeningCheckerPlay(
+                    state,
+                    isRed
+                )
+                listeners.forEach(result)
+            },
+        }
+    }
+
+    function onStartCheckerPlay(state: CBToRoll | CBAction) {
+        return {
+            accept: (...listeners: Partial<CubeGameListeners>[]) => {
+                const result = dispatcher.doStartCheckerPlay(state)
+                listeners.forEach(result)
+            },
+        }
+    }
+
+    function onStartCubeAction(state: CBInPlay, skipCubeAction: boolean) {
+        return {
+            accept: (...listeners: Partial<CubeGameListeners>[]) => {
+                const result = dispatcher.doStartCubeAction(
+                    state,
+                    skipCubeAction
+                )
+                listeners.forEach(result)
+            },
+        }
+    }
+
+    return {
+        onStartCubeGame,
+        onStartOpeningCheckerPlay,
+        onStartCheckerPlay,
+        onStartCubeAction,
     }
 }
