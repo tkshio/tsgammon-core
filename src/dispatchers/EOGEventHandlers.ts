@@ -13,7 +13,7 @@ export function eogEventHandlers(
     listeners: Partial<CubeGameListeners & SingleGameListeners>[]
 ) {
     const listener = {
-        ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur)),
+        ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur), {}),
     }
     return {
         onEndOfCubeGame: (
