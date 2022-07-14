@@ -259,9 +259,6 @@ function cubefulSGListener(
     cbListeners: Partial<CubeGameListeners>,
     bgListeners: Partial<BGListeners>
 ): Partial<SingleGameListeners> {
-    if (state === undefined) {
-        return sgListener
-    }
     return concatSGListeners(
         sgListener,
         appendCBListeners(
@@ -276,7 +273,7 @@ function cubefulSGListener(
 
 function appendCBListeners(
     skipCubeAction: boolean,
-    state: CBState,
+    state: CBState | undefined,
     onEndOfCubeGame: (
         state: CBInPlay,
         sgResult: SGResult,
@@ -286,14 +283,14 @@ function appendCBListeners(
     bgListeners: Partial<BGListeners>
 ) {
     const cbHandlers: InternalCBHandler = buildInternalCBHandlers()
+    if (state === undefined) {
+        return {
+            onStartGame: () => {
+                cbHandlers.onStartCubeGame().accept(cbListeners)
+            },
+        }
+    }
     return {
-        onStartGame: () => {
-            cbHandlers.onStartCubeGame().accept({
-                onStartCubeGame: () => {
-                    bgListeners.onStartCubeGame?.()
-                },
-            })
-        },
         // オープニングロールがあった：手番を設定してInPlay状態に遷移
         onStartOpeningCheckerPlay: (sgInPlay: SGInPlay) => {
             if (state.tag === 'CBOpening') {
