@@ -74,7 +74,7 @@ function _cubefulGameEventHandlers(
         _sgListeners
     )
 
-    const { onEndOfCubeGame } = eogEventHandlers(listeners)
+    const { onEndOfCubeGame } = eogEventHandlers(cbListeners)
 
     const sgEventHandlers = (cbState?: CBState) =>
         singleGameEventHandlers(

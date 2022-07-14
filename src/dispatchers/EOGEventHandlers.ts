@@ -10,7 +10,8 @@ import { SGState } from './SingleGameState'
 import { concat2 } from './utils/concat'
 
 export function eogEventHandlers(
-    listeners: Partial<CubeGameListeners & SingleGameListeners>[]
+    /* SingleGameListenersは無視されるだけだが、引数を渡す側では混在している場合が多いので */
+    ...listeners: Partial<CubeGameListeners & SingleGameListeners>[]
 ) {
     const listener = {
         ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur), {}),
@@ -41,6 +42,7 @@ export function eogEventHandlers(
         }
     }
 }
+
 export function eogEventHandlersSG(listeners: Partial<SingleGameListeners>[]) {
     const listener = {
         ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur)),
