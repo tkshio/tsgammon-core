@@ -91,7 +91,11 @@ function _cubefulGameEventHandlers(
 
     const handlers = buildBGEventHandlers(
         cbListeners,
-        bgListeners,
+        concatBGListeners(bgListeners, {
+            onTake: (bgState: { cbState: CBToRoll; sgState: SGToRoll }) => {
+                handlers.onRoll(bgState)
+            },
+        }),
         sgEventHandlers
     )
     function append(
@@ -132,6 +136,7 @@ function buildCBOnlyHandler(
     function onDouble(bgState: { cbState: CBAction; sgState: SGToRoll }) {
         const result = dispatcher.doDouble(bgState.cbState)
         result(listeners)
+        // キューブレスポンスにCBとSGの両方の情報を渡すため、bgListenersを呼ぶ
         result({
             onDouble: (nextState: CBResponse) => {
                 bgListeners.onDouble?.({
@@ -142,9 +147,18 @@ function buildCBOnlyHandler(
         })
     }
 
-    function onTake(state: CBResponse) {
-        const result = dispatcher.doTake(state)
+    function onTake(bgState: { cbState: CBResponse; sgState: SGToRoll }) {
+        const result = dispatcher.doTake(bgState.cbState)
         result(listeners)
+        // 自動ロール実施
+        result({
+            onTake: (nextState: CBToRoll) => {
+                bgListeners.onTake?.({
+                    cbState: nextState,
+                    sgState: bgState.sgState,
+                })
+            },
+        })
     }
 
     function onPass(state: CBResponse) {
@@ -192,8 +206,8 @@ function buildBGEventHandlers(
             cbEventHandlers.onDouble(bgState)
         },
 
-        onTake: (bgState: { cbState: CBResponse; sgState: SGState }) => {
-            cbEventHandlers.onTake(bgState.cbState)
+        onTake: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => {
+            cbEventHandlers.onTake(bgState)
         },
 
         onPass: (bgState: { cbState: CBResponse; sgState: SGState }) => {
@@ -224,10 +238,12 @@ type InternalCBHandler = {
 
 type CBOnlyHandler = {
     onDouble: (bgState: { cbState: CBAction; sgState: SGToRoll }) => void
-    onTake: (state: CBResponse) => void
+    onTake: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => void
     onPass: (state: CBResponse) => void
 }
 
+// BGEventHandlerの結果として呼ばれる処理（すなわち、
+// BGEventHandlerに処理を追加するためのインターフェース）
 export type BGListeners = {
     onStartCubeGame: () => void
     onStartCubeAction: (bgState: {
@@ -239,6 +255,7 @@ export type BGListeners = {
         sgState: SGToRoll
     }) => void
     onDouble: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => void
+    onTake: (bgState: { cbState: CBToRoll; sgState: SGToRoll }) => void
     onAwaitCheckerPlay: (bgState: {
         cbState: CBInPlay
         sgState: SGInPlay
