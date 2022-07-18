@@ -1,41 +1,49 @@
 import { EOGStatus } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
-import { cubeGameDispatcher, CubeGameListeners } from './CubeGameDispatcher'
-import { CBState } from './CubeGameState'
+import { BGListeners } from './cubefulGameEventHandlers'
+import { cubeGameDispatcher } from './CubeGameDispatcher'
+import { CBEoG, CBState } from './CubeGameState'
 import {
     singleGameDispatcher,
     SingleGameListeners,
 } from './SingleGameDispatcher'
 import { SGState } from './SingleGameState'
-import { concat2 } from './utils/concat'
+import { concat1, concat2 } from './utils/concat'
 
 export function eogEventHandlers(
     /* SingleGameListenersは無視されるだけだが、引数を渡す側では混在している場合が多いので */
-    ...listeners: Partial<CubeGameListeners & SingleGameListeners>[]
+    ...listeners: Partial<BGListeners & SingleGameListeners>[]
 ) {
     const listener = {
         ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur), {}),
     }
     return {
         onEndOfCubeGame: (
-            cbState: CBState,
+            bgState: { cbState: CBState; sgState: SGState },
             sgResult: SGResult,
             eog: EOGStatus
         ) => {
             const result = cubeGameDispatcher.doEndOfCubeGame(
-                cbState,
+                bgState.cbState,
                 sgResult,
                 eog
             )
-            result(listener)
+            result({
+                onEndOfCubeGame: (nextState: CBEoG) => {
+                    listener.onEndOfCubeGame?.({
+                        cbState: nextState,
+                        sgState: bgState.sgState,
+                    })
+                },
+            })
         },
     }
     function concatEOGListeners(
-        listener1: Partial<Pick<CubeGameListeners, 'onEndOfCubeGame'>>,
-        listener2: Partial<Pick<CubeGameListeners, 'onEndOfCubeGame'>>
-    ) {
+        listener1: Partial<Pick<BGListeners, 'onEndOfCubeGame'>>,
+        listener2: Partial<Pick<BGListeners, 'onEndOfCubeGame'>>
+    ): Partial<Pick<BGListeners, 'onEndOfCubeGame'>> {
         return {
-            onEndOfCubeGame: concat2(
+            onEndOfCubeGame: concat1(
                 listener1.onEndOfCubeGame,
                 listener2.onEndOfCubeGame
             ),

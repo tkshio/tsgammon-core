@@ -1,5 +1,5 @@
 import { BGState } from '../dispatchers/BGState'
-import { CubeGameListeners } from '../dispatchers/CubeGameDispatcher'
+import { BGListeners } from '../dispatchers/cubefulGameEventHandlers'
 import {
     CBAction,
     CBEoG,
@@ -59,9 +59,12 @@ export function matchRecorderAsCBAddOn(
     gameConf: GameConf,
     sgState: SGState,
     matchRecorder: MatchRecorder<BGState>
-): Partial<CubeGameListeners & SingleGameListeners> {
+): Partial<BGListeners & SingleGameListeners> {
     return {
-        onDouble: (_: CBResponse, lastState: CBAction) => {
+        onDouble: (
+            _: { cbState: CBResponse; sgState: SGToRoll },
+            lastState: CBAction
+        ) => {
             const plyRecord = plyRecordForDouble(
                 lastState.cubeState,
                 lastState.isRed
@@ -69,7 +72,10 @@ export function matchRecorderAsCBAddOn(
             matchRecorder.recordPly(plyRecord, { cbState: lastState, sgState })
         },
 
-        onTake: (_: CBToRoll, lastState: CBResponse) => {
+        onTake: (
+            _: { cbState: CBToRoll; sgState: SGToRoll },
+            lastState: CBResponse
+        ) => {
             const plyRecord = plyRecordForTake(lastState.isRed)
             matchRecorder.recordPly(plyRecord, { cbState: lastState, sgState })
         },
@@ -78,7 +84,10 @@ export function matchRecorderAsCBAddOn(
             matchRecorder.resetCurGame()
         },
 
-        onEndOfCubeGame: (cbState: CBEoG, lastState?: CBResponse) => {
+        onEndOfCubeGame: (
+            bgState: { cbState: CBEoG; sgState: SGState },
+            lastState?: CBResponse
+        ) => {
             if (lastState !== undefined) {
                 const plyRecord = plyRecordForPass(
                     lastState.isRed ? SGResult.WHITEWON : SGResult.REDWON
@@ -88,10 +97,10 @@ export function matchRecorderAsCBAddOn(
                     sgState,
                 })
             }
-            const { stake, eogStatus } = cbState.calcStake(gameConf)
+            const { stake, eogStatus } = bgState.cbState.calcStake(gameConf)
             const plyRecordEoG = plyRecordForEoG(
                 stake,
-                cbState.result,
+                bgState.cbState.result,
                 eogStatus
             )
             matchRecorder.recordEoG(plyRecordEoG)
