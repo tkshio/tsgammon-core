@@ -1,7 +1,10 @@
-import { BoardStateNode } from '../BoardStateNode'
 import { DiceRoll } from '../Dices'
 import { DiceSource, randomDiceSource } from '../utils/DiceSource'
-import { SGEoG, SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
+import {
+    SingleGameDispatcher,
+    SingleGameListener,
+} from './SingleGameDispatcher'
+import { SGOpening, SGToRoll } from './SingleGameState'
 
 export interface RollDispatcher {
     doRollRequest(rollReq: (dices: DiceRoll) => void): void
@@ -32,25 +35,68 @@ export function rollListeners(
                   conf.rollListener.onRollRequest(rollReq)
               }
             : async (rollReq: (dices: DiceRoll) => void): Promise<void> => {
-                  const roll = await conf.diceSource.roll()
+                  const roll = await Promise.resolve(conf.diceSource.roll())
                   rollReq(roll)
               },
     }
 }
 
-export type SingleGameDispatcherWithRD = {
-    doOpeningRoll: (state: SGOpening) => void
-    doCommitCheckerPlay: (
-        state: SGInPlay,
-        curBoardState: BoardStateNode
-    ) => SGToRoll | SGEoG
-    doRoll: (state: SGToRoll) => void
+export type SingleGameDispatcherWithRL = Omit<
+    SingleGameDispatcher,
+    'doRoll' | 'doOpeningRoll'
+> & {
+    doRoll: (
+        state: SGToRoll
+    ) => (
+        listener: Partial<Pick<SingleGameListener, 'onStartCheckerPlay'>>
+    ) => void
+    doOpeningRoll: (
+        state: SGOpening
+    ) => (
+        listener: Partial<
+            Pick<
+                SingleGameListener,
+                'onStartOpeningCheckerPlay' | 'onRerollOpening'
+            >
+        >
+    ) => void
 }
 
-export function rollDispatcher(listener: RollListener): RollDispatcher {
+export function withRL(
+    singleGameDispatcher: SingleGameDispatcher,
+    rollListener: RollListener
+): SingleGameDispatcherWithRL {
     return {
-        doRollRequest: (rollReq: (dices: DiceRoll) => void): void => {
-            listener.onRollRequest(rollReq)
+        ...singleGameDispatcher,
+        doRoll: (state: SGToRoll) => {
+            return (
+                listener: Partial<
+                    Pick<SingleGameListener, 'onStartCheckerPlay'>
+                >
+            ) => {
+                rollListener.onRollRequest((dices: DiceRoll) => {
+                    const result = singleGameDispatcher.doRoll(state, dices)
+                    result(listener)
+                })
+            }
+        },
+        doOpeningRoll: (state: SGOpening) => {
+            return (
+                listener: Partial<
+                    Pick<
+                        SingleGameListener,
+                        'onStartOpeningCheckerPlay' | 'onRerollOpening'
+                    >
+                >
+            ) => {
+                rollListener.onRollRequest((dices: DiceRoll) => {
+                    const result = singleGameDispatcher.doOpeningRoll(
+                        state,
+                        dices
+                    )
+                    result(listener)
+                })
+            }
         },
     }
 }

@@ -14,25 +14,23 @@ import { concat0, concat1, concat2 } from './utils/concat'
 
 export type CubeGameDispatcher = {
     doStartCubeGame: () => (
-        listener: Partial<Pick<CubeGameListeners, 'onStartCubeGame'>>
+        listener: Partial<Pick<CubeGameListener, 'onStartCubeGame'>>
     ) => void
     // キューブアクション固有のU.I.から能動的に使用する操作
     doDouble: (
         state: CBAction
-    ) => (listeners: Partial<Pick<CubeGameListeners, 'onDouble'>>) => void
+    ) => (listeners: Partial<Pick<CubeGameListener, 'onDouble'>>) => void
     doSkipCubeAction: (
         state: CBAction
     ) => (
-        listeners: Partial<Pick<CubeGameListeners, 'onSkipCubeAction'>>
+        listeners: Partial<Pick<CubeGameListener, 'onSkipCubeAction'>>
     ) => void
     doTake: (
         state: CBResponse
-    ) => (listeners: Partial<Pick<CubeGameListeners, 'onTake'>>) => void
+    ) => (listeners: Partial<Pick<CubeGameListener, 'onTake'>>) => void
     doPass: (
         state: CBResponse
-    ) => (
-        listeners: Partial<Pick<CubeGameListeners, 'onEndOfCubeGame'>>
-    ) => void
+    ) => (listeners: Partial<Pick<CubeGameListener, 'onEndOfCubeGame'>>) => void
 
     // ゲームの進行状況に対応して受動的に使用される操作
     doStartCubeAction: (
@@ -40,35 +38,37 @@ export type CubeGameDispatcher = {
         skipCubeAction: boolean
     ) => (
         listeners: Partial<
-            Pick<CubeGameListeners, 'onStartCubeAction' | 'onSkipCubeAction'>
+            Pick<
+                CubeGameListener,
+                'onStartCubeAction' | 'onSkipCubeAction' | 'onAwaitCubeAction'
+            >
         >
     ) => void
     doStartOpeningCheckerPlay: (
         state: CBOpening,
         isRed: boolean
     ) => (
-        listeners: Partial<Pick<CubeGameListeners, 'onAwaitCheckerPlay'>>
+        listeners: Partial<Pick<CubeGameListener, 'onAwaitCheckerPlay'>>
     ) => void
     doStartCheckerPlay: (
         state: CBAction | CBToRoll
     ) => (
-        listeners: Partial<Pick<CubeGameListeners, 'onAwaitCheckerPlay'>>
+        listeners: Partial<Pick<CubeGameListener, 'onAwaitCheckerPlay'>>
     ) => void
     doEndOfCubeGame: (
         state: CBState,
         result: SGResult,
         eogStatus: EOGStatus
-    ) => (
-        listeners: Partial<Pick<CubeGameListeners, 'onEndOfCubeGame'>>
-    ) => void
+    ) => (listeners: Partial<Pick<CubeGameListener, 'onEndOfCubeGame'>>) => void
 }
 
-export type CubeGameListeners = {
+export type CubeGameListener = {
     onStartCubeGame: () => void
 
+    onAwaitCubeAction: (nextState: CBAction | CBToRoll) => void
     onStartCubeAction: (nextState: CBAction) => void
-    onAwaitCheckerPlay: (nextState: CBInPlay) => void
     onSkipCubeAction: (nextState: CBToRoll) => void
+    onAwaitCheckerPlay: (nextState: CBInPlay) => void
 
     onDouble: (nextState: CBResponse, lastState: CBAction) => void
     onTake: (nextState: CBToRoll, lastState: CBResponse) => void
@@ -76,15 +76,19 @@ export type CubeGameListeners = {
 }
 
 export function concatCBListeners(
-    base: Partial<CubeGameListeners>,
-    ...listeners: Partial<CubeGameListeners>[]
-): Partial<CubeGameListeners> {
+    base: Partial<CubeGameListener>,
+    ...listeners: Partial<CubeGameListener>[]
+): Partial<CubeGameListener> {
     return listeners.reduce(
-        (prev: Partial<CubeGameListeners>, cur: Partial<CubeGameListeners>) => {
+        (prev: Partial<CubeGameListener>, cur: Partial<CubeGameListener>) => {
             return {
                 onStartCubeGame: concat0(
                     prev?.onStartCubeGame,
                     cur?.onStartCubeGame
+                ),
+                onAwaitCubeAction: concat1(
+                    prev?.onAwaitCubeAction,
+                    cur?.onAwaitCubeAction
                 ),
                 onStartCubeAction: concat1(
                     prev?.onStartCubeAction,
@@ -113,9 +117,12 @@ export function concatCBListeners(
 export function setCBStateListener(
     defaultState: CBState,
     setCBState: (cbState: CBState) => void
-): CubeGameListeners {
+): CubeGameListener {
     return {
         onStartCubeGame: () => setCBState(defaultState),
+        onAwaitCubeAction: () => {
+            //
+        },
         onStartCubeAction: setCBState,
         onAwaitCheckerPlay: setCBState,
         onDouble: setCBState,
@@ -138,36 +145,34 @@ export const cubeGameDispatcher: CubeGameDispatcher = {
 }
 
 function doStartCubeGame() {
-    return (listeners: Partial<Pick<CubeGameListeners, 'onStartCubeGame'>>) => {
+    return (listeners: Partial<Pick<CubeGameListener, 'onStartCubeGame'>>) => {
         listeners.onStartCubeGame?.()
     }
 }
 function doDouble(state: CBAction) {
     const nextState: CBResponse = state.doDouble()
-    return (listeners: Partial<Pick<CubeGameListeners, 'onDouble'>>) => {
+    return (listeners: Partial<Pick<CubeGameListener, 'onDouble'>>) => {
         listeners.onDouble?.(nextState, state)
     }
 }
 
 function doSkipCubeAction(state: CBAction) {
     const nextState = state.doSkipCubeAction()
-    return (
-        listeners: Partial<Pick<CubeGameListeners, 'onSkipCubeAction'>>
-    ) => {
+    return (listeners: Partial<Pick<CubeGameListener, 'onSkipCubeAction'>>) => {
         listeners.onSkipCubeAction?.(nextState)
     }
 }
 
 function doTake(state: CBResponse) {
     const nextState: CBToRoll = state.doTake()
-    return (listeners: Partial<Pick<CubeGameListeners, 'onTake'>>) => {
+    return (listeners: Partial<Pick<CubeGameListener, 'onTake'>>) => {
         listeners.onTake?.(nextState, state)
     }
 }
 
 function doPass(state: CBResponse) {
     const nextState: CBEoG = state.doPass()
-    return (listeners: Partial<Pick<CubeGameListeners, 'onEndOfCubeGame'>>) => {
+    return (listeners: Partial<Pick<CubeGameListener, 'onEndOfCubeGame'>>) => {
         listeners.onEndOfCubeGame?.(nextState, state)
     }
 }
@@ -177,9 +182,13 @@ function doStartCubeAction(state: CBInPlay, skipCubeAction: boolean) {
         state.doStartCubeAction(skipCubeAction)
     return (
         listeners: Partial<
-            Pick<CubeGameListeners, 'onStartCubeAction' | 'onSkipCubeAction'>
+            Pick<
+                CubeGameListener,
+                'onStartCubeAction' | 'onSkipCubeAction' | 'onAwaitCubeAction'
+            >
         >
     ) => {
+        listeners.onAwaitCubeAction?.(nextState)
         if (nextState.tag === 'CBAction') {
             listeners.onStartCubeAction?.(nextState)
         } else {
@@ -193,7 +202,7 @@ function doStartOpeningCheckerPlay(state: CBOpening, isRed: boolean) {
         ? state.doStartCheckerPlayRed()
         : state.doStartCheckerPlayWhite()
     return (
-        listeners: Partial<Pick<CubeGameListeners, 'onAwaitCheckerPlay'>>
+        listeners: Partial<Pick<CubeGameListener, 'onAwaitCheckerPlay'>>
     ) => {
         listeners.onAwaitCheckerPlay?.(nextState)
     }
@@ -202,7 +211,7 @@ function doStartOpeningCheckerPlay(state: CBOpening, isRed: boolean) {
 function doStartCheckerPlay(state: CBAction | CBToRoll) {
     const nextState: CBInPlay = state.doStartCheckerPlay()
     return (
-        listeners: Partial<Pick<CubeGameListeners, 'onAwaitCheckerPlay'>>
+        listeners: Partial<Pick<CubeGameListener, 'onAwaitCheckerPlay'>>
     ) => {
         listeners.onAwaitCheckerPlay?.(nextState)
     }
@@ -214,7 +223,7 @@ function doEndOfCubeGame(
     eogStatus: EOGStatus
 ) {
     const nextState: CBEoG = resultToCBEoG(state.cubeState, sgResult, eogStatus)
-    return (listeners: Partial<Pick<CubeGameListeners, 'onEndOfCubeGame'>>) => {
+    return (listeners: Partial<Pick<CubeGameListener, 'onEndOfCubeGame'>>) => {
         listeners.onEndOfCubeGame?.(nextState)
     }
 }

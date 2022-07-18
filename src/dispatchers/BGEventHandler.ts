@@ -1,5 +1,5 @@
 import { BGState } from './BGState'
-import { BGListeners } from './cubefulGameEventHandlers'
+import { BGListener } from './BGListener'
 import {
     CBAction,
     CBInPlay,
@@ -8,11 +8,11 @@ import {
     CBState,
     CBToRoll,
 } from './CubeGameState'
-import { SingleGameEventHandlers } from './SingleGameEventHandlers'
+import { SingleGameEventHandler } from './SingleGameEventHandler'
 import { SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
-import { concat1, concat2 } from './utils/concat'
+import { concat0, concat1, concat2 } from './utils/concat'
 
-export type BGEventHandlers = {
+export type BGEventHandler = {
     onRollOpening: (bgState: { cbState: CBOpening; sgState: SGOpening }) => void
 
     onCommit: (bgState: { cbState: CBInPlay; sgState: SGInPlay }) => void
@@ -29,10 +29,10 @@ export type BGEventHandlers = {
     onPass: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => void
 }
 
-export function asSGEventHandlers(
+export function asSGEventHandler(
     cbState: CBState,
-    handlers: Partial<BGEventHandlers>
-): SingleGameEventHandlers {
+    handlers: Partial<BGEventHandler>
+): SingleGameEventHandler {
     return {
         onStartGame: () => {
             handlers.onStartGame?.()
@@ -56,10 +56,15 @@ export function asSGEventHandlers(
 }
 
 export function concatBGListeners(
-    bg1: Partial<BGListeners>,
-    bg2: Partial<BGListeners>
-) {
+    bg1: Partial<BGListener>,
+    bg2: Partial<BGListener>
+): Partial<BGListener> {
     return {
+        onStartCubeGame: concat0(bg1.onStartCubeGame, bg2.onStartCubeGame),
+        onAwaitCubeAction: concat2(
+            bg1.onAwaitCubeAction,
+            bg2.onAwaitCubeAction
+        ),
         onStartCubeAction: concat1(
             bg1.onStartCubeAction,
             bg2.onStartCubeAction
@@ -76,16 +81,19 @@ export function concatBGListeners(
 }
 
 export function setBGStateListener(
-    defaultState: CBState,
-    setCBState: (cbState: CBState) => void
-): BGListeners {
+    defaultState: BGState,
+    setBGState: (bgState: BGState) => void
+): BGListener {
     return {
-        onStartCubeGame: () => setCBState(defaultState),
-        onStartCubeAction: (bgState: BGState) => setCBState(bgState.cbState),
-        onAwaitCheckerPlay: (bgState: BGState) => setCBState(bgState.cbState),
-        onDouble: (bgState: BGState) => setCBState(bgState.cbState),
-        onTake: (bgState: BGState) => setCBState(bgState.cbState),
-        onSkipCubeAction: (bgState: BGState) => setCBState(bgState.cbState),
-        onEndOfCubeGame: (bgState: BGState) => setCBState(bgState.cbState),
+        onStartCubeGame: () => setBGState(defaultState),
+        onAwaitCubeAction: () => {
+            //
+        },
+        onStartCubeAction: (bgState: BGState) => setBGState(bgState),
+        onAwaitCheckerPlay: (bgState: BGState) => setBGState(bgState),
+        onDouble: (bgState: BGState) => setBGState(bgState),
+        onTake: (bgState: BGState) => setBGState(bgState),
+        onSkipCubeAction: (bgState: BGState) => setBGState(bgState),
+        onEndOfCubeGame: (bgState: BGState) => setBGState(bgState),
     }
 }

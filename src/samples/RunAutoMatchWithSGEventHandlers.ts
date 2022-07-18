@@ -1,6 +1,6 @@
 import { defaultSGState } from '../dispatchers/defaultStates'
 import { setSGStateListener } from '../dispatchers/SingleGameDispatcher'
-import { singleGameEventHandlers } from '../dispatchers/SingleGameEventHandlers'
+import { buildSGEventHandler } from '../dispatchers/buildSGEventHandler'
 import { SGState } from '../dispatchers/SingleGameState'
 import { toSGState } from '../dispatchers/utils/GameSetup'
 import { simpleNNEngine } from '../engines/SimpleNNGammon'
@@ -18,7 +18,7 @@ function run() {
     const setSGState = (state: SGState) => {
         gState.sg = state
     }
-    const handlers = singleGameEventHandlers(
+    const handlers = buildSGEventHandler(
         undefined,
         setSGStateListener(defaultSGState(standardConf), setSGState)
     )

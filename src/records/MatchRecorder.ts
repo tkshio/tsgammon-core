@@ -1,12 +1,13 @@
 import { BGState } from '../dispatchers/BGState'
-import { BGListeners } from '../dispatchers/cubefulGameEventHandlers'
+import { BGListener } from '../dispatchers/BGListener'
 import {
     CBAction,
     CBEoG,
+    CBInPlay,
     CBResponse,
     CBToRoll,
 } from '../dispatchers/CubeGameState'
-import { SingleGameListeners } from '../dispatchers/SingleGameDispatcher'
+import { SingleGameListener } from '../dispatchers/SingleGameDispatcher'
 import {
     SGEoG,
     SGInPlay,
@@ -35,7 +36,7 @@ export type MatchRecorder<T> = {
 
 export function matchRecorderAsSGAddOn(
     matchRecorder: MatchRecorder<SGState>
-): Partial<SingleGameListeners> {
+): Partial<SingleGameListener> {
     return {
         onAwaitRoll: (_: SGToRoll, lastState: SGInPlay) => {
             matchRecorder.recordPly(
@@ -57,10 +58,19 @@ export function matchRecorderAsSGAddOn(
 
 export function matchRecorderAsCBAddOn(
     gameConf: GameConf,
-    sgState: SGState,
+    sgStateToResume: SGState,
     matchRecorder: MatchRecorder<BGState>
-): Partial<BGListeners & SingleGameListeners> {
+): Partial<BGListener> {
     return {
+        onAwaitCubeAction: (
+            _: { cbState: CBAction | CBToRoll; sgState: SGToRoll },
+            lastState: { cbState: CBInPlay; sgState: SGInPlay }
+        ) => {
+            matchRecorder.recordPly(
+                plyRecordForCheckerPlay(lastState.sgState.curPly),
+                lastState
+            )
+        },
         onDouble: (
             _: { cbState: CBResponse; sgState: SGToRoll },
             lastState: CBAction
@@ -69,7 +79,10 @@ export function matchRecorderAsCBAddOn(
                 lastState.cubeState,
                 lastState.isRed
             )
-            matchRecorder.recordPly(plyRecord, { cbState: lastState, sgState })
+            matchRecorder.recordPly(plyRecord, {
+                cbState: lastState,
+                sgState: sgStateToResume,
+            })
         },
 
         onTake: (
@@ -77,7 +90,10 @@ export function matchRecorderAsCBAddOn(
             lastState: CBResponse
         ) => {
             const plyRecord = plyRecordForTake(lastState.isRed)
-            matchRecorder.recordPly(plyRecord, { cbState: lastState, sgState })
+            matchRecorder.recordPly(plyRecord, {
+                cbState: lastState,
+                sgState: sgStateToResume,
+            })
         },
 
         onStartCubeGame: () => {
@@ -94,7 +110,7 @@ export function matchRecorderAsCBAddOn(
                 )
                 matchRecorder.recordPly(plyRecord, {
                     cbState: lastState,
-                    sgState,
+                    sgState: sgStateToResume,
                 })
             }
             const { stake, eogStatus } = bgState.cbState.calcStake(gameConf)

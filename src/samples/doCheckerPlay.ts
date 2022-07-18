@@ -1,11 +1,11 @@
-import { SingleGameEventHandlers } from '../dispatchers/SingleGameEventHandlers'
+import { SingleGameEventHandler } from '../dispatchers/SingleGameEventHandler'
 import { SGState } from '../dispatchers/SingleGameState'
 import { GammonEngine } from '../engines/GammonEngine'
 
 export function doCheckerPlay(
     engine: GammonEngine,
     sgState: SGState,
-    sgEventHandlers: SingleGameEventHandlers
+    sgEventHandlers: SingleGameEventHandler
 ) {
     switch (sgState.tag) {
         case 'SGOpening': {

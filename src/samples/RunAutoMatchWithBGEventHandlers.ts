@@ -1,9 +1,6 @@
-import {
-    BGEventHandlers,
-    asSGEventHandlers,
-} from '../dispatchers/BGEventHandlers'
+import { BGEventHandler, asSGEventHandler } from '../dispatchers/BGEventHandler'
 import { BGState } from '../dispatchers/BGState'
-import { cubefulGameEventHandlers } from '../dispatchers/cubefulGameEventHandlers'
+import { buildBGEventHandler } from '../dispatchers/buildBGEventHandler'
 import { setCBStateListener } from '../dispatchers/CubeGameDispatcher'
 import { CBState } from '../dispatchers/CubeGameState'
 import { defaultBGState } from '../dispatchers/defaultStates'
@@ -18,7 +15,7 @@ import { doCheckerPlay } from './doCheckerPlay'
 
 const engine = simpleNNEngine
 
-function doPlay(bgState: BGState, eventHandlers: BGEventHandlers) {
+function doPlay(bgState: BGState, eventHandlers: BGEventHandler) {
     const { cbState, sgState } = bgState
     switch (cbState.tag) {
         case 'CBOpening':
@@ -27,7 +24,7 @@ function doPlay(bgState: BGState, eventHandlers: BGEventHandlers) {
             doCheckerPlay(
                 simpleNNEngine,
                 sgState,
-                asSGEventHandlers(cbState, eventHandlers)
+                asSGEventHandler(cbState, eventHandlers)
             )
             break
 
@@ -82,7 +79,7 @@ function run() {
         gState.cb = state
     }
     const isCrawford = false
-    const handlers = cubefulGameEventHandlers(
+    const handlers = buildBGEventHandler(
         isCrawford,
         rollListeners(),
         setCBStateListener(defaultBGState().cbState, setCBState),
