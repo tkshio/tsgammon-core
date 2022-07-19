@@ -41,9 +41,17 @@ export function matchStateForPointMatch(
 
 export function shouldSkipCubeAction(
     matchState: MatchState,
-    cubeValue: number
+    cubeValue: number,
+    isRed: boolean
 ) {
-    return false
+    return (
+        matchState.matchLength > 0 &&
+        matchState.matchLength <=
+            cubeValue +
+                (isRed
+                    ? matchState.score.redScore
+                    : matchState.score.whiteScore)
+    )
 }
 
 function matchStateInPlay(
