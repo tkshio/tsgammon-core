@@ -45,12 +45,13 @@ export function shouldSkipCubeAction(
     isRed: boolean
 ) {
     return (
-        matchState.matchLength > 0 &&
-        matchState.matchLength <=
-            cubeValue +
-                (isRed
-                    ? matchState.score.redScore
-                    : matchState.score.whiteScore)
+        matchState.isCrawford ||
+        (matchState.matchLength > 0 &&
+            matchState.matchLength <=
+                cubeValue +
+                    (isRed
+                        ? matchState.score.redScore
+                        : matchState.score.whiteScore))
     )
 }
 
