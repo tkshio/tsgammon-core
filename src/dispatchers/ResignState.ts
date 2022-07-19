@@ -1,3 +1,5 @@
+import { ResignOffer } from '../ResignOffer'
+
 export type ResignState = RSNone | RSOffered
 
 export type RSNone = {
@@ -12,12 +14,9 @@ type _RSOffered = { tag: 'RSOffered'; offer: ResignOffer }
 export type RSOfferedWhite = _RSOffered & { isRed: false }
 export type RSOfferedRed = _RSOffered & { isRed: true }
 
-export enum ResignOffer {
-    Single = 1,
-    Gammon = 2,
-    Backgammon = 4,
-}
-export function rsNone(): RSNone {
+export const RSNONE = rsNone()
+
+function rsNone(): RSNone {
     return {
         tag: 'RSNone',
         doOfferResignRed: (offer: ResignOffer) => rsOfferedWhite(offer),

@@ -1,7 +1,8 @@
 import { EOGStatus, eog } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
-import { ResignOffer, RSOffered } from './ResignState'
-import { ResignEventHandler, RSNONE } from './ResignEventHandlers'
+import { RSNONE, RSOffered } from './ResignState'
+import { ResignOffer } from '../ResignOffer'
+import { ResignEventHandler } from './ResignEventHandlers'
 
 export function buildRSEventHandler(
     listeners: Partial<{

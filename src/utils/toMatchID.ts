@@ -1,13 +1,12 @@
 import { encode as encodeAsBase64 } from '@borderless/base64'
 
-import { cube, CubeOwner } from '../CubeState'
+import { CubeOwner } from '../CubeState'
 import { GameState } from '../GameState'
 import { MatchState } from '../MatchState'
-import { ResignOffer } from '../dispatchers/ResignState'
+import { ResignOffer } from '../ResignOffer'
 
 export function toMatchID(matchState: MatchState, gameState: GameState) {
-    const cubeState =
-        gameState.tag === 'GSInit' ? cube(1) : gameState.cbState.cubeState
+    const cubeState = gameState.cubeState
 
     // 1. Bit 1-4 contains the 2-logarithm of the cube value. For example, a 8-cube is encoded as 0011 binary (or 3), since 2 to the power of 3 is 8. The maximum value of the cube in with this encoding is 2 to the power of 15, i.e., a 32768-cube.
     const bit1_4 = Math.log2(cubeState.value)
@@ -22,18 +21,27 @@ export function toMatchID(matchState: MatchState, gameState: GameState) {
 
     // 3. Bit 7 is the player on roll or the player who did roll (0 and 1 for player 0 and 1, respectively).
     const bit7 =
-        gameState.tag === 'GSInPlay' ? (gameState.sgState.isRed ? 0 : 1) : 0
+        gameState.tag === 'GSInPlay'
+            ? // キューブレスポンス中はロールしたプレイヤーとレスポンス中のプレイヤーが逆になる
+              gameState.isDoubleOffered
+                ? gameState.isRed
+                    ? 1
+                    : 0
+                : gameState.isRed
+                ? 0
+                : 1
+            : 0
 
     // 4. Bit 8 is the Crawford flag: 1 if this game is the Crawford game, 0 otherwise.
     const bit8 = matchState.isCrawford ? 1 : 0
 
     // 5. Bit 9-11 is the game state: 000 for no game started, 001 for playing a game, 010 if the game is over, 011 if the game was resigned, or 100 if the game was ended by dropping a cube.
     const bit9_11 =
-        gameState.tag === 'GSInit'
+        gameState.tag === 'GSOpening'
             ? 0
-            : gameState.tag === 'GSOpening' || gameState.tag === 'GSInPlay'
+            : gameState.tag === 'GSInPlay'
             ? 1
-            : gameState.cbState.isWonByPass
+            : gameState.isWonByPass
             ? 4
             : gameState.isWonByResign
             ? 3
@@ -41,23 +49,15 @@ export function toMatchID(matchState: MatchState, gameState: GameState) {
 
     // 6. Bit 12 indicates whose turn it is. For example, suppose player 0 is on roll then bit 7 above will be 0. Player 0 now decides to double, this will make bit 12 equal to 1, since it is now player 1's turn to decide whether she takes or passes the cube.
     const bit12 =
-        gameState.tag === 'GSInit' || gameState.tag === 'GSOpening'
-            ? 0
-            : gameState.tag === 'GSEoG'
-            ? 0
-            : gameState.rsState.tag === 'RSOffered'
-            ? gameState.rsState.isRed
-                ? 0
-                : 1
-            : gameState.cbState.isRed
+        gameState.tag === 'GSOpening' || gameState.tag === 'GSEoG'
+            ? 0 // value for these cases are undefined
+            : gameState.isRed
             ? 0
             : 1
 
     // 7. Bit 13 indicates whether an doubled is being offered. 0 if no double is being offered and 1 if a double is being offered.
     const bit13 =
-        gameState.tag === 'GSInPlay' && gameState.cbState.tag === 'CBResponse'
-            ? 1
-            : 0
+        gameState.tag === 'GSInPlay' && gameState.isDoubleOffered ? 1 : 0
 
     // Bit 14-15 indicates whether an resignation was offered. 00 for no resignation, 01 for resign of a single game, 10 for resign of a gammon, or 11 for resign of a backgammon. The player offering the resignation is the inverse of bit 12, e.g., if player 0 resigns a gammon then bit 12 will be 1 (as it is now player 1 now has to decide whether to accept or reject the resignation) and bit 13-14 will be 10 for resign of a gammon.
     const bit14_15 = isResignOffered(gameState)
@@ -121,23 +121,24 @@ export function toMatchID(matchState: MatchState, gameState: GameState) {
 }
 
 function dices(gameState: GameState): { dice1: number; dice2: number } {
-    return gameState.tag === 'GSInPlay' && gameState.sgState.tag === 'SGInPlay'
+    return gameState.tag === 'GSInPlay' && gameState.dices !== undefined
         ? {
-              dice1: gameState.sgState.dices[0].pip,
-              dice2: gameState.sgState.dices[1].pip,
+              dice1: gameState.dices[0].pip,
+              dice2: gameState.dices[1].pip,
           }
         : { dice1: 0, dice2: 0 }
 }
 
 function isResignOffered(gameState: GameState) {
     if (
-        gameState.tag == 'GSInit' ||
+        gameState.tag == 'GSOpening' ||
         gameState.tag == 'GSEoG' ||
-        gameState.rsState.tag == 'RSNone'
+        !gameState.isResignOffered ||
+        gameState.offer == undefined
     ) {
         return 0
     }
-    const offer = gameState.rsState.offer
+    const offer = gameState.offer
     switch (offer) {
         case ResignOffer.Single:
             return 1

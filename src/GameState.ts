@@ -1,45 +1,28 @@
-import {
-    CBAction,
-    CBEoG,
-    CBInPlay,
-    CBOpening,
-    CBResponse,
-    CBToRoll,
-} from './dispatchers/CubeGameState'
-import { RSNone, RSOffered } from './dispatchers/ResignState'
-import {
-    SGEoG,
-    SGInPlay,
-    SGOpening,
-    SGToRoll,
-} from './dispatchers/SingleGameState'
+import { CubeState } from './CubeState'
+import { Dice } from './Dices'
+import { ResignOffer } from './ResignOffer'
 
-export type GameState = GSInit | GSOpening | GSInPlay | GSEoG
+export type GameState = GSOpening | GSInPlay | GSEoG
 
 type _GameState = {
-    //
-}
-
-export type GSInit = _GameState & {
-    tag: 'GSInit'
+    cubeState: CubeState
 }
 
 export type GSOpening = _GameState & {
     tag: 'GSOpening'
-    rsState: RSNone
-    cbState: CBOpening
-    sgState: SGOpening
 }
+
 export type GSInPlay = _GameState & {
     tag: 'GSInPlay'
-    rsState: RSNone | RSOffered
-    cbState: CBAction | CBResponse | CBToRoll | CBInPlay
-    sgState: SGInPlay | SGToRoll
+    isResignOffered: boolean
+    isDoubleOffered: boolean
+    offer?: ResignOffer
+    dices?: Dice[]
+    isRed: boolean
 }
+
 export type GSEoG = _GameState & {
-    cbState: CBEoG
-    sgState: SGToRoll | SGEoG
     tag: 'GSEoG'
-    isEoM: boolean
     isWonByResign: boolean
+    isWonByPass: boolean
 }

@@ -1,6 +1,5 @@
-import { rsNone, ResignOffer, RSOffered } from './ResignState'
-
-export const RSNONE = rsNone()
+import { RSOffered } from './ResignState'
+import { ResignOffer } from '../ResignOffer'
 
 export type ResignEventHandler = {
     onOfferResign: (offer: ResignOffer, isRed: boolean) => void
