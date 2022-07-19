@@ -1,7 +1,7 @@
 import { PlyStateRecord } from './PlyStateRecord'
 import { Score } from '../Score'
 import { PlyRecordEoG } from './PlyRecord'
-import { MatchState } from '../dispatchers/MatchState'
+import { MatchState } from '../MatchState'
 
 /**
  * 1ゲーム分、すなわちオープニングロールからゲームが終局するまでの記録。

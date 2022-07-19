@@ -4,7 +4,7 @@ import {
     MatchStateInPlay,
     matchStateLastGame,
     matchStateNewGame,
-} from '../dispatchers/MatchState'
+} from '../MatchState'
 import { GameConf, standardConf } from '../GameConf'
 import {
     gameRecordEoG,

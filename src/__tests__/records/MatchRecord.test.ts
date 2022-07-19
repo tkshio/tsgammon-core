@@ -1,7 +1,7 @@
 import {
     matchStateForPointMatch,
     matchStateForUnlimitedMatch,
-} from '../../dispatchers/MatchState'
+} from '../../MatchState'
 import { eog } from '../../EOGStatus'
 import { standardConf } from '../../GameConf'
 import {

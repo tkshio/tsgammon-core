@@ -1,6 +1,6 @@
-import { EOGStatus } from '../EOGStatus'
-import { Score, score } from '../Score'
-import { StakeConf } from './StakeConf'
+import { EOGStatus } from './EOGStatus'
+import { Score, score } from './Score'
+import { StakeConf } from './dispatchers/StakeConf'
 
 export type MatchState = MatchStateInPlay | MatchStateEoG
 
@@ -37,6 +37,13 @@ export function matchStateForPointMatch(
     isCrawford = false
 ): MatchStateInPlay {
     return matchStateInPlay(matchLength, scoreBefore, false, isCrawford)
+}
+
+export function shouldSkipCubeAction(
+    matchState: MatchState,
+    cubeValue: number
+) {
+    return false
 }
 
 function matchStateInPlay(

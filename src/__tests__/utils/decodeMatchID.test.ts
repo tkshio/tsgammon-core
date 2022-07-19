@@ -1,4 +1,4 @@
-import { decodeMatchID } from '../../../dispatchers/utils/decodeMatchID'
+import { decodeMatchID } from '../../utils/decodeMatchID'
 
 describe('decodeMatchID()', () => {
     test('decodes matchID', () => {

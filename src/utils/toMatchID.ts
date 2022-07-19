@@ -1,9 +1,9 @@
 import { encode as encodeAsBase64 } from '@borderless/base64'
 
-import { cube, CubeOwner } from '../../CubeState'
+import { cube, CubeOwner } from '../CubeState'
 import { GameState } from '../GameState'
 import { MatchState } from '../MatchState'
-import { ResignOffer } from '../ResignState'
+import { ResignOffer } from '../dispatchers/ResignState'
 
 export function toMatchID(matchState: MatchState, gameState: GameState) {
     const cubeState =

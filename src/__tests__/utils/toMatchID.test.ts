@@ -1,5 +1,5 @@
-import { boardState } from '../../../BoardState'
-import { cube, CubeOwner } from '../../../CubeState'
+import { boardState } from '../../BoardState'
+import { cube, CubeOwner } from '../../CubeState'
 import {
     cbActionRed,
     cbActionWhite,
@@ -9,31 +9,27 @@ import {
     cbResponseWhite,
     cbToRollRed,
     cbToRollWhite,
-} from '../../../dispatchers/CubeGameState'
-import { GameState } from '../../../dispatchers/GameState'
+} from '../../dispatchers/CubeGameState'
+import { GameState } from '../../GameState'
 import {
     MatchState,
     matchStateForPointMatch,
     matchStateForUnlimitedMatch,
     MatchStateInPlay,
-} from '../../../dispatchers/MatchState'
+} from '../../MatchState'
 import {
     ResignOffer,
     rsNone,
     rsOfferedRed,
-} from '../../../dispatchers/ResignState'
+} from '../../dispatchers/ResignState'
 import {
     inPlayStateRed,
     inPlayStateWhite,
     toRollStateRed,
     toRollStateWhite,
-} from '../../../dispatchers/SingleGameState'
-import {
-    Bit,
-    littleEndianReducer,
-    toMatchID,
-} from '../../../dispatchers/utils/toMatchID'
-import { score } from '../../../Score'
+} from '../../dispatchers/SingleGameState'
+import { Bit, littleEndianReducer, toMatchID } from '../../utils/toMatchID'
+import { score } from '../../Score'
 
 describe('toMatchID()', () => {
     test('encodes matchState', () => {

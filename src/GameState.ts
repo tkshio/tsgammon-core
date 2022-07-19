@@ -5,9 +5,14 @@ import {
     CBOpening,
     CBResponse,
     CBToRoll,
-} from './CubeGameState'
-import { RSNone, RSOffered } from './ResignState'
-import { SGEoG, SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
+} from './dispatchers/CubeGameState'
+import { RSNone, RSOffered } from './dispatchers/ResignState'
+import {
+    SGEoG,
+    SGInPlay,
+    SGOpening,
+    SGToRoll,
+} from './dispatchers/SingleGameState'
 
 export type GameState = GSInit | GSOpening | GSInPlay | GSEoG
 

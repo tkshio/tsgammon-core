@@ -8,7 +8,7 @@ import {
 import { BoardState, boardState } from '../BoardState'
 import { BoardStateNode, boardStateNode } from '../BoardStateNode'
 import { Dice, DiceRoll } from '../Dices'
-import { matchStateForUnlimitedMatch } from '../dispatchers/MatchState'
+import { matchStateForUnlimitedMatch } from '../MatchState'
 import { simpleNNEngine } from '../engines/SimpleNNGammon'
 import { EOGStatus } from '../EOGStatus'
 import { GameConf, standardConf } from '../GameConf'
