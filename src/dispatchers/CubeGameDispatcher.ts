@@ -21,16 +21,13 @@ export type CubeGameDispatcher = {
     doDouble: (
         state: CBAction
     ) => (listeners: Partial<Pick<CubeGameListener, 'onDoubled'>>) => void
-    doSkipCubeAction: (
-        state: CBAction
-    ) => (
-        listeners: Partial<Pick<CubeGameListener, 'onCubeActionSkipped'>>
-    ) => void
+
     doTake: (
         state: CBResponse
     ) => (
         listeners: Partial<Pick<CubeGameListener, 'onDoubleAccepted'>>
     ) => void
+
     doPass: (
         state: CBResponse
     ) => (listeners: Partial<Pick<CubeGameListener, 'onEndOfCubeGame'>>) => void
@@ -49,17 +46,26 @@ export type CubeGameDispatcher = {
             >
         >
     ) => void
+
+    doSkipCubeAction: (
+        state: CBAction
+    ) => (
+        listeners: Partial<Pick<CubeGameListener, 'onCubeActionSkipped'>>
+    ) => void
+
     doStartOpeningCheckerPlay: (
         state: CBOpening,
         isRed: boolean
     ) => (
         listeners: Partial<Pick<CubeGameListener, 'onAwaitCheckerPlay'>>
     ) => void
+
     doStartCheckerPlay: (
         state: CBAction | CBToRoll
     ) => (
         listeners: Partial<Pick<CubeGameListener, 'onAwaitCheckerPlay'>>
     ) => void
+
     doEndOfCubeGame: (
         state: CBState,
         result: SGResult,
