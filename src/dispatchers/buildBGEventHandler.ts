@@ -20,14 +20,19 @@ export type BGEventHandlersExtensible = BGEventHandler & {
 }
 
 export function buildBGEventHandler(
-    isCrawford: boolean,
+    skipCubeAction: boolean,
     rollListener: RollListener = rollListeners(),
     ...listeners: Partial<BGListener>[]
 ): BGEventHandlersExtensible {
-    return buildBGEventHandler_rec(isCrawford, rollListener, {}, ...listeners)
+    return buildBGEventHandler_rec(
+        skipCubeAction,
+        rollListener,
+        {},
+        ...listeners
+    )
 }
 function buildBGEventHandler_rec(
-    isCrawford: boolean,
+    skipCubeAction: boolean,
     rollListener: RollListener = rollListeners(),
     _bgListeners: Partial<BGListener>,
     ...listeners: Partial<BGListener>[]
@@ -37,11 +42,15 @@ function buildBGEventHandler_rec(
         _bgListeners
     )
 
-    const handlers = _buildBGEventHandler(isCrawford, rollListener, bgListeners)
+    const handlers = _buildBGEventHandler(
+        skipCubeAction,
+        rollListener,
+        bgListeners
+    )
 
     function addListeners(...toAdd: Partial<BGListener>[]) {
         return buildBGEventHandler_rec(
-            isCrawford,
+            skipCubeAction,
             rollListener,
             bgListeners,
             ...toAdd
