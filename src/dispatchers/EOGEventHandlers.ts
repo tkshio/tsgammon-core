@@ -1,12 +1,11 @@
 import { EOGStatus } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
 import { BGListener } from './BGListener'
+import { BGState } from './BGState'
 import { cubeGameDispatcher } from './CubeGameDispatcher'
-import { CBEoG, CBState } from './CubeGameState'
-import {
-    singleGameDispatcher,
-    SingleGameListener,
-} from './SingleGameDispatcher'
+import { CBEoG } from './CubeGameState'
+import { singleGameDispatcher } from './SingleGameDispatcher'
+import { SingleGameListener } from './SingleGameListener'
 import { SGState } from './SingleGameState'
 import { concat1, concat2 } from './utils/concat'
 
@@ -15,8 +14,8 @@ export function eogEventHandler(...listeners: Partial<BGListener>[]) {
         ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur), {}),
     }
     return {
-        onEndOfCubeGame: (
-            bgState: { cbState: CBState; sgState: SGState },
+        onEndOfBGGame: (
+            bgState: BGState,
             sgResult: SGResult,
             eog: EOGStatus
         ) => {
@@ -27,7 +26,7 @@ export function eogEventHandler(...listeners: Partial<BGListener>[]) {
             )
             result({
                 onEndOfCubeGame: (nextState: CBEoG) => {
-                    listener.onEndOfCubeGame?.({
+                    listener.onEndOfBGGame?.({
                         cbState: nextState,
                         sgState: bgState.sgState,
                     })
@@ -36,13 +35,13 @@ export function eogEventHandler(...listeners: Partial<BGListener>[]) {
         },
     }
     function concatEOGListeners(
-        listener1: Partial<Pick<BGListener, 'onEndOfCubeGame'>>,
-        listener2: Partial<Pick<BGListener, 'onEndOfCubeGame'>>
-    ): Partial<Pick<BGListener, 'onEndOfCubeGame'>> {
+        listener1: Partial<Pick<BGListener, 'onEndOfBGGame'>>,
+        listener2: Partial<Pick<BGListener, 'onEndOfBGGame'>>
+    ): Partial<Pick<BGListener, 'onEndOfBGGame'>> {
         return {
-            onEndOfCubeGame: concat1(
-                listener1.onEndOfCubeGame,
-                listener2.onEndOfCubeGame
+            onEndOfBGGame: concat1(
+                listener1.onEndOfBGGame,
+                listener2.onEndOfBGGame
             ),
         }
     }

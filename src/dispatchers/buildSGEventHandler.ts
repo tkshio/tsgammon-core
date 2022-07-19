@@ -1,10 +1,7 @@
 import { DiceRoll } from '../Dices'
 import { RollListener, rollListeners } from './RollDispatcher'
-import {
-    concatSGListeners,
-    singleGameDispatcher,
-    SingleGameListener,
-} from './SingleGameDispatcher'
+import { concatSGListeners, singleGameDispatcher } from './SingleGameDispatcher'
+import { SingleGameListener } from './SingleGameListener'
 import { SGOpening, SGToRoll } from './SingleGameState'
 import {
     SingleGameEventHandlerExtensible,

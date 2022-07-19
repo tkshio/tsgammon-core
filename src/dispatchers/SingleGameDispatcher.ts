@@ -1,9 +1,9 @@
 import { DiceRoll } from '../Dices'
 import { EOGStatus } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
+import { SingleGameListener } from './SingleGameListener'
 import {
     resultToSGEoG,
-    SGEoG,
     SGInPlay,
     SGOpening,
     SGState,
@@ -13,7 +13,7 @@ import { concat0, concat1, concat2 } from './utils/concat'
 
 export type SingleGameDispatcher = {
     doStartGame: () => (
-        listener: Partial<Pick<SingleGameListener, 'onStartGame'>>
+        listener: Partial<Pick<SingleGameListener, 'onGameStarted'>>
     ) => void
     doOpeningRoll: (
         state: SGOpening,
@@ -22,7 +22,7 @@ export type SingleGameDispatcher = {
         listener: Partial<
             Pick<
                 SingleGameListener,
-                'onStartOpeningCheckerPlay' | 'onRerollOpening'
+                'onOpeningCheckerPlayStarted' | 'onRerollOpening'
             >
         >
     ) => void
@@ -37,7 +37,7 @@ export type SingleGameDispatcher = {
         state: SGToRoll,
         dices: DiceRoll
     ) => (
-        listener: Partial<Pick<SingleGameListener, 'onStartCheckerPlay'>>
+        listener: Partial<Pick<SingleGameListener, 'onCheckerPlayStarted'>>
     ) => void
     doEndOfGame: (
         state: SGState,
@@ -46,19 +46,12 @@ export type SingleGameDispatcher = {
     ) => (listeners: Partial<Pick<SingleGameListener, 'onEndOfGame'>>) => void
 }
 
-export type SingleGameListener = {
-    onStartGame: () => void
-    onStartOpeningCheckerPlay: (nextState: SGInPlay) => void
-    onStartCheckerPlay: (nextState: SGInPlay) => void
-    onRerollOpening: (nextState: SGOpening) => void
-    onAwaitRoll: (nextState: SGToRoll, lastState: SGInPlay) => void
-    onEndOfGame: (nextState: SGEoG, lastState?: SGInPlay) => void
-}
-
 export const singleGameDispatcher = {
     doStartGame: () => {
-        return (listener: Partial<Pick<SingleGameListener, 'onStartGame'>>) => {
-            listener.onStartGame?.()
+        return (
+            listener: Partial<Pick<SingleGameListener, 'onGameStarted'>>
+        ) => {
+            listener.onGameStarted?.()
         }
     },
     doOpeningRoll: (state: SGOpening, dices: DiceRoll) => {
@@ -67,12 +60,12 @@ export const singleGameDispatcher = {
             listener: Partial<
                 Pick<
                     SingleGameListener,
-                    'onStartOpeningCheckerPlay' | 'onRerollOpening'
+                    'onOpeningCheckerPlayStarted' | 'onRerollOpening'
                 >
             >
         ) => {
             if (nextState.tag === 'SGInPlay') {
-                listener.onStartOpeningCheckerPlay?.(nextState)
+                listener.onOpeningCheckerPlayStarted?.(nextState)
             } else {
                 listener.onRerollOpening?.(nextState)
             }
@@ -99,9 +92,9 @@ export const singleGameDispatcher = {
     doRoll: (state: SGToRoll, dices: DiceRoll) => {
         const nextState = state.doRoll(dices)
         return (
-            listener: Partial<Pick<SingleGameListener, 'onStartCheckerPlay'>>
+            listener: Partial<Pick<SingleGameListener, 'onCheckerPlayStarted'>>
         ) => {
-            listener.onStartCheckerPlay?.(nextState)
+            listener.onCheckerPlayStarted?.(nextState)
         }
     },
     doEndOfGame: (sgState: SGState, result: SGResult, eog: EOGStatus) => {
@@ -124,14 +117,14 @@ export function concatSGListeners(
             cur: Partial<SingleGameListener>
         ) => {
             return {
-                onStartGame: concat0(prev?.onStartGame, cur?.onStartGame),
-                onStartOpeningCheckerPlay: concat1(
-                    prev?.onStartOpeningCheckerPlay,
-                    cur?.onStartOpeningCheckerPlay
+                onGameStarted: concat0(prev?.onGameStarted, cur?.onGameStarted),
+                onOpeningCheckerPlayStarted: concat1(
+                    prev?.onOpeningCheckerPlayStarted,
+                    cur?.onOpeningCheckerPlayStarted
                 ),
-                onStartCheckerPlay: concat1(
-                    prev?.onStartCheckerPlay,
-                    cur?.onStartCheckerPlay
+                onCheckerPlayStarted: concat1(
+                    prev?.onCheckerPlayStarted,
+                    cur?.onCheckerPlayStarted
                 ),
                 onRerollOpening: concat1(
                     prev?.onRerollOpening,
@@ -149,9 +142,9 @@ export function setSGStateListener(
     setState: (state: SGState) => void
 ): SingleGameListener {
     return {
-        onStartGame: () => setState(defaultSGState),
-        onStartOpeningCheckerPlay: setState,
-        onStartCheckerPlay: setState,
+        onGameStarted: () => setState(defaultSGState),
+        onOpeningCheckerPlayStarted: setState,
+        onCheckerPlayStarted: setState,
         onRerollOpening: setState,
         onAwaitRoll: setState,
         onEndOfGame: setState,

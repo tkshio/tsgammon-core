@@ -59,7 +59,7 @@ function _buildBGEventHandler(
     rollListener: RollListener,
     bgListeners: Partial<BGListener>
 ): BGEventHandler {
-    const { onEndOfCubeGame } = eogEventHandler(bgListeners)
+    const { onEndOfBGGame: onEndOfCubeGame } = eogEventHandler(bgListeners)
     const sgDispatcher = withRL(singleGameDispatcher, rollListener)
 
     const handler = {
@@ -70,7 +70,7 @@ function _buildBGEventHandler(
             const sgResult = sgDispatcher.doOpeningRoll(bgState.sgState)
             sgResult({
                 // オープニングロールがあった：手番を設定してInPlay状態に遷移
-                onStartOpeningCheckerPlay: (nextSGState: SGInPlay) => {
+                onOpeningCheckerPlayStarted: (nextSGState: SGInPlay) => {
                     const cbResult =
                         cubeGameDispatcher.doStartOpeningCheckerPlay(
                             bgState.cbState,
@@ -106,14 +106,14 @@ function _buildBGEventHandler(
                                 { cbState: bgState.cbState, sgState: lastState }
                             )
                         },
-                        onStartCubeAction: (nextCBState: CBAction) => {
-                            bgListeners.onStartCubeAction?.({
+                        onCubeActionStarted: (nextCBState: CBAction) => {
+                            bgListeners.onCubeActionStarted?.({
                                 cbState: nextCBState,
                                 sgState: nextSGState,
                             })
                         },
-                        onSkipCubeAction: (nextCBState: CBToRoll) => {
-                            bgListeners.onSkipCubeAction?.({
+                        onCubeActionSkipped: (nextCBState: CBToRoll) => {
+                            bgListeners.onCubeActionSkipped?.({
                                 cbState: nextCBState,
                                 sgState: nextSGState,
                             })
@@ -138,7 +138,7 @@ function _buildBGEventHandler(
             const sgResult = sgDispatcher.doRoll(bgState.sgState)
             sgResult({
                 // ロールがあった：InPlay状態に遷移
-                onStartCheckerPlay: (nextSGState: SGInPlay) => {
+                onCheckerPlayStarted: (nextSGState: SGInPlay) => {
                     const cbResult = cubeGameDispatcher.doStartCheckerPlay(
                         bgState.cbState
                     )
@@ -157,11 +157,11 @@ function _buildBGEventHandler(
         onStartGame: () => {
             const sgResult = sgDispatcher.doStartGame()
             sgResult({
-                onStartGame: () => {
+                onGameStarted: () => {
                     const cbResult = cubeGameDispatcher.doStartCubeGame()
                     cbResult({
-                        onStartCubeGame: () => {
-                            bgListeners.onStartCubeGame?.()
+                        onCubeGameStarted: () => {
+                            bgListeners.onBGGameStarted?.()
                         },
                     })
                 },
@@ -172,8 +172,8 @@ function _buildBGEventHandler(
             const result = cubeGameDispatcher.doDouble(bgState.cbState)
             // キューブレスポンスにCBとSGの両方の情報を渡すため、bgListenersを呼ぶ
             result({
-                onDouble: (nextState: CBResponse) => {
-                    bgListeners.onDouble?.(
+                onDoubled: (nextState: CBResponse) => {
+                    bgListeners.onDoubled?.(
                         {
                             cbState: nextState,
                             sgState: bgState.sgState,
@@ -187,8 +187,8 @@ function _buildBGEventHandler(
         onTake: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => {
             const result = cubeGameDispatcher.doTake(bgState.cbState)
             result({
-                onTake: (nextState: CBToRoll) => {
-                    bgListeners.onTake?.(
+                onDoubleAccepted: (nextState: CBToRoll) => {
+                    bgListeners.onDoubleAccepted?.(
                         {
                             cbState: nextState,
                             sgState: bgState.sgState,
@@ -208,7 +208,7 @@ function _buildBGEventHandler(
             const result = cubeGameDispatcher.doPass(bgState.cbState)
             result({
                 onEndOfCubeGame: (cbEoG: CBEoG) => {
-                    bgListeners.onEndOfCubeGame?.({
+                    bgListeners.onEndOfBGGame?.({
                         cbState: cbEoG,
                         sgState: bgState.sgState,
                     })

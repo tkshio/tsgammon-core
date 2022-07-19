@@ -1,9 +1,7 @@
 import { DiceRoll } from '../Dices'
 import { DiceSource, randomDiceSource } from '../utils/DiceSource'
-import {
-    SingleGameDispatcher,
-    SingleGameListener,
-} from './SingleGameDispatcher'
+import { SingleGameDispatcher } from './SingleGameDispatcher'
+import { SingleGameListener } from './SingleGameListener'
 import { SGOpening, SGToRoll } from './SingleGameState'
 
 export interface RollDispatcher {
@@ -48,7 +46,7 @@ export type SingleGameDispatcherWithRL = Omit<
     doRoll: (
         state: SGToRoll
     ) => (
-        listener: Partial<Pick<SingleGameListener, 'onStartCheckerPlay'>>
+        listener: Partial<Pick<SingleGameListener, 'onCheckerPlayStarted'>>
     ) => void
     doOpeningRoll: (
         state: SGOpening
@@ -56,7 +54,7 @@ export type SingleGameDispatcherWithRL = Omit<
         listener: Partial<
             Pick<
                 SingleGameListener,
-                'onStartOpeningCheckerPlay' | 'onRerollOpening'
+                'onOpeningCheckerPlayStarted' | 'onRerollOpening'
             >
         >
     ) => void
@@ -71,7 +69,7 @@ export function withRL(
         doRoll: (state: SGToRoll) => {
             return (
                 listener: Partial<
-                    Pick<SingleGameListener, 'onStartCheckerPlay'>
+                    Pick<SingleGameListener, 'onCheckerPlayStarted'>
                 >
             ) => {
                 rollListener.onRollRequest((dices: DiceRoll) => {
@@ -85,7 +83,7 @@ export function withRL(
                 listener: Partial<
                     Pick<
                         SingleGameListener,
-                        'onStartOpeningCheckerPlay' | 'onRerollOpening'
+                        'onOpeningCheckerPlayStarted' | 'onRerollOpening'
                     >
                 >
             ) => {

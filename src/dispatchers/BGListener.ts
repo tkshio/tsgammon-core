@@ -11,24 +11,24 @@ import { SGInPlay, SGState, SGToRoll } from './SingleGameState'
 // BGEventHandlerに処理を追加するためのインターフェース）
 
 export type BGListener = {
-    onStartCubeGame: () => void
+    onBGGameStarted: () => void
     onAwaitCubeAction: (
         bgState: { cbState: CBAction | CBToRoll; sgState: SGToRoll },
         lastState: { cbState: CBInPlay; sgState: SGInPlay }
     ) => void
-    onStartCubeAction: (bgState: {
+    onCubeActionStarted: (bgState: {
         cbState: CBAction
         sgState: SGToRoll
     }) => void
-    onSkipCubeAction: (bgState: {
+    onCubeActionSkipped: (bgState: {
         cbState: CBToRoll
         sgState: SGToRoll
     }) => void
-    onDouble: (
+    onDoubled: (
         bgState: { cbState: CBResponse; sgState: SGToRoll },
         lastState: CBAction
     ) => void
-    onTake: (
+    onDoubleAccepted: (
         bgState: { cbState: CBToRoll; sgState: SGToRoll },
         lastState: CBResponse
     ) => void
@@ -36,5 +36,5 @@ export type BGListener = {
         cbState: CBInPlay
         sgState: SGInPlay
     }) => void
-    onEndOfCubeGame: (bgState: { cbState: CBEoG; sgState: SGState }) => void
+    onEndOfBGGame: (bgState: { cbState: CBEoG; sgState: SGState }) => void
 }

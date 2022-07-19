@@ -1,4 +1,4 @@
-import { SingleGameListener } from './SingleGameDispatcher'
+import { SingleGameListener } from './SingleGameListener'
 import { SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 
 export type SingleGameEventHandler = {

@@ -60,23 +60,26 @@ export function concatBGListeners(
     bg2: Partial<BGListener>
 ): Partial<BGListener> {
     return {
-        onStartCubeGame: concat0(bg1.onStartCubeGame, bg2.onStartCubeGame),
+        onBGGameStarted: concat0(bg1.onBGGameStarted, bg2.onBGGameStarted),
         onAwaitCubeAction: concat2(
             bg1.onAwaitCubeAction,
             bg2.onAwaitCubeAction
         ),
-        onStartCubeAction: concat1(
-            bg1.onStartCubeAction,
-            bg2.onStartCubeAction
+        onCubeActionStarted: concat1(
+            bg1.onCubeActionStarted,
+            bg2.onCubeActionStarted
         ),
-        onSkipCubeAction: concat1(bg1.onSkipCubeAction, bg2.onSkipCubeAction),
-        onDouble: concat2(bg1.onDouble, bg2.onDouble),
-        onTake: concat2(bg1.onTake, bg2.onTake),
+        onCubeActionSkipped: concat1(
+            bg1.onCubeActionSkipped,
+            bg2.onCubeActionSkipped
+        ),
+        onDoubled: concat2(bg1.onDoubled, bg2.onDoubled),
+        onDoubleAccepted: concat2(bg1.onDoubleAccepted, bg2.onDoubleAccepted),
         onAwaitCheckerPlay: concat1(
             bg1.onAwaitCheckerPlay,
             bg2.onAwaitCheckerPlay
         ),
-        onEndOfCubeGame: concat1(bg1.onEndOfCubeGame, bg2.onEndOfCubeGame),
+        onEndOfBGGame: concat1(bg1.onEndOfBGGame, bg2.onEndOfBGGame),
     }
 }
 
@@ -85,15 +88,15 @@ export function setBGStateListener(
     setBGState: (bgState: BGState) => void
 ): BGListener {
     return {
-        onStartCubeGame: () => setBGState(defaultState),
+        onBGGameStarted: () => setBGState(defaultState),
         onAwaitCubeAction: () => {
             //
         },
-        onStartCubeAction: (bgState: BGState) => setBGState(bgState),
+        onCubeActionStarted: (bgState: BGState) => setBGState(bgState),
         onAwaitCheckerPlay: (bgState: BGState) => setBGState(bgState),
-        onDouble: (bgState: BGState) => setBGState(bgState),
-        onTake: (bgState: BGState) => setBGState(bgState),
-        onSkipCubeAction: (bgState: BGState) => setBGState(bgState),
-        onEndOfCubeGame: (bgState: BGState) => setBGState(bgState),
+        onDoubled: (bgState: BGState) => setBGState(bgState),
+        onDoubleAccepted: (bgState: BGState) => setBGState(bgState),
+        onCubeActionSkipped: (bgState: BGState) => setBGState(bgState),
+        onEndOfBGGame: (bgState: BGState) => setBGState(bgState),
     }
 }

@@ -7,7 +7,7 @@ import {
     CBResponse,
     CBToRoll,
 } from '../dispatchers/CubeGameState'
-import { SingleGameListener } from '../dispatchers/SingleGameDispatcher'
+import { SingleGameListener } from '../dispatchers/SingleGameListener'
 import {
     SGEoG,
     SGInPlay,
@@ -45,7 +45,7 @@ export function matchRecorderAsSGAddOn(
             )
         },
 
-        onStartGame: () => {
+        onGameStarted: () => {
             matchRecorder.resetCurGame()
         },
 
@@ -71,7 +71,7 @@ export function matchRecorderAsCBAddOn(
                 lastState
             )
         },
-        onDouble: (
+        onDoubled: (
             _: { cbState: CBResponse; sgState: SGToRoll },
             lastState: CBAction
         ) => {
@@ -85,7 +85,7 @@ export function matchRecorderAsCBAddOn(
             })
         },
 
-        onTake: (
+        onDoubleAccepted: (
             _: { cbState: CBToRoll; sgState: SGToRoll },
             lastState: CBResponse
         ) => {
@@ -96,11 +96,11 @@ export function matchRecorderAsCBAddOn(
             })
         },
 
-        onStartCubeGame: () => {
+        onBGGameStarted: () => {
             matchRecorder.resetCurGame()
         },
 
-        onEndOfCubeGame: (
+        onEndOfBGGame: (
             bgState: { cbState: CBEoG; sgState: SGState },
             lastState?: CBResponse
         ) => {
