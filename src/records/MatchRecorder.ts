@@ -58,7 +58,7 @@ export function matchRecorderAsSGAddOn(
 
 export function matchRecorderAsCBAddOn(
     gameConf: GameConf,
-    sgStateToResume: SGState,
+    sgState: SGState,
     matchRecorder: MatchRecorder<BGState>
 ): Partial<BGListener> {
     return {
@@ -72,7 +72,7 @@ export function matchRecorderAsCBAddOn(
             )
         },
         onDoubled: (
-            _: { cbState: CBResponse; sgState: SGToRoll },
+            bgState: { cbState: CBResponse; sgState: SGToRoll },
             lastState: CBAction
         ) => {
             const plyRecord = plyRecordForDouble(
@@ -81,18 +81,18 @@ export function matchRecorderAsCBAddOn(
             )
             matchRecorder.recordPly(plyRecord, {
                 cbState: lastState,
-                sgState: sgStateToResume,
+                sgState: bgState.sgState,
             })
         },
 
         onDoubleAccepted: (
-            _: { cbState: CBToRoll; sgState: SGToRoll },
+            bgState: { cbState: CBToRoll; sgState: SGToRoll },
             lastState: CBResponse
         ) => {
             const plyRecord = plyRecordForTake(lastState.isRed)
             matchRecorder.recordPly(plyRecord, {
                 cbState: lastState,
-                sgState: sgStateToResume,
+                sgState: bgState.sgState,
             })
         },
 
@@ -110,7 +110,7 @@ export function matchRecorderAsCBAddOn(
                 )
                 matchRecorder.recordPly(plyRecord, {
                     cbState: lastState,
-                    sgState: sgStateToResume,
+                    sgState: bgState.sgState,
                 })
             }
             const { stake, eogStatus } = bgState.cbState.calcStake(gameConf)
