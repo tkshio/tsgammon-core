@@ -34,7 +34,7 @@ export type MatchRecorder<T> = {
     resumeTo: (index: number) => PlyStateRecord<T>
 }
 
-export function matchRecorderAsSGAddOn(
+export function matchRecorderForSG(
     matchRecorder: MatchRecorder<SGState>
 ): Partial<SingleGameListener> {
     return {
@@ -56,9 +56,8 @@ export function matchRecorderAsSGAddOn(
     }
 }
 
-export function matchRecorderAsCBAddOn(
+export function matchRecorderForBG(
     gameConf: GameConf,
-    sgState: SGState,
     matchRecorder: MatchRecorder<BGState>
 ): Partial<BGListener> {
     return {
