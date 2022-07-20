@@ -11,7 +11,7 @@ import { concat1, concat2 } from './utils/concat'
 
 export function eogEventHandler(...listeners: Partial<BGListener>[]) {
     const listener = {
-        ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur), {}),
+        ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur)),
     }
     return {
         onEndOfBGGame: (
@@ -47,7 +47,9 @@ export function eogEventHandler(...listeners: Partial<BGListener>[]) {
     }
 }
 
-export function eogEventHandlersSG(listeners: Partial<SingleGameListener>[]) {
+export function eogEventHandlersSG(
+    ...listeners: Partial<SingleGameListener>[]
+) {
     const listener = {
         ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur)),
     }
