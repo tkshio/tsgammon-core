@@ -94,6 +94,12 @@ function _buildBGEventHandler(
                         },
                     })
                 },
+                onRerollOpening: (nextSGState: SGOpening) => {
+                    bgListeners.onBGOpeningRerolled?.({
+                        cbState: bgState.cbState,
+                        sgState: nextSGState,
+                    })
+                },
             })
         },
 

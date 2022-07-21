@@ -61,6 +61,10 @@ export function concatBGListeners(
 ): Partial<BGListener> {
     return {
         onBGGameStarted: concat0(bg1.onBGGameStarted, bg2.onBGGameStarted),
+        onBGOpeningRerolled: concat1(
+            bg1.onBGOpeningRerolled,
+            bg2.onBGOpeningRerolled
+        ),
         onAwaitCubeAction: concat2(
             bg1.onAwaitCubeAction,
             bg2.onAwaitCubeAction
@@ -89,6 +93,7 @@ export function setBGStateListener(
 ): BGListener {
     return {
         onBGGameStarted: () => setBGState(defaultState),
+        onBGOpeningRerolled: (bgState: BGState) => setBGState(bgState),
         onAwaitCubeAction: () => {
             //
         },

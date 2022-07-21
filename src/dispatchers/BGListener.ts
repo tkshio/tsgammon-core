@@ -2,16 +2,21 @@ import {
     CBAction,
     CBEoG,
     CBInPlay,
+    CBOpening,
     CBResponse,
     CBToRoll,
 } from './CubeGameState'
-import { SGInPlay, SGState, SGToRoll } from './SingleGameState'
+import { SGInPlay, SGOpening, SGState, SGToRoll } from './SingleGameState'
 
 // BGEventHandlerの結果として呼ばれる処理（すなわち、
 // BGEventHandlerに処理を追加するためのインターフェース）
 
 export type BGListener = {
     onBGGameStarted: () => void
+    onBGOpeningRerolled: (bgState: {
+        cbState: CBOpening
+        sgState: SGOpening
+    }) => void
     onAwaitCubeAction: (
         bgState: { cbState: CBAction | CBToRoll; sgState: SGToRoll },
         lastState: { cbState: CBInPlay; sgState: SGInPlay }
