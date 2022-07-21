@@ -1,6 +1,7 @@
+import { CubeOwner, CubeState } from './CubeState'
+import { StakeConf } from './StakeConf'
 import { EOGStatus } from './EOGStatus'
 import { Score, score } from './Score'
-import { StakeConf } from './dispatchers/StakeConf'
 
 export type MatchState = MatchStateInPlay | MatchStateEoG
 
@@ -45,14 +46,48 @@ export function shouldSkipCubeAction(
     isRed: boolean
 ) {
     return (
-        matchState.isCrawford ||
-        (matchState.matchLength > 0 &&
-            matchState.matchLength <=
-                cubeValue +
-                    (isRed
-                        ? matchState.score.redScore
-                        : matchState.score.whiteScore))
+        matchState.isCrawford || //
+        isCubeMaxFor(matchState, cubeValue, isRed)
     )
+}
+
+function isCubeMaxFor(
+    matchState: MatchState,
+    cubeValue: number,
+    isRed: boolean
+) {
+    return (
+        matchState.matchLength > 0 &&
+        matchState.matchLength <=
+            cubeValue +
+                (isRed
+                    ? matchState.score.redScore
+                    : matchState.score.whiteScore)
+    )
+}
+
+export function isCubeMaxForMatch(
+    matchState: MatchState,
+    cubeState: CubeState
+) {
+    return _isCubeMaxForMatch(matchState, cubeState.value, cubeState.owner)
+
+    function _isCubeMaxForMatch(
+        matchState: MatchState,
+        cubeValue: number,
+        cubeOwner?: CubeOwner
+    ): boolean {
+        return cubeOwner === undefined
+            ? isDoubleMatchPoint(matchState)
+            : isCubeMaxFor(matchState, cubeValue, cubeOwner === CubeOwner.RED)
+
+        function isDoubleMatchPoint(matchState: MatchState): boolean {
+            return (
+                matchState.score.redScore === matchState.matchLength - 1 &&
+                matchState.score.whiteScore === matchState.matchLength - 1
+            )
+        }
+    }
 }
 
 function matchStateInPlay(

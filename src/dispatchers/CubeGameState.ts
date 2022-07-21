@@ -2,7 +2,7 @@ import { CubeOwner, CubeState } from '../CubeState'
 import { eog, EOGStatus } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
 import { score, Score, scoreAsRed, scoreAsWhite } from '../Score'
-import { applyStakeConf, StakeConf } from './StakeConf'
+import { applyStakeConf, StakeConf } from '../StakeConf'
 
 export type CBState =
     | CBOpening

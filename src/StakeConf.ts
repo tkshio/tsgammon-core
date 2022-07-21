@@ -1,5 +1,5 @@
-import { CubeState } from '../CubeState'
-import { EOGStatus } from '../EOGStatus'
+import { CubeState } from './CubeState'
+import { EOGStatus } from './EOGStatus'
 
 export type StakeConf = {
     jacobyRule: boolean
