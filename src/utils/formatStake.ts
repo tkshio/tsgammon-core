@@ -1,4 +1,5 @@
 import { EOGStatus } from '../EOGStatus'
+import { defaultNames } from '../records/utils/defaultNames'
 import { Score } from '../Score'
 
 /**
@@ -13,8 +14,8 @@ import { Score } from '../Score'
 export function formatStake(
     stake: Score,
     eog: EOGStatus,
-    redPlayer = 'Red',
-    whitePlayer = 'White'
+    redPlayer = defaultNames.red,
+    whitePlayer = defaultNames.white
 ) {
     const gammon = eog.isBackgammon
         ? ' by Backgammon'

@@ -7,6 +7,7 @@ import { Ply } from '../../Ply'
 import { SGResult } from '../SGResult'
 import { MoveFormatDirection } from '../../utils/formatAbsMove'
 import { EOGStatus } from '../../EOGStatus'
+import { defaultNames } from './defaultNames'
 
 /**
  * MatchRecordsをテキスト形式に変換する
@@ -16,8 +17,8 @@ import { EOGStatus } from '../../EOGStatus'
  */
 export function formatMatchRecord<T>(
     matchRecord: MatchRecord<T>,
-    redPlayer = 'Red',
-    whitePlayer = 'White'
+    redPlayer = defaultNames.red,
+    whitePlayer = defaultNames.white
 ): string {
     const header = formatHeaderPart(matchRecord, redPlayer, whitePlayer)
 
@@ -44,8 +45,8 @@ export function formatMatchRecord<T>(
 // ヘッダ情報の出力：confのルール設定や日時など
 function formatHeaderPart<T>(
     matchRecord: MatchRecord<T>,
-    redPlayer = 'Red',
-    whitePlayer = 'White'
+    redPlayer = defaultNames.red,
+    whitePlayer = defaultNames.white
 ) {
     const conf = matchRecord.conf
     const date = new Date()
@@ -78,8 +79,8 @@ ${matchRecord.matchState.matchLength + ' point match'}
 function formatGameRecord<T>(
     gameRecord: GameRecord<T>,
     gameNum: number,
-    redPlayer = 'Red',
-    whitePlayer = 'White'
+    redPlayer = defaultNames.red,
+    whitePlayer = defaultNames.white
 ): string[] {
     const columnWidth = 34
     const numWidth = 3

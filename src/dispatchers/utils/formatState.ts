@@ -1,5 +1,6 @@
 import { Ply } from '../../Ply'
 import { SGResult } from '../../records/SGResult'
+import { defaultNames } from '../../records/utils/defaultNames'
 import { MoveFormatDirection } from '../../utils/formatAbsMove'
 import { formatPly, formatPlyAbbr } from '../../utils/formatPly'
 import { CheckerPlayState } from '../CheckerPlayState'
@@ -10,7 +11,9 @@ export function formatState(
     sgState: SGState,
     cbState?: CBState,
     cpState?: CheckerPlayState,
-    moveFormatDirection?: MoveFormatDirection
+    moveFormatDirection?: MoveFormatDirection,
+    red: string = defaultNames.red,
+    white: string = defaultNames.white
 ) {
     if (cbState && cbState.tag !== 'CBInPlay') {
         switch (cbState.tag) {
@@ -18,44 +21,56 @@ export function formatState(
                 return 'Opening roll.'
 
             case 'CBResponse':
-                return `${
-                    cbState.isDoubleFromRed ? 'Red' : 'White'
-                } offers double.`
+                return `${cbState.isDoubleFromRed ? red : white} offers double.`
 
             case 'CBAction': {
                 const lastPly =
                     sgState.tag === 'SGToRoll' ? sgState.lastPly : undefined
-                return formatToRoll(cbState.isRed, lastPly, moveFormatDirection)
+                return formatToRoll(
+                    cbState.isRed,
+                    lastPly,
+                    moveFormatDirection,
+                    red,
+                    white
+                )
             }
             case 'CBToRoll': {
                 const lastPly =
                     sgState.tag === 'SGToRoll' ? sgState.lastPly : undefined
                 return cbState.lastAction === 'Take'
-                    ? `${cbState.isRed ? 'White' : 'Red'} accepts the cube.`
-                    : formatToRoll(cbState.isRed, lastPly, moveFormatDirection)
+                    ? `${cbState.isRed ? white : red} accepts the cube.`
+                    : formatToRoll(
+                          cbState.isRed,
+                          lastPly,
+                          moveFormatDirection,
+                          red,
+                          white
+                      )
             }
             case 'CBEoG': {
                 return `${
                     cbState.result === SGResult.REDWON
-                        ? 'Red win.'
+                        ? `${red} win.`
                         : cbState.result === SGResult.WHITEWON
-                        ? 'White win.'
+                        ? `${white} win.`
                         : ''
                 }`
             }
         }
     }
 
-    return formatSGState(sgState, cpState, moveFormatDirection)
+    return formatSGState(sgState, cpState, moveFormatDirection, red, white)
 }
 
 function formatToRoll(
     isRed: boolean,
     lastPly?: Ply,
-    moveFormatDirection?: MoveFormatDirection
+    moveFormatDirection?: MoveFormatDirection,
+    red: string = defaultNames.red,
+    white: string = defaultNames.white
 ) {
     return (
-        `${isRed ? 'Red' : 'White'} to roll.` +
+        `${isRed ? red : white} to roll.` +
         (lastPly
             ? ` ( last play ${formatPlyAbbr(lastPly, moveFormatDirection)} )`
             : '')
@@ -65,7 +80,9 @@ function formatToRoll(
 function formatSGState(
     sgState: SGState,
     cpState?: CheckerPlayState,
-    moveFormatDirection?: MoveFormatDirection
+    moveFormatDirection?: MoveFormatDirection,
+    red: string = defaultNames.red,
+    white: string = defaultNames.white
 ) {
     // 移動中
     if (cpState) {
@@ -78,7 +95,9 @@ function formatSGState(
             return formatToRoll(
                 sgState.isRed,
                 sgState.lastPly,
-                moveFormatDirection
+                moveFormatDirection,
+                red,
+                white
             )
         case 'SGInPlay': {
             return formatPly(sgState.curPly)
@@ -86,9 +105,9 @@ function formatSGState(
         case 'SGEoG': {
             return sgState.result === SGResult.NOGAME
                 ? 'No game'
-                : `${
-                      sgState.result === SGResult.REDWON ? 'Red' : 'White'
-                  } wins ${sgState.stake.value}pt.`
+                : `${sgState.result === SGResult.REDWON ? red : white} wins ${
+                      sgState.stake.value
+                  }pt.`
         }
     }
 }

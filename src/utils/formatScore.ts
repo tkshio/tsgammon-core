@@ -1,3 +1,4 @@
+import { defaultNames } from '../records/utils/defaultNames'
 import { Score } from '../Score'
 
 /**
@@ -13,8 +14,8 @@ import { Score } from '../Score'
  */
 export function formatScore(
     score: Score,
-    redPlayer = 'Red',
-    whitePlayer = 'White'
+    redPlayer = defaultNames.red,
+    whitePlayer = defaultNames.white
 ) {
     return `Score: ${redPlayer}:${score.redScore} - ${whitePlayer}:${score.whiteScore}`
 }
