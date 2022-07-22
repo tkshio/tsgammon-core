@@ -51,7 +51,7 @@ export type BoardStateNode = {
 }
 
 /**
- * {@link BoardStateNode.majorFirst()} / {@link minorFirst()}に対して、
+ * {@link BoardStateNode["majorFirst"]} / {@link BoardStateNode["minorFirst"]}に対して、
  * 該当がないことを示す
  */
 export type NoMove = { hasValue: false }
