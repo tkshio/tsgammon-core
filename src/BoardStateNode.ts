@@ -66,17 +66,19 @@ export const NO_MOVE: NoMove = { hasValue: false }
  *
  * @param board 盤面
  * @param dicePips ダイス目のペア
+ * @param movesForDoublet ゾロ目の時に動かせる駒数
  * @returns 局面
  */
 export function boardStateNode(
     board: BoardState,
-    dicePips: DiceRoll
+    dicePips: DiceRoll,
+    movesForDoublet = 4
 ): BoardStateNode {
     const { dice1, dice2 } = dicePips
 
     return dice1 !== dice2
         ? buildNodesForHeteroDice(board, dice1, dice2)
-        : buildNodesForDoublet(board, dice1)
+        : buildNodesForDoublet(board, dice1, movesForDoublet)
 }
 
 /**
@@ -89,16 +91,18 @@ export function boardStateNode(
  * @param dice1 ダイス目
  * @param dice2 ダイス目
  * @param bornOffs すでにベアリングオフした駒の数の対（順に自分、相手：省略時は0）
+ * @param movesForDoublet ゾロ目の時に動かせる駒数
  * @returns 局面
  */
 export function boardStateNodeFromArray(
     pieces: number[],
     dice1: DicePip,
     dice2: DicePip,
-    bornOffs: [number, number] = [0, 0]
+    bornOffs: [number, number] = [0, 0],
+    movesForDoublet = 4
 ): BoardStateNode {
     const board = boardState(pieces, bornOffs)
-    return boardStateNode(board, { dice1, dice2 })
+    return boardStateNode(board, { dice1, dice2 }, movesForDoublet)
 }
 
 // ダイスを無視して何も次の手がない状態のBoardStateNodeを生成する

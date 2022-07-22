@@ -1,17 +1,6 @@
-import { boardStateNodeFromArray } from '../BoardStateNode'
-import { collectMoves } from '../utils/collectMoves'
-import { DicePip } from '../Dices'
-import { Move } from '../Move'
+import { listupMovesTest } from './BoardStateNode.listup.common'
 
-type Moves = [number, number, boolean?][]
-type BasicTestArg = {
-    pos: number[]
-    diceRoll: [DicePip, DicePip]
-    expectedMoves: Moves[]
-    expectedRedundancy?: boolean[]
-}
-
-const listupMovesTestItems: { name: string; args: BasicTestArg }[] = [
+const listupMovesTestItems: { name: string; args: listupMovesTest }[] = [
     {
         name: 'listup moves',
         args: {
@@ -218,7 +207,7 @@ const listupMovesTestItems: { name: string; args: BasicTestArg }[] = [
 
 const implementationDependentMattersTest: {
     name: string
-    args: BasicTestArg
+    args: listupMovesTest
 }[] = [
     {
         name: 'Bar point should not block opponent',
@@ -236,7 +225,7 @@ const implementationDependentMattersTest: {
     },
 ]
 
-const markRedundantMovesTest: { name: string; args: BasicTestArg }[] = [
+const markRedundantMovesTest: { name: string; args: listupMovesTest }[] = [
     {
         name: 'mark redundant when the same piece moved twice and no hits in midst',
         args: {
@@ -772,98 +761,14 @@ describe('mark redundant moves', () => {
     testWith(markRedundantMovesTest)
 })
 
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["basicTest"] }] */
-function testWith(testConds: { name: string; args: BasicTestArg }[]) {
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["listupMovesTest"] }] */
+function testWith(testConds: { name: string; args: listupMovesTest }[]) {
     testConds.forEach(
-        ({ name, args }: { name: string; args: BasicTestArg }) => {
+        ({ name, args }: { name: string; args: listupMovesTest }) => {
             // eslint-disable-next-line  jest/valid-title
             test(name, () => {
-                basicTest(args)
+                listupMovesTest(args)
             })
         }
     )
-}
-
-function basicTest(arg: BasicTestArg) {
-    const node = boardStateNodeFromArray(
-        arg.pos,
-        arg.diceRoll[0],
-        arg.diceRoll[1]
-    )
-
-    const collected = collectMoves(node).sort((a, b) =>
-        sortMoves(a.moves, b.moves)
-    )
-
-    expect(collected.map((move) => move.moves)).toEqual(
-        arg.expectedMoves.map((moves: Moves) =>
-            moves.map(([from, to, isHit]: [number, number, boolean?]) =>
-                move(from, to, isHit)
-            )
-        )
-    )
-
-    const isCommitable =
-        arg.expectedMoves.length === 1 && arg.expectedMoves[0].length === 0
-    expect(node.isCommitable).toBe(isCommitable)
-    expect(collected.map((moves) => moves.isRedundant)).toEqual(
-        arg.expectedRedundancy
-    )
-}
-
-function move(from: number, to: number, isHit?: boolean): Move {
-    return {
-        from: from,
-        to: to,
-        pip: to - from,
-        isHit: !!isHit,
-        isBearOff: to >= 25,
-        isOverrun: to > 25,
-    }
-}
-
-function sortMove(m1: Move, m2: Move): number {
-    const from = m1.from - m2.from
-    if (from !== 0) {
-        return from
-    }
-    const to = m1.to - m2.to
-    if (to !== 0) {
-        return to
-    }
-    const pip = m1.pip - m2.pip
-    if (pip !== 0) {
-        return pip
-    }
-    if (m1.isHit && !m2.isHit) {
-        return 1
-    }
-    if (!m1.isHit && m2.isHit) {
-        return -1
-    }
-    if (m1.isBearOff && !m2.isBearOff) {
-        return 1
-    }
-    if (!m1.isBearOff && m2.isBearOff) {
-        return -1
-    }
-    if (m1.isOverrun && !m2.isOverrun) {
-        return 1
-    }
-    if (!m1.isOverrun && m2.isOverrun) {
-        return -1
-    }
-    return 0
-}
-function sortMoves(m1: Move[], m2: Move[]): number {
-    if (m1.length !== m2.length) {
-        return m1.length - m2.length
-    }
-    for (let index = 0; index < m1.length; index++) {
-        const s = sortMove(m1[index], m2[index])
-        if (s !== 0) {
-            return s
-        }
-    }
-    return 0
 }

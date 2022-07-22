@@ -33,12 +33,13 @@ export type Dice = {
 }
 
 /**
- * DicePipの配列を、Diceの配列に変換する
- * @param dicePips ダイスの目を格納した配列
+ * DicePipを指定した数の要素を持つDiceの配列に変換する
+ * @param dicePip ダイスの目
+ * @param count 要素数
  * @returns 未使用の状態のDice配列
  */
-export function dices(...dicePips: DicePip[]): Dice[] {
-    return dicePips.map(dice)
+export function dices(dicePip: DicePip, count: number): Dice[] {
+    return Array(count).map(() => dice(dicePip))
 }
 
 /**

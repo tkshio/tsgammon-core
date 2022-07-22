@@ -9,13 +9,15 @@ import { buildNodeForEoG, leaveNodeBuilder, NodeBuilder } from './NodeBuilder'
  * ゾロ目に対して、バックギャモンのルールに基づいて可能な手を列挙し、BoardStateNodeとして返す
  * @param board 盤面
  * @param dicePip ダイスの目
+ * @param count ダイスの目を使える回数（省略時は4）
  * @returns
  */
 export function buildNodesForDoublet(
     board: BoardState,
-    dicePip: DicePip
+    dicePip: DicePip,
+    count: number
 ): BoardStateNode {
-    const unusedDices = dices(dicePip, dicePip, dicePip, dicePip)
+    const unusedDices = dices(dicePip, count)
     const [node] = buildNodesForDoubletRec(
         board,
         unusedDices,
