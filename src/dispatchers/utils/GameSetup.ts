@@ -3,7 +3,7 @@ import { boardState as _boardState } from '../../BoardState'
 import { cube, CubeState } from '../../CubeState'
 import { DicePip } from '../../Dices'
 import { eog } from '../../EOGStatus'
-import { standardConf } from '../../GameConf'
+import { GameConf, standardConf } from '../../GameConf'
 import { Ply } from '../../Ply'
 import { SGResult } from '../../records/SGResult'
 import { Score } from '../../Score'
@@ -118,16 +118,24 @@ export function toCBState(gameState: GameSetup = {}): CBState {
     }
 }
 
-export function toSGState(gameState: GameSetup = {}): SGState {
+export function toSGState(
+    gameState: GameSetup = {},
+    gameConf: GameConf = standardConf
+): SGState {
+    const { movesForDoublet = 4 } = gameConf
     if (gameState.gameStatus === undefined) {
         return openingState(
-            boardState(gameState.absPos ?? standardConf.initialPos)
+            boardState(gameState.absPos ?? standardConf.initialPos),
+            undefined,
+            movesForDoublet
         )
     }
     switch (gameState.gameStatus) {
         case GameStatus.OPENING:
             return openingState(
-                boardState(gameState.absPos ?? standardConf.initialPos)
+                boardState(gameState.absPos ?? standardConf.initialPos),
+                undefined,
+                movesForDoublet
             )
         case GameStatus.CUBEACTION_RED:
         case GameStatus.TOROLL_RED:
@@ -136,7 +144,8 @@ export function toSGState(gameState: GameSetup = {}): SGState {
             const lastStateNode = nodeWithEmptyDice(board)
             return toRollStateRed(
                 lastStateNode.board.revert(),
-                gameState.lastPly
+                gameState.lastPly,
+                movesForDoublet
             )
         }
         case GameStatus.CUBEACTION_WHITE:
@@ -146,16 +155,22 @@ export function toSGState(gameState: GameSetup = {}): SGState {
             const lastStateNode = nodeWithEmptyDice(lastBoardState)
             return toRollStateWhite(
                 lastStateNode.board.revert(),
-                gameState.lastPly
+                gameState.lastPly,
+                movesForDoublet
             )
         }
         case GameStatus.INPLAY_RED:
             return inPlayStateRed(
                 boardState(gameState.absPos).revert(),
-                gameState
+                gameState,
+                movesForDoublet
             )
         case GameStatus.INPLAY_WHITE:
-            return inPlayStateWhite(boardState(gameState.absPos), gameState)
+            return inPlayStateWhite(
+                boardState(gameState.absPos),
+                gameState,
+                movesForDoublet
+            )
         case GameStatus.EOG_REDWON: {
             const lastBoardState = boardState(gameState.absPos).revert()
             return eogStateRed(

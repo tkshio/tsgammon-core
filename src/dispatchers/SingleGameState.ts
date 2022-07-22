@@ -99,7 +99,8 @@ export type SGEoGNoGame = _SGEoG & {
 
 export function openingState(
     boardState: BoardState,
-    dicePip?: DicePip
+    dicePip: DicePip | undefined,
+    movesForDouble: number
 ): SGOpening {
     const absBoard = whiteViewAbsoluteBoard(boardState)
     return {
@@ -109,7 +110,11 @@ export function openingState(
         boardState,
         doOpening: (openingRoll: DiceRoll) => {
             if (openingRoll.dice1 === openingRoll.dice2) {
-                return openingState(boardState, openingRoll.dice1)
+                return openingState(
+                    boardState,
+                    openingRoll.dice1,
+                    movesForDouble
+                )
             } else {
                 const isRedPlayerFirst = openingRoll.dice1 > openingRoll.dice2
                 const boardToPlay = isRedPlayerFirst
@@ -120,7 +125,7 @@ export function openingState(
                     ? inPlayStateRed
                     : inPlayStateWhite
 
-                return inPlayState(boardToPlay, openingRoll)
+                return inPlayState(boardToPlay, openingRoll, movesForDouble)
             }
         },
     }
@@ -128,9 +133,10 @@ export function openingState(
 
 export function inPlayStateRed(
     boardState: BoardState,
-    dices: DiceRoll
+    dices: DiceRoll,
+    movesForDouble = 4
 ): SGInPlayRed {
-    const node = boardStateNode(boardState, dices)
+    const node = boardStateNode(boardState, dices, movesForDouble)
 
     return inPlayStateRedFromNode(
         node,
@@ -139,14 +145,16 @@ export function inPlayStateRed(
             moves: [],
             isRed: true,
         },
-        node
+        node,
+        movesForDouble
     )
 }
 
 export function inPlayStateRedFromNode(
     boardStateNode: BoardStateNode,
     curPly: Ply,
-    revertTo: BoardStateNode
+    revertTo: BoardStateNode,
+    movesForDouble: number
 ): SGInPlayRed {
     const dices = boardStateNode.dices
     const absBoard = redViewAbsoluteBoard(boardStateNode.board)
@@ -154,7 +162,8 @@ export function inPlayStateRedFromNode(
 
     const doCheckerPlayCommit = buildDoCheckerCommit(
         toPly,
-        toRollStateWhite,
+        (boardState: BoardState, lastPly: Ply) =>
+            toRollStateWhite(boardState, lastPly, movesForDouble),
         (stakeValue: number, eog: EOGStatus, committed: BoardStateNode) =>
             eogStateRed(
                 stakeValue,
@@ -179,16 +188,22 @@ export function inPlayStateRedFromNode(
         isRed: true,
         doCheckerPlayCommit,
         withNode: (node: BoardStateNode) => {
-            return inPlayStateRedFromNode(node, toPly(node), revertTo)
+            return inPlayStateRedFromNode(
+                node,
+                toPly(node),
+                revertTo,
+                movesForDouble
+            )
         },
     }
 }
 
 export function inPlayStateWhite(
     boardState: BoardState,
-    dices: DiceRoll
+    dices: DiceRoll,
+    movesForDouble = 4
 ): SGInPlayWhite {
-    const node = boardStateNode(boardState, dices)
+    const node = boardStateNode(boardState, dices, movesForDouble)
     return inPlayStateWhiteFromNode(
         node,
         {
@@ -196,14 +211,16 @@ export function inPlayStateWhite(
             moves: [],
             isRed: false,
         },
-        node
+        node,
+        movesForDouble
     )
 }
 
 function inPlayStateWhiteFromNode(
     boardStateNode: BoardStateNode,
     curPly: Ply,
-    revertTo: BoardStateNode
+    revertTo: BoardStateNode,
+    movesForDouble: number
 ): SGInPlayWhite {
     const dices = boardStateNode.dices
     const absBoard = whiteViewAbsoluteBoard(boardStateNode.board)
@@ -215,7 +232,8 @@ function inPlayStateWhiteFromNode(
 
     const doCheckerPlayCommit = buildDoCheckerCommit(
         toPly,
-        toRollStateRed,
+        (boardState: BoardState, lastPly: Ply) =>
+            toRollStateRed(boardState, lastPly, movesForDouble),
         (stakeValue: number, eog: EOGStatus, committed: BoardStateNode) =>
             eogStateWhite(
                 stakeValue,
@@ -240,7 +258,12 @@ function inPlayStateWhiteFromNode(
         isRed: false,
         doCheckerPlayCommit,
         withNode: (node: BoardStateNode) => {
-            return inPlayStateWhiteFromNode(node, toPly(node), revertTo)
+            return inPlayStateWhiteFromNode(
+                node,
+                toPly(node),
+                revertTo,
+                movesForDouble
+            )
         },
     }
 }
@@ -271,7 +294,8 @@ function buildDoCheckerCommit<TOROLL extends SGToRoll, EOG extends SGEoG>(
 
 export function toRollStateRed(
     boardState: BoardState,
-    lastPly: Ply = { moves: [], dices: [], isRed: true }
+    lastPly: Ply = { moves: [], dices: [], isRed: true },
+    movesForDouble = 4
 ): SGToRollRed {
     const absBoard = redViewAbsoluteBoard(boardState)
     return {
@@ -283,14 +307,15 @@ export function toRollStateRed(
         lastPly,
 
         doRoll: (dices: DiceRoll): SGInPlayRed => {
-            return inPlayStateRed(boardState, dices)
+            return inPlayStateRed(boardState, dices, movesForDouble)
         },
     }
 }
 
 export function toRollStateWhite(
     boardState: BoardState,
-    lastPly: Ply = { moves: [], dices: [], isRed: false }
+    lastPly: Ply = { moves: [], dices: [], isRed: false },
+    movesForDouble = 4
 ): SGToRollWhite {
     const absBoard = whiteViewAbsoluteBoard(boardState)
     return {
@@ -302,7 +327,7 @@ export function toRollStateWhite(
         lastPly,
 
         doRoll: (dices: DiceRoll): SGInPlayWhite => {
-            return inPlayStateWhite(boardState, dices)
+            return inPlayStateWhite(boardState, dices, movesForDouble)
         },
     }
 }
