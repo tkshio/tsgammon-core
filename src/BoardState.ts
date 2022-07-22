@@ -65,6 +65,11 @@ export interface BoardState {
 
     pieceCount: number
     opponentPieceCount: number
+
+    /**
+     * 自分のインナーボードの開始点（標準ルールでは19）
+     */
+    innerPos: number
 }
 
 /**
@@ -86,13 +91,18 @@ export function countRedPieces(pieces: number[]) {
  *
  * @param pieces 駒の配置（省略時は標準ルールでの開始時な配置）
  * @param bornOffs すでにベアリングオフした駒の数の対（順に自分、相手：省略時は0）
+ * @param innerPos この値とそれ以降がインナーボードとなる
+ * @param outerPos この値
  * @returns 盤面
  */
 export function boardState(
     pieces: number[] = standardConf.initialPos,
-    bornOffs: [number, number] = [0, 0]
+    bornOffs: [number, number] = [0, 0],
+    innerPos = 19,
+    isEoGFunc: (board: Board) => boolean = (board: Board) =>
+        board.pieceCount === 0
 ): BoardState {
-    return initBoardState(pieces, bornOffs)
+    return initBoardState(pieces, bornOffs, innerPos, isEoGFunc)
 }
 function posInverterFor(points: number[]): (pos: number) => number {
     return (pos: number) => points.length - 1 - pos
@@ -100,9 +110,9 @@ function posInverterFor(points: number[]): (pos: number) => number {
 function initBoardState(
     points: number[],
     bornOffs: [number, number] = [0, 0],
-    innerPos = 19,
-    outerPos = 7
-): Board {
+    innerPos: number,
+    isEoGFunc: (board: Board) => boolean
+): BoardState {
     const myBornOff = bornOffs[0]
     const opponentBornOff = bornOffs[1]
     const pieceCount = countWhitePieces(points)
@@ -113,14 +123,15 @@ function initBoardState(
     const invertPos = posInverterFor(points)
 
     const lastPiecePos = points.findIndex((n) => 0 < n)
-    const opponentLastPiecePos = invertPos(reverted.findIndex((n) => 0 < n))
+    const found = reverted.findIndex((n) => 0 < n)
+    const opponentLastPiecePos = found === -1 ? 0 : invertPos(found)
 
     const isBearable = innerPos <= lastPiecePos
 
     const myPipCount = countPip(points)
     const opponentPipCount = countPip(reverted)
 
-    return {
+    const board = {
         points,
         pieceCount,
         opponentPieceCount,
@@ -142,12 +153,14 @@ function initBoardState(
             })
         },
         isEndOfGame(): boolean {
-            return this.pieceCount === 0
+            return isEoGFunc(this)
         },
         isGammonish(): boolean {
             return this.opponentBornOff === 0
         },
         isBackgammonishAlso(): boolean {
+            // 自分のinnerPosとバーが、相手のアウターになる
+            const outerPos = points.length - innerPos // 7 = 26 - 19
             const opponentOuterAndBar = [...Array(outerPos)].map(
                 (_, index) => index + innerPos
             )
@@ -188,7 +201,11 @@ function initBoardState(
         },
         myPipCount,
         opponentPipCount,
+        innerPos,
+        outerPos: points.length - 1 - innerPos, // 6 = 25 - 19
     }
+
+    return board
 }
 
 function revertPoints(points: number[]): number[] {

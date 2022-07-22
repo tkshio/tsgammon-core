@@ -1,4 +1,5 @@
 import { DicePip } from '../Dices'
+import { honsugorokuConf } from '../GameConf'
 import { listupMovesTest } from './BoardStateNode.listup.common'
 
 type Moves = [number, number, boolean?][]
@@ -99,17 +100,59 @@ const listupMovesTestItems: { name: string; args: ListupMovesTestArg }[] = [
     },
 ]
 
+const honsugorokuTest: { name: string; args: ListupMovesTestArg }[] = [
+    {
+        name: 'end of game is the timing of bearing-off',
+        args: {
+            pos: [
+                0, 0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                1, /* bar */ 0, 0, 0, 0, 0, 14, 0,
+            ],
+            diceRoll: [1, 2],
+            expectedMoves: [[[18, 19]], [[18, 20]]],
+            expectedRedundancy: [false, false],
+        },
+    },
+    {
+        name: 'when oppenent has any chance, it is not end of the game',
+        args: {
+            pos: [
+                0, 0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                1, /* bar */ 0, 0, 0, 0, 14, -2, 0,
+            ],
+            diceRoll: [1, 2],
+            expectedMoves: [
+                [
+                    [18, 19],
+                    [19, 21],
+                ],
+                [
+                    [18, 19],
+                    [23, 25],
+                ],
+                [
+                    [18, 20],
+                    [20, 21],
+                ],
+            ],
+            expectedRedundancy: [true, false, false],
+        },
+    },
+]
+
 describe('listup moves', () => {
     testWith(listupMovesTestItems)
 })
-
+describe('honsugoroku eog', () => {
+    testWith(honsugorokuTest)
+})
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["listupMovesTest"] }] */
 function testWith(testConds: { name: string; args: ListupMovesTestArg }[]) {
     testConds.forEach(
         ({ name, args }: { name: string; args: ListupMovesTestArg }) => {
             // eslint-disable-next-line  jest/valid-title
             test(name, () => {
-                listupMovesTest(args, { movesForDoublet: 2 })
+                listupMovesTest(args, honsugorokuConf)
             })
         }
     )

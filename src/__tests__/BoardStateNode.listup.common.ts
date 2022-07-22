@@ -1,5 +1,6 @@
-import { boardStateNodeFromArray } from '../BoardStateNode'
-import { DicePip } from '../Dices'
+import { boardState, BoardState } from '../BoardState'
+import { boardStateNode } from '../BoardStateNode'
+import { DicePip, diceRoll } from '../Dices'
 import { collectMoves } from '../utils/collectMoves'
 import { sortMoves, move } from './BoardStateNode.common'
 
@@ -13,13 +14,18 @@ export type listupMovesTest = {
 
 export function listupMovesTest(
     arg: listupMovesTest,
-    conf: { movesForDoublet: number } = { movesForDoublet: 4 }
+    conf: {
+        movesForDoublet?: number
+        isEoGFunc?: (board: BoardState) => boolean
+    } = {
+        movesForDoublet: 4,
+        isEoGFunc: (board: BoardState) => board.pieceCount === 0,
+    }
 ) {
-    const node = boardStateNodeFromArray(
-        arg.pos,
-        arg.diceRoll[0],
-        arg.diceRoll[1],
-        undefined,
+    const board = boardState(arg.pos, undefined, undefined, conf.isEoGFunc)
+    const node = boardStateNode(
+        board,
+        diceRoll(arg.diceRoll[0], arg.diceRoll[1]),
         conf.movesForDoublet
     )
 
