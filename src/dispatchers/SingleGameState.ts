@@ -100,7 +100,7 @@ export type SGEoGNoGame = _SGEoG & {
 export function openingState(
     boardState: BoardState,
     dicePip: DicePip | undefined,
-    movesForDouble: number
+    movesForDouble = 4
 ): SGOpening {
     const absBoard = whiteViewAbsoluteBoard(boardState)
     return {

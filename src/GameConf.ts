@@ -9,6 +9,10 @@ export type GameConf = {
      */
     initialPos: number[]
     /**
+     * インナーボードの位置
+     */
+    innerPos: number
+    /**
      * キューブの最大値。cubeMaxに達するとダブルできなくなる。
      * cubeMaxが512なら、キューブは512にまで上がる可能性があり、1024には上がらない。
      */
@@ -35,6 +39,7 @@ export const standardConf: GameConf = {
         0, 2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0,
         0, -2, 0,
     ],
+    innerPos: 19,
     cubeMax: 1024,
     jacobyRule: false,
 }

@@ -12,5 +12,14 @@ export function defaultBGState(gameConf: GameConf = standardConf) {
 }
 
 export function defaultSGState(gameConf: GameConf = standardConf) {
-    return openingState(boardState(gameConf.initialPos))
+    return openingState(
+        boardState(
+            gameConf.initialPos,
+            [0, 0],
+            gameConf.innerPos,
+            gameConf.isEoGFunc
+        ),
+        undefined,
+        gameConf.movesForDoublet
+    )
 }
