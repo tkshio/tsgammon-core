@@ -190,18 +190,23 @@ export function toSGState(
             )
         }
     }
-}
 
-function boardState(pos: number[]) {
-    const pieces = pos.reduce(
-        (prev: { me: number; opp: number }, cur: number) => {
-            return cur > 0
-                ? { me: prev.me + cur, opp: prev.opp }
-                : cur < 0
-                ? { me: prev.me, opp: prev.opp - cur }
-                : prev
-        },
-        { me: 0, opp: 0 }
-    )
-    return _boardState(pos, [15 - pieces.me, 15 - pieces.opp])
+    function boardState(pos: number[]) {
+        const pieces = pos.reduce(
+            (prev: { me: number; opp: number }, cur: number) => {
+                return cur > 0
+                    ? { me: prev.me + cur, opp: prev.opp }
+                    : cur < 0
+                    ? { me: prev.me, opp: prev.opp - cur }
+                    : prev
+            },
+            { me: 0, opp: 0 }
+        )
+        return _boardState(
+            pos,
+            [15 - pieces.me, 15 - pieces.opp],
+            gameConf.innerPos,
+            gameConf.isEoGFunc
+        )
+    }
 }
