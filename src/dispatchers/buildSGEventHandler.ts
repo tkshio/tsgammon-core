@@ -1,5 +1,5 @@
 import { DiceRoll } from '../Dices'
-import { RollListener, rollListeners } from './RollDispatcher'
+import { RollListener, rollListener } from './RollDispatcher'
 import { concatSGListeners, singleGameDispatcher } from './SingleGameDispatcher'
 import { SingleGameListener } from './SingleGameListener'
 import { SGOpening, SGToRoll } from './SingleGameState'
@@ -9,10 +9,10 @@ import {
 } from './SingleGameEventHandler'
 
 export function buildSGEventHandler(
-    rollListener: RollListener = rollListeners(),
+    rListener: RollListener = rollListener(),
     ...listeners: Partial<SingleGameListener>[]
 ): SingleGameEventHandlerExtensible {
-    return buildSGEventHandler_rec(rollListener, {}, ...listeners)
+    return buildSGEventHandler_rec(rListener, {}, ...listeners)
 }
 
 function buildSGEventHandler_rec(

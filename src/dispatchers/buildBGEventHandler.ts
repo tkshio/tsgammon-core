@@ -11,7 +11,7 @@ import {
     CBToRoll,
 } from './CubeGameState'
 import { eogEventHandler } from './EOGEventHandlers'
-import { RollListener, rollListeners, withRL } from './RollDispatcher'
+import { RollListener, rollListener, withRL } from './RollDispatcher'
 import { singleGameDispatcher } from './SingleGameDispatcher'
 import { SGEoG, SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 
@@ -21,19 +21,14 @@ export type BGEventHandlersExtensible = BGEventHandler & {
 
 export function buildBGEventHandler(
     skipCubeAction: boolean,
-    rollListener: RollListener = rollListeners(),
+    rListener: RollListener = rollListener(),
     ...listeners: Partial<BGListener>[]
 ): BGEventHandlersExtensible {
-    return buildBGEventHandler_rec(
-        skipCubeAction,
-        rollListener,
-        {},
-        ...listeners
-    )
+    return buildBGEventHandler_rec(skipCubeAction, rListener, {}, ...listeners)
 }
 function buildBGEventHandler_rec(
     skipCubeAction: boolean,
-    rollListener: RollListener = rollListeners(),
+    rListener: RollListener = rollListener(),
     _bgListeners: Partial<BGListener>,
     ...listeners: Partial<BGListener>[]
 ): BGEventHandlersExtensible {
@@ -44,14 +39,14 @@ function buildBGEventHandler_rec(
 
     const handlers = _buildBGEventHandler(
         skipCubeAction,
-        rollListener,
+        rListener,
         bgListeners
     )
 
     function addListeners(...toAdd: Partial<BGListener>[]) {
         return buildBGEventHandler_rec(
             skipCubeAction,
-            rollListener,
+            rListener,
             bgListeners,
             ...toAdd
         )

@@ -16,26 +16,24 @@ export type RollReqs = {
     reqs: ((dices: DiceRoll) => void)[]
 }
 
-export function rollListeners(
-    conf:
-        | { isRollHandlerEnabled: false; diceSource: DiceSource }
-        | { isRollHandlerEnabled: true; rollListener: RollListener } = {
-        isRollHandlerEnabled: false,
-        diceSource: randomDiceSource,
-    }
+export function rollListener(
+    conf: {
+        onRollRequest?: (rollReq: (dices: DiceRoll) => void) => void
+        diceSource?: DiceSource
+    } = {}
 ): RollListener {
-    // diceSourceが指定されている場合は普通にロールを行い、そうでない場合は、listnerに任せる
-    // rollListenerはStoriesなどによって自動的に指定される場合があるので、別途フラグを設けている
-
+    //rollListnerの指定があればそちらに任せ、そうでなければDiceSourceを適宜補完して処理する
+    const { onRollRequest, diceSource = randomDiceSource } = conf
     return {
-        onRollRequest: conf.isRollHandlerEnabled
-            ? (rollReq: (dices: DiceRoll) => void): void => {
-                  conf.rollListener.onRollRequest(rollReq)
-              }
-            : async (rollReq: (dices: DiceRoll) => void): Promise<void> => {
-                  const roll = await Promise.resolve(conf.diceSource.roll())
-                  rollReq(roll)
-              },
+        onRollRequest:
+            onRollRequest !== undefined
+                ? (rollReq: (dices: DiceRoll) => void): void => {
+                      onRollRequest(rollReq)
+                  }
+                : async (rollReq: (dices: DiceRoll) => void): Promise<void> => {
+                      const roll = await Promise.resolve(diceSource.roll())
+                      rollReq(roll)
+                  },
     }
 }
 

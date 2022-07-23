@@ -4,7 +4,7 @@ import { buildBGEventHandler } from '../dispatchers/buildBGEventHandler'
 import { setCBStateListener } from '../dispatchers/CubeGameDispatcher'
 import { CBState } from '../dispatchers/CubeGameState'
 import { defaultBGState } from '../dispatchers/defaultStates'
-import { rollListeners } from '../dispatchers/RollDispatcher'
+import { rollListener } from '../dispatchers/RollDispatcher'
 import { setSGStateListener } from '../dispatchers/SingleGameDispatcher'
 import { SGState } from '../dispatchers/SingleGameState'
 import { toCBState, toSGState } from '../dispatchers/utils/GameSetup'
@@ -81,7 +81,7 @@ function run() {
     const isCrawford = false
     const handlers = buildBGEventHandler(
         isCrawford,
-        rollListeners(),
+        rollListener(),
         setCBStateListener(defaultBGState().cbState, setCBState),
         setSGStateListener(defaultBGState().sgState, setSGState)
     )
