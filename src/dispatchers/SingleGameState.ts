@@ -166,7 +166,7 @@ export function inPlayStateRedFromNode(
             toRollStateWhite(boardState, lastPly, movesForDouble),
         (stakeValue: number, eog: EOGStatus, committed: BoardStateNode) =>
             eogStateRed(
-                stakeValue,
+                eog.calcStake(stakeValue),
                 eog,
                 redViewAbsoluteBoard(committed.board),
                 committed.board
@@ -236,7 +236,7 @@ function inPlayStateWhiteFromNode(
             toRollStateRed(boardState, lastPly, movesForDouble),
         (stakeValue: number, eog: EOGStatus, committed: BoardStateNode) =>
             eogStateWhite(
-                stakeValue,
+                eog.calcStake(stakeValue),
                 eog,
                 whiteViewAbsoluteBoard(committed.board),
                 committed.board
@@ -362,7 +362,7 @@ export function eogStateWhite(
     }
 }
 
-function eogStateNogame(
+export function eogStateNogame(
     eogStatus: EOGStatus,
     absBoard: AbsoluteBoardState,
     boardState: BoardState
@@ -373,22 +373,6 @@ function eogStateNogame(
     }
 }
 
-export function resultToSGEoG(
-    sgState: SGState,
-    sgResult: SGResult,
-    eogStatus: EOGStatus
-) {
-    const stakeValue = eogStatus.calcStake(1)
-    const { absBoard, boardState } = sgState
-    switch (sgResult) {
-        case SGResult.WHITEWON:
-            return eogStateWhite(stakeValue, eogStatus, absBoard, boardState)
-        case SGResult.REDWON:
-            return eogStateRed(stakeValue, eogStatus, absBoard, boardState)
-        case SGResult.NOGAME:
-            return eogStateNogame(eogStatus, absBoard, boardState)
-    }
-}
 function eogState(
     eogStatus: EOGStatus,
     stake: Score,

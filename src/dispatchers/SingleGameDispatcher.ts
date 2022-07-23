@@ -2,13 +2,8 @@ import { DiceRoll } from '../Dices'
 import { EOGStatus } from '../EOGStatus'
 import { SGResult } from '../records/SGResult'
 import { SingleGameListener } from './SingleGameListener'
-import {
-    resultToSGEoG,
-    SGInPlay,
-    SGOpening,
-    SGState,
-    SGToRoll,
-} from './SingleGameState'
+import { SGInPlay, SGOpening, SGState, SGToRoll } from './SingleGameState'
+import { sgResultToSGEoG } from './utils/sgResultToSGEoG'
 import { concat0, concat1, concat2 } from './utils/concat'
 
 export type SingleGameDispatcher = {
@@ -98,7 +93,7 @@ export const singleGameDispatcher = {
         }
     },
     doEndOfGame: (sgState: SGState, result: SGResult, eog: EOGStatus) => {
-        const nextState = resultToSGEoG(sgState, result, eog)
+        const nextState = sgResultToSGEoG(sgState, result, eog)
         return (
             listeners: Partial<Pick<SingleGameListener, 'onEndOfGame'>>
         ) => {
