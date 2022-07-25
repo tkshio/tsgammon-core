@@ -9,7 +9,16 @@ import { SingleGameListener } from './SingleGameListener'
 import { SGState } from './SingleGameState'
 import { concat1, concat2 } from './utils/concat'
 
-export function eogEventHandler(...listeners: Partial<BGListener>[]) {
+export type BGEoGHandler = {
+    onEndOfBGGame: (
+        bgState: BGState,
+        sgResult: SGResult,
+        eog: EOGStatus
+    ) => void
+}
+export function eogEventHandler(
+    ...listeners: Partial<BGListener>[]
+): BGEoGHandler {
     const listener = {
         ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur)),
     }
@@ -46,10 +55,12 @@ export function eogEventHandler(...listeners: Partial<BGListener>[]) {
         }
     }
 }
-
+export type SGEoGHandler = {
+    onEndOfGame: (sgState: SGState, sgResult: SGResult, eog: EOGStatus) => void
+}
 export function eogEventHandlersSG(
     ...listeners: Partial<SingleGameListener>[]
-) {
+): SGEoGHandler {
     const listener = {
         ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur)),
     }

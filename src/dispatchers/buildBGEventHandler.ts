@@ -16,7 +16,7 @@ import { singleGameDispatcher } from './SingleGameDispatcher'
 import { SGEoG, SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 
 export type BGEventHandlersExtensible = BGEventHandler & {
-    addListeners: (toAdd: Partial<BGListener>) => BGEventHandlersExtensible
+    addListener: (toAdd: Partial<BGListener>) => BGEventHandlersExtensible
 }
 
 export function buildBGEventHandler(
@@ -54,7 +54,7 @@ function buildBGEventHandler_rec(
 
     return {
         ...handlers,
-        addListeners,
+        addListener: addListeners,
     }
 }
 
