@@ -35,7 +35,7 @@ export type CubeGameDispatcher = {
     // ゲームの進行状況に対応して受動的に使用される操作
     doStartCubeAction: (
         state: CBInPlay,
-        skipCubeAction: boolean
+        skipCubeAction: (cbState: CBInPlay) => boolean
     ) => (
         listeners: Partial<
             Pick<
@@ -182,9 +182,13 @@ function doPass(state: CBResponse) {
     }
 }
 
-function doStartCubeAction(state: CBInPlay, skipCubeAction: boolean) {
-    const nextState: CBAction | CBToRoll =
-        state.doStartCubeAction(skipCubeAction)
+function doStartCubeAction(
+    state: CBInPlay,
+    skipCubeAction: (cbState: CBInPlay) => boolean
+) {
+    const nextState: CBAction | CBToRoll = state.doStartCubeAction(
+        skipCubeAction(state)
+    )
     return (
         listeners: Partial<
             Pick<

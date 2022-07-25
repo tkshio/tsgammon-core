@@ -20,14 +20,14 @@ export type BGEventHandlersExtensible = BGEventHandler & {
 }
 
 export function buildBGEventHandler(
-    skipCubeAction: boolean,
+    skipCubeAction: (cbState: CBInPlay) => boolean,
     rListener: RollListener = rollListener(),
     ...listeners: Partial<BGListener>[]
 ): BGEventHandlersExtensible {
     return buildBGEventHandler_rec(skipCubeAction, rListener, {}, ...listeners)
 }
 function buildBGEventHandler_rec(
-    skipCubeAction: boolean,
+    skipCubeAction: (cbState: CBInPlay) => boolean,
     rListener: RollListener = rollListener(),
     _bgListeners: Partial<BGListener>,
     ...listeners: Partial<BGListener>[]
@@ -59,7 +59,7 @@ function buildBGEventHandler_rec(
 }
 
 function _buildBGEventHandler(
-    skipCubeAction: boolean,
+    skipCubeAction: (cbState: CBInPlay) => boolean,
     rollListener: RollListener,
     bgListeners: Partial<BGListener>
 ): BGEventHandler {
