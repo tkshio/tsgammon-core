@@ -63,7 +63,7 @@ function formatHeaderPart<T>(
 ; [Player 2 ${redPlayer}]
 ; [EventDate "${eventDate}"]
 ; [EventTime "${eventTime}"]
-; [Variation "Backgammon"]
+; [Variation "${conf.name}"]
 ; [Unrated "On"]
 ; [Jacoby "${conf.jacobyRule ? 'On' : 'Off'}"]
 ; [Beaver "Off"]

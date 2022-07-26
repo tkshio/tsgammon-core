@@ -5,6 +5,10 @@ import { BoardState } from './BoardState'
  */
 export type GameConf = {
     /**
+     * 名称
+     */
+    name: string
+    /**
      * 初期配置は、対局開始時の駒配置を示すとともに、駒の総数の算出の基礎としても使用される
      */
     initialPos: number[]
@@ -35,6 +39,7 @@ export type GameConf = {
 }
 
 export const standardConf: GameConf = {
+    name: 'Backgammon',
     initialPos: [
         0, 2, 0, 0, 0, 0, -5, 0, -3, 0, 0, 0, 5, -5, 0, 0, 0, 3, 0, 5, 0, 0, 0,
         0, -2, 0,
@@ -46,6 +51,7 @@ export const standardConf: GameConf = {
 
 export const honsugorokuConf: GameConf = {
     ...standardConf,
+    name: 'HonSugoroku',
     /**
      * ゾロ目の時も動かせるコマは二つ
      */
