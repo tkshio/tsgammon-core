@@ -41,5 +41,8 @@ export type BGListener = {
         cbState: CBInPlay
         sgState: SGInPlay
     }) => void
-    onEndOfBGGame: (bgState: { cbState: CBEoG; sgState: SGState }) => void
+    onEndOfBGGame: (
+        bgState: { cbState: CBEoG; sgState: SGState },
+        lastState?: CBResponse | undefined
+    ) => void
 }

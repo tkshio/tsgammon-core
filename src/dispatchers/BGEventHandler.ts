@@ -83,7 +83,7 @@ export function concatBGListeners(
             bg1.onAwaitCheckerPlay,
             bg2.onAwaitCheckerPlay
         ),
-        onEndOfBGGame: concat1(bg1.onEndOfBGGame, bg2.onEndOfBGGame),
+        onEndOfBGGame: concat2(bg1.onEndOfBGGame, bg2.onEndOfBGGame),
     }
 }
 

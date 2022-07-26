@@ -31,7 +31,7 @@ export function formatPlyRecord(
             return ' Doubles => ' + plyRecord.cubeValue
         }
         case 'Pass': {
-            return 'Pass'
+            return 'Drops'
         }
         case 'Take': {
             return ' Takes'

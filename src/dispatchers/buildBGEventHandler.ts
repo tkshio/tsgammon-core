@@ -217,11 +217,14 @@ function _buildBGEventHandler(
         onPass: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => {
             const result = cubeGameDispatcher.doPass(bgState.cbState)
             result({
-                onEndOfCubeGame: (cbEoG: CBEoG) => {
-                    bgListeners.onEndOfBGGame?.({
-                        cbState: cbEoG,
-                        sgState: bgState.sgState,
-                    })
+                onEndOfCubeGame: (cbEoG: CBEoG, lastState?: CBResponse) => {
+                    bgListeners.onEndOfBGGame?.(
+                        {
+                            cbState: cbEoG,
+                            sgState: bgState.sgState,
+                        },
+                        lastState
+                    )
                 },
             })
         },
