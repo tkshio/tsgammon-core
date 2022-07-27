@@ -164,8 +164,11 @@ export function eogRecord<T>(
         eogRecord.stake,
         eogRecord.eogStatus
     )
-
-    const curGameRecord = gameRecordEoG(matchRecord.curGameRecord, eogRecord)
+    const curGameRecord = gameRecordEoG(
+        matchRecord.curGameRecord,
+        eogRecord,
+        matchState.isEoM
+    )
     return {
         ...matchRecord,
         isEoG: true,

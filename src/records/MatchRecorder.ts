@@ -1,5 +1,5 @@
-import { BGState } from '../dispatchers/BGState'
 import { BGListener } from '../dispatchers/BGListener'
+import { BGState } from '../dispatchers/BGState'
 import {
     CBAction,
     CBEoG,
@@ -15,6 +15,14 @@ import {
     SGToRoll,
 } from '../dispatchers/SingleGameState'
 import { GameConf } from '../GameConf'
+import {
+    addPlyRecord,
+    discardCurrentGame,
+    eogRecord,
+    MatchRecord,
+    recordFinishedGame,
+    trimPlyRecords,
+} from './MatchRecord'
 import {
     PlyRecordEoG,
     plyRecordForCheckerPlay,
@@ -120,5 +128,43 @@ export function matchRecorderAsBG(
             )
             matchRecorder.recordEoG(plyRecordEoG)
         },
+    }
+}
+
+export function buildMatchRecorder<T>(
+    matchRecord: MatchRecord<T>,
+    setMatchRecord: (f: (prev: MatchRecord<T>) => MatchRecord<T>) => void
+): MatchRecorder<T> {
+    function recordPly(plyRecord: PlyRecordInPlay, state: T) {
+        setMatchRecord((prev) =>
+            prev.isEoG ? prev : addPlyRecord(prev, plyRecord, state)
+        )
+    }
+
+    function recordEoG(eogPlyRecord: PlyRecordEoG) {
+        setMatchRecord((prev) => {
+            if (prev.isEoG) {
+                return prev
+            }
+            return eogRecord(prev, eogPlyRecord)
+        })
+    }
+
+    function resetCurGame() {
+        setMatchRecord((prev) =>
+            prev.isEoG ? recordFinishedGame(prev) : discardCurrentGame(prev)
+        )
+    }
+
+    function resumeTo(index: number): PlyStateRecord<T> {
+        setMatchRecord((prev) => trimPlyRecords(prev, index))
+        return matchRecord.curGameRecord.plyRecords[index]
+    }
+
+    return {
+        recordEoG,
+        resetCurGame,
+        recordPly,
+        resumeTo,
     }
 }

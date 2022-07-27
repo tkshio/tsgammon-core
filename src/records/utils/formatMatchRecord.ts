@@ -94,7 +94,7 @@ function formatGameRecord<T>(
     )
 
     const stakes = gameRecord.isEoG
-        ? formatStakeLine(gameRecord.eogRecord.stake)
+        ? formatStakeLine(gameRecord.eogRecord.stake, gameRecord.isEoM)
         : ''
 
     return [gameDesc, scoreDesc].concat(turns, stakes)
@@ -130,13 +130,17 @@ function formatGameRecord<T>(
         return `${num}) ${whiteCol}${redCol}`
     }
 
-    function formatStakeLine(stake: Score): string {
+    function formatStakeLine(stake: Score, isEoM: boolean): string {
         const whiteStake = formatStake(stake.whiteScore)
         const redStake = formatStake(stake.redScore)
         return `     ${(' ' + whiteStake).padEnd(columnWidth)} ${redStake}`
 
         function formatStake(score: number): string {
-            return score === 0 ? '' : `Wins ${score} point`
+            return score === 0
+                ? ''
+                : isEoM
+                ? `Wins ${score} point and the match`
+                : `Wins ${score} point`
         }
     }
 }

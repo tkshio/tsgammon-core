@@ -19,6 +19,7 @@ export type GameRecord<T> = GameRecordEoG<T> | GameRecordInPlay<T>
 export type GameRecordEoG<T> = _GameRecord<T> & {
     eogRecord: PlyRecordEoG
     isEoG: true
+    isEoM: boolean
 }
 
 /**
@@ -57,15 +58,18 @@ export function gameRecordInPlay<T>(
  *
  * @param curGameRecord 進行中のゲーム
  * @param eogRecord ゲームの結果の記録
+ * @param isEoM このゲームでマッチが決着したならtrue
  * @returns 生成された終局後のゲームの記録
  */
 export function gameRecordEoG<T>(
     curGameRecord: GameRecordInPlay<T>,
-    eogRecord: PlyRecordEoG
+    eogRecord: PlyRecordEoG,
+    isEoM: boolean
 ): GameRecordEoG<T> {
     return {
         ...curGameRecord,
         isEoG: true,
         eogRecord,
+        isEoM,
     }
 }
