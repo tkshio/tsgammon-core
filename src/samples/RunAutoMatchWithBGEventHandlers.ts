@@ -1,14 +1,15 @@
-import { BGEventHandler, asSGEventHandler } from '../dispatchers/BGEventHandler'
+import {
+    asSGEventHandler,
+    BGEventHandler,
+    setBGStateListener,
+} from '../dispatchers/BGEventHandler'
 import { BGState } from '../dispatchers/BGState'
 import { buildBGEventHandler } from '../dispatchers/buildBGEventHandler'
-import { setCBStateListener } from '../dispatchers/CubeGameDispatcher'
-import { CBState } from '../dispatchers/CubeGameState'
 import { defaultBGState } from '../dispatchers/defaultStates'
 import { rollListener } from '../dispatchers/RollDispatcher'
-import { setSGStateListener } from '../dispatchers/SingleGameDispatcher'
-import { SGState } from '../dispatchers/SingleGameState'
 import { toCBState, toSGState } from '../dispatchers/utils/GameSetup'
 import { simpleNNEngine } from '../engines/SimpleNNGammon'
+import { standardConf } from '../GameConf'
 import { score } from '../Score'
 import { formatStake } from '../utils/formatStake'
 import { doCheckerPlay } from './doCheckerPlay'
@@ -68,22 +69,18 @@ function doPlay(bgState: BGState, eventHandlers: BGEventHandler) {
     }
 }
 function run() {
-    const stakeConf = { jacobyRule: false }
+    const gameConf = { ...standardConf, jacobyRule: false }
     let gameScore = score()
     const gState = { cb: toCBState(), sg: toSGState() }
 
-    const setSGState = (state: SGState) => {
-        gState.sg = state
+    const setBGState = (state: BGState) => {
+        gState.cb = state.cbState
+        gState.sg = state.sgState
     }
-    const setCBState = (state: CBState) => {
-        gState.cb = state
-    }
-    const isCrawford = false
     const handlers = buildBGEventHandler(
-        isCrawford,
+        () => false,
         rollListener(),
-        setCBStateListener(defaultBGState().cbState, setCBState),
-        setSGStateListener(defaultBGState().sgState, setSGState)
+        setBGStateListener(defaultBGState(gameConf), setBGState)
     )
 
     let cbState = gState.cb
@@ -96,7 +93,7 @@ function run() {
         sgState = gState.sg
     }
 
-    const stake = cbState.calcStake(stakeConf).stake
+    const stake = cbState.calcStake(gameConf).stake
     gameScore = gameScore.add(stake)
     console.log(formatStake(stake, cbState.eogStatus))
 
