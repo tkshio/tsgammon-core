@@ -66,7 +66,7 @@ function _buildBGEventHandler(
     const { onEndOfBGGame: onEndOfCubeGame } = eogEventHandler(bgListeners)
     const sgDispatcher = withRL(singleGameDispatcher, rollListener)
 
-    const handler = {
+    const bgHandler = {
         onRollOpening: (bgState: {
             cbState: CBOpening
             sgState: SGOpening
@@ -102,7 +102,7 @@ function _buildBGEventHandler(
             const sgResult = sgDispatcher.doCommitCheckerPlay(bgState.sgState)
             sgResult({
                 // チェッカープレイが終了した：キューブアクション状態またはロール待ち状態に遷移
-                onAwaitRoll: (nextSGState: SGToRoll, lastState: SGInPlay) => {
+                onAwaitRoll: (nextSGState: SGToRoll) => {
                     const cbResult = cubeGameDispatcher.doStartCubeAction(
                         bgState.cbState,
                         skipCubeAction
@@ -111,10 +111,10 @@ function _buildBGEventHandler(
                         onAwaitCubeAction: (
                             nextCBState: CBAction | CBToRoll
                         ) => {
-                            bgListeners.onAwaitCubeAction?.(
-                                { cbState: nextCBState, sgState: nextSGState },
-                                { cbState: bgState.cbState, sgState: lastState }
-                            )
+                            bgListeners.onAwaitCubeAction?.({
+                                cbState: nextCBState,
+                                sgState: nextSGState,
+                            })
                         },
                         onCubeActionStarted: (nextCBState: CBAction) => {
                             bgListeners.onCubeActionStarted?.({
@@ -128,6 +128,12 @@ function _buildBGEventHandler(
                                 sgState: nextSGState,
                             })
                         },
+                    })
+                },
+                onCheckerPlayCommitted: (committedState: SGInPlay) => {
+                    bgListeners.onCommitted?.({
+                        cbState: bgState.cbState,
+                        sgState: committedState,
                     })
                 },
                 onEndOfGame: (nextSGState: SGEoG) => {
@@ -206,10 +212,13 @@ function _buildBGEventHandler(
                         bgState.cbState
                     )
                     // Take後は自動ロール
-                    handler.onRoll({
+                    bgHandler.onRoll({
                         cbState: nextState,
                         sgState: bgState.sgState,
                     })
+                },
+                onPassed: (_: CBResponse, isRedWon: boolean) => {
+                    bgListeners.onPassed?.(bgState, isRedWon)
                 },
             })
         },
@@ -217,17 +226,14 @@ function _buildBGEventHandler(
         onPass: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => {
             const result = cubeGameDispatcher.doPass(bgState.cbState)
             result({
-                onEndOfCubeGame: (cbEoG: CBEoG, lastState?: CBResponse) => {
-                    bgListeners.onEndOfBGGame?.(
-                        {
-                            cbState: cbEoG,
-                            sgState: bgState.sgState,
-                        },
-                        lastState
-                    )
+                onEndOfCubeGame: (cbEoG: CBEoG) => {
+                    bgListeners.onEndOfBGGame?.({
+                        cbState: cbEoG,
+                        sgState: bgState.sgState,
+                    })
                 },
             })
         },
     }
-    return handler
+    return bgHandler
 }

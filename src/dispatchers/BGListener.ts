@@ -17,10 +17,10 @@ export type BGListener = {
         cbState: CBOpening
         sgState: SGOpening
     }) => void
-    onAwaitCubeAction: (
-        bgState: { cbState: CBAction | CBToRoll; sgState: SGToRoll },
-        lastState: { cbState: CBInPlay; sgState: SGInPlay }
-    ) => void
+    onAwaitCubeAction: (bgState: {
+        cbState: CBAction | CBToRoll
+        sgState: SGToRoll
+    }) => void
     onCubeActionStarted: (bgState: {
         cbState: CBAction
         sgState: SGToRoll
@@ -37,12 +37,14 @@ export type BGListener = {
         bgState: { cbState: CBToRoll; sgState: SGToRoll },
         lastState: CBResponse
     ) => void
+    onPassed: (
+        bgState: { cbState: CBResponse; sgState: SGToRoll },
+        isRedWon: boolean
+    ) => void
     onAwaitCheckerPlay: (bgState: {
         cbState: CBInPlay
         sgState: SGInPlay
     }) => void
-    onEndOfBGGame: (
-        bgState: { cbState: CBEoG; sgState: SGState },
-        lastState?: CBResponse | undefined
-    ) => void
+    onCommitted: (bgState: { cbState: CBInPlay; sgState: SGInPlay }) => void
+    onEndOfBGGame: (bgState: { cbState: CBEoG; sgState: SGState }) => void
 }

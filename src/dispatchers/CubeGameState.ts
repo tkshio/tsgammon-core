@@ -110,7 +110,9 @@ export type CBEoGRedWon = _CBEoG & {
 export type CBEoGWhiteWon = _CBEoG & {
     result: SGResult.WHITEWON
 }
+
 export type CBEoGNogame = _CBEoG & {
+    isWonByPass: false
     result: SGResult.NOGAME
 }
 
@@ -186,7 +188,7 @@ export function cbInPlayWhite(cubeState: CubeState): CBInPlayWhite {
     }
 }
 export function cbResponseRed(cubeState: CubeState): CBResponseRed {
-    return {
+    const cbResponse: CBResponseRed = {
         tag: 'CBResponse',
         isDoubleFromRed: false,
         isRed: true,
@@ -195,12 +197,13 @@ export function cbResponseRed(cubeState: CubeState): CBResponseRed {
             return doAccept(CubeOwner.RED, cbToRollWhite, cubeState)
         },
         doPass: () => {
-            return eogForPass(cbEoGWhite, cubeState)
+            return cbEoGWhiteWon(cubeState, eog(), true)
         },
     }
+    return cbResponse
 }
 export function cbResponseWhite(cubeState: CubeState): CBResponseWhite {
-    return {
+    const cbResponse: CBResponseWhite = {
         tag: 'CBResponse',
         isDoubleFromRed: true,
         isRed: false,
@@ -209,16 +212,10 @@ export function cbResponseWhite(cubeState: CubeState): CBResponseWhite {
             return doAccept(CubeOwner.WHITE, cbToRollRed, cubeState)
         },
         doPass: () => {
-            return eogForPass(cbEoGRed, cubeState)
+            return cbEoGRedWon(cubeState, eog(), true)
         },
     }
-}
-
-function eogForPass<T extends CBEoG>(
-    cbEoG: (cubeState: CubeState, eog: EOGStatus, isWonByPass: boolean) => T,
-    cubeState: CubeState
-): T {
-    return cbEoG(cubeState, eog(), true)
+    return cbResponse
 }
 
 function doAccept<T extends CBToRoll>(
@@ -265,15 +262,15 @@ export function resultToCBEoG(
 ): CBEoG {
     switch (sgResult) {
         case SGResult.WHITEWON:
-            return cbEoGWhite(cubeState, eogStatus, false)
+            return cbEoGWhiteWon(cubeState, eogStatus, false)
         case SGResult.REDWON:
-            return cbEoGRed(cubeState, eogStatus, false)
+            return cbEoGRedWon(cubeState, eogStatus, false)
         case SGResult.NOGAME:
-            return cbEoGNogame(cubeState, eogStatus, false)
+            return cbEoGNogame(cubeState, eogStatus)
     }
 }
 
-function cbEoGRed(
+function cbEoGRedWon(
     cubeState: CubeState,
     eogStatus: EOGStatus,
     isWonByPass: boolean
@@ -294,7 +291,7 @@ function cbEoGRed(
     }
 }
 
-function cbEoGWhite(
+function cbEoGWhiteWon(
     cubeState: CubeState,
     eogStatus: EOGStatus,
     isWonByPass: boolean
@@ -315,17 +312,13 @@ function cbEoGWhite(
     }
 }
 
-function cbEoGNogame(
-    cubeState: CubeState,
-    eogStatus: EOGStatus,
-    isWonByPass: boolean
-): CBEoGNogame {
+function cbEoGNogame(cubeState: CubeState, eogStatus: EOGStatus): CBEoGNogame {
     return {
         tag: 'CBEoG',
         cubeState,
         result: SGResult.NOGAME,
         eogStatus,
-        isWonByPass,
+        isWonByPass: false,
         calcStake: () => {
             return {
                 stake: score(),

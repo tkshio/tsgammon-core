@@ -1,12 +1,13 @@
 import { DiceRoll } from '../Dices'
 import { RollListener, rollListener } from './RollDispatcher'
-import { concatSGListeners, singleGameDispatcher } from './SingleGameDispatcher'
+import { singleGameDispatcher } from './SingleGameDispatcher'
 import { SingleGameListener } from './SingleGameListener'
 import { SGOpening, SGToRoll } from './SingleGameState'
 import {
     SingleGameEventHandlerExtensible,
     SingleGameEventHandler,
 } from './SingleGameEventHandler'
+import { concat0, concat1 } from './utils/concat'
 
 export function buildSGEventHandler(
     rListener: RollListener = rollListener(),
@@ -20,10 +21,13 @@ function buildSGEventHandler_rec(
     sgListener: Partial<SingleGameListener>,
     ...listeners: Partial<SingleGameListener>[]
 ): SingleGameEventHandlerExtensible {
-    const listener = listeners.reduce(
-        (prev, cur) => concatSGListeners(prev, cur),
-        sgListener
-    )
+    const listener: SingleGameListener = {
+        ...emptySGListener,
+        ...listeners.reduce(
+            (prev, cur) => concatSGListeners(prev, cur),
+            sgListener
+        ),
+    }
     const addListeners = (...toAdd: Partial<SingleGameListener>[]) => {
         return buildSGEventHandler_rec(rollListener, listener, ...toAdd)
     }
@@ -35,7 +39,7 @@ function buildSGEventHandler_rec(
 
 function _buildSGEventHandler(
     rollListener: RollListener,
-    listeners: Partial<SingleGameListener>
+    listeners: SingleGameListener
 ): SingleGameEventHandler {
     return {
         onStartGame: () => {
@@ -60,4 +64,62 @@ function _buildSGEventHandler(
                 result(listeners)
             }),
     }
+}
+const emptySGListener: SingleGameListener = {
+    onAwaitRoll: () => {
+        //
+    },
+    onCheckerPlayCommitted: () => {
+        //
+    },
+    onCheckerPlayStarted: () => {
+        //
+    },
+    onEndOfGame: () => {
+        //
+    },
+    onGameStarted: () => {
+        //
+    },
+    onOpeningCheckerPlayStarted: () => {
+        //
+    },
+    onRerollOpening: () => {
+        //
+    },
+}
+
+export function concatSGListeners(
+    base: Partial<SingleGameListener>,
+    ...listners: Partial<SingleGameListener>[]
+): Partial<SingleGameListener> {
+    return listners.reduce(
+        (
+            prev: Partial<SingleGameListener>,
+            cur: Partial<SingleGameListener>
+        ) => {
+            return {
+                onGameStarted: concat0(prev?.onGameStarted, cur?.onGameStarted),
+                onOpeningCheckerPlayStarted: concat1(
+                    prev?.onOpeningCheckerPlayStarted,
+                    cur?.onOpeningCheckerPlayStarted
+                ),
+                onCheckerPlayStarted: concat1(
+                    prev?.onCheckerPlayStarted,
+                    cur?.onCheckerPlayStarted
+                ),
+                onCheckerPlayCommitted: concat1(
+                    prev.onCheckerPlayCommitted,
+                    cur.onCheckerPlayCommitted
+                ),
+                onRerollOpening: concat1(
+                    prev?.onRerollOpening,
+                    cur?.onRerollOpening
+                ),
+                onAwaitRoll: concat1(prev?.onAwaitRoll, cur?.onAwaitRoll),
+                onEndOfGame: concat1(prev?.onEndOfGame, cur?.onEndOfGame),
+            }
+        },
+        base
+    )
 }

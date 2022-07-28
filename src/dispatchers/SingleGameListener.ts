@@ -4,7 +4,8 @@ export type SingleGameListener = {
     onGameStarted: () => void
     onOpeningCheckerPlayStarted: (nextState: SGInPlay) => void
     onCheckerPlayStarted: (nextState: SGInPlay) => void
+    onCheckerPlayCommitted: (committedState: SGInPlay) => void
     onRerollOpening: (nextState: SGOpening) => void
-    onAwaitRoll: (nextState: SGToRoll, lastState: SGInPlay) => void
-    onEndOfGame: (nextState: SGEoG, lastState?: SGInPlay) => void
+    onAwaitRoll: (nextState: SGToRoll) => void
+    onEndOfGame: (nextState: SGEoG) => void
 }

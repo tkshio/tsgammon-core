@@ -7,7 +7,7 @@ import { CBEoG } from './CubeGameState'
 import { singleGameDispatcher } from './SingleGameDispatcher'
 import { SingleGameListener } from './SingleGameListener'
 import { SGState } from './SingleGameState'
-import { concat2 } from './utils/concat'
+import { concat1 } from './utils/concat'
 
 export type BGEoGHandler = {
     onEndOfBGGame: (
@@ -48,7 +48,7 @@ export function eogEventHandler(
         listener2: Partial<Pick<BGListener, 'onEndOfBGGame'>>
     ): Partial<Pick<BGListener, 'onEndOfBGGame'>> {
         return {
-            onEndOfBGGame: concat2(
+            onEndOfBGGame: concat1(
                 listener1.onEndOfBGGame,
                 listener2.onEndOfBGGame
             ),
@@ -62,6 +62,9 @@ export function eogEventHandlersSG(
     ...listeners: Partial<SingleGameListener>[]
 ): SGEoGHandler {
     const listener = {
+        onEndOfGame: () => {
+            //
+        },
         ...listeners.reduce((prev, cur) => concatEOGListeners(prev, cur)),
     }
     return {
@@ -79,7 +82,7 @@ export function eogEventHandlersSG(
         listener2: Partial<Pick<SingleGameListener, 'onEndOfGame'>>
     ) {
         return {
-            onEndOfGame: concat2(listener1.onEndOfGame, listener2.onEndOfGame),
+            onEndOfGame: concat1(listener1.onEndOfGame, listener2.onEndOfGame),
         }
     }
 }

@@ -25,7 +25,9 @@ export type CubeGameDispatcher = {
     doTake: (
         state: CBResponse
     ) => (
-        listeners: Partial<Pick<CubeGameListener, 'onDoubleAccepted'>>
+        listeners: Partial<
+            Pick<CubeGameListener, 'onDoubleAccepted' | 'onPassed'>
+        >
     ) => void
 
     doPass: (
@@ -128,6 +130,9 @@ export function setCBStateListener(
         onAwaitCheckerPlay: setCBState,
         onDoubled: setCBState,
         onDoubleAccepted: setCBState,
+        onPassed: () => {
+            //
+        },
         onCubeActionSkipped: setCBState,
         onEndOfCubeGame: setCBState,
     }
@@ -177,8 +182,13 @@ function doTake(state: CBResponse) {
 
 function doPass(state: CBResponse) {
     const nextState: CBEoG = state.doPass()
-    return (listeners: Partial<Pick<CubeGameListener, 'onEndOfCubeGame'>>) => {
-        listeners.onEndOfCubeGame?.(nextState, state)
+    return (
+        listeners: Partial<
+            Pick<CubeGameListener, 'onEndOfCubeGame' | 'onPassed'>
+        >
+    ) => {
+        listeners.onPassed?.(state, state.isDoubleFromRed)
+        listeners.onEndOfCubeGame?.(nextState)
     }
 }
 

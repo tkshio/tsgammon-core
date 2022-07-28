@@ -46,10 +46,10 @@ export function matchRecorderAsSG(
     matchRecorder: MatchRecorder<SGState>
 ): Partial<SingleGameListener> {
     return {
-        onAwaitRoll: (_: SGToRoll, lastState: SGInPlay) => {
+        onCheckerPlayCommitted: (committedState: SGInPlay) => {
             matchRecorder.recordPly(
-                plyRecordForCheckerPlay(lastState.curPly),
-                lastState
+                plyRecordForCheckerPlay(committedState.curPly),
+                committedState
             )
         },
 
@@ -69,15 +69,6 @@ export function matchRecorderAsBG(
     matchRecorder: MatchRecorder<BGState>
 ): Partial<BGListener> {
     return {
-        onAwaitCubeAction: (
-            _: { cbState: CBAction | CBToRoll; sgState: SGToRoll },
-            lastState: { cbState: CBInPlay; sgState: SGInPlay }
-        ) => {
-            matchRecorder.recordPly(
-                plyRecordForCheckerPlay(lastState.sgState.curPly),
-                lastState
-            )
-        },
         onDoubled: (
             bgState: { cbState: CBResponse; sgState: SGToRoll },
             lastState: CBAction
@@ -102,24 +93,27 @@ export function matchRecorderAsBG(
                 sgState: bgState.sgState,
             })
         },
-
+        onPassed: (
+            bgState: { cbState: CBResponse; sgState: SGToRoll },
+            isRedWon: boolean
+        ) => {
+            const plyRecord = plyRecordForPass(
+                isRedWon ? SGResult.REDWON : SGResult.WHITEWON
+            )
+            matchRecorder.recordPly(plyRecord, bgState)
+        },
         onBGGameStarted: () => {
             matchRecorder.resetCurGame()
         },
 
-        onEndOfBGGame: (
-            bgState: { cbState: CBEoG; sgState: SGState },
-            lastState?: CBResponse
-        ) => {
-            if (lastState !== undefined) {
-                const plyRecord = plyRecordForPass(
-                    lastState.isRed ? SGResult.WHITEWON : SGResult.REDWON
-                )
-                matchRecorder.recordPly(plyRecord, {
-                    cbState: lastState,
-                    sgState: bgState.sgState,
-                })
-            }
+        onCommitted: (bgState: { cbState: CBInPlay; sgState: SGInPlay }) => {
+            const committedState = bgState.sgState
+            matchRecorder.recordPly(
+                plyRecordForCheckerPlay(committedState.curPly),
+                bgState
+            )
+        },
+        onEndOfBGGame: (bgState: { cbState: CBEoG; sgState: SGState }) => {
             const { stake, eogStatus } = bgState.cbState.calcStake(gameConf)
             const plyRecordEoG = plyRecordForEoG(
                 stake,

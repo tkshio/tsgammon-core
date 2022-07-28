@@ -16,5 +16,6 @@ export type CubeGameListener = {
 
     onDoubled: (nextState: CBResponse, lastState: CBAction) => void
     onDoubleAccepted: (nextState: CBToRoll, lastState: CBResponse) => void
-    onEndOfCubeGame: (nextState: CBEoG, lastState?: CBResponse) => void
+    onPassed: (lastState: CBResponse, isRedWon: boolean) => void
+    onEndOfCubeGame: (nextState: CBEoG) => void
 }

@@ -43,17 +43,13 @@ export type SingleGameDispatcherWithRL = Omit<
 > & {
     doRoll: (
         state: SGToRoll
-    ) => (
-        listener: Partial<Pick<SingleGameListener, 'onCheckerPlayStarted'>>
-    ) => void
+    ) => (listener: Pick<SingleGameListener, 'onCheckerPlayStarted'>) => void
     doOpeningRoll: (
         state: SGOpening
     ) => (
-        listener: Partial<
-            Pick<
-                SingleGameListener,
-                'onOpeningCheckerPlayStarted' | 'onRerollOpening'
-            >
+        listener: Pick<
+            SingleGameListener,
+            'onOpeningCheckerPlayStarted' | 'onRerollOpening'
         >
     ) => void
 }
@@ -66,9 +62,7 @@ export function withRL(
         ...singleGameDispatcher,
         doRoll: (state: SGToRoll) => {
             return (
-                listener: Partial<
-                    Pick<SingleGameListener, 'onCheckerPlayStarted'>
-                >
+                listener: Pick<SingleGameListener, 'onCheckerPlayStarted'>
             ) => {
                 rollListener.onRollRequest((dices: DiceRoll) => {
                     const result = singleGameDispatcher.doRoll(state, dices)
@@ -78,11 +72,9 @@ export function withRL(
         },
         doOpeningRoll: (state: SGOpening) => {
             return (
-                listener: Partial<
-                    Pick<
-                        SingleGameListener,
-                        'onOpeningCheckerPlayStarted' | 'onRerollOpening'
-                    >
+                listener: Pick<
+                    SingleGameListener,
+                    'onOpeningCheckerPlayStarted' | 'onRerollOpening'
                 >
             ) => {
                 rollListener.onRollRequest((dices: DiceRoll) => {

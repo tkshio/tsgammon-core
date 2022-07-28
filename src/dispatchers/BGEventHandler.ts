@@ -65,7 +65,7 @@ export function concatBGListeners(
             bg1.onBGOpeningRerolled,
             bg2.onBGOpeningRerolled
         ),
-        onAwaitCubeAction: concat2(
+        onAwaitCubeAction: concat1(
             bg1.onAwaitCubeAction,
             bg2.onAwaitCubeAction
         ),
@@ -79,11 +79,13 @@ export function concatBGListeners(
         ),
         onDoubled: concat2(bg1.onDoubled, bg2.onDoubled),
         onDoubleAccepted: concat2(bg1.onDoubleAccepted, bg2.onDoubleAccepted),
+        onPassed: concat2(bg1.onPassed, bg2.onPassed),
         onAwaitCheckerPlay: concat1(
             bg1.onAwaitCheckerPlay,
             bg2.onAwaitCheckerPlay
         ),
-        onEndOfBGGame: concat2(bg1.onEndOfBGGame, bg2.onEndOfBGGame),
+        onCommitted: concat1(bg1.onCommitted, bg2.onCommitted),
+        onEndOfBGGame: concat1(bg1.onEndOfBGGame, bg2.onEndOfBGGame),
     }
 }
 
@@ -99,8 +101,14 @@ export function setBGStateListener(
         },
         onCubeActionStarted: (bgState: BGState) => setBGState(bgState),
         onAwaitCheckerPlay: (bgState: BGState) => setBGState(bgState),
+        onCommitted: () => {
+            //
+        },
         onDoubled: (bgState: BGState) => setBGState(bgState),
         onDoubleAccepted: (bgState: BGState) => setBGState(bgState),
+        onPassed: () => {
+            //
+        },
         onCubeActionSkipped: (bgState: BGState) => setBGState(bgState),
         onEndOfBGGame: (bgState: BGState) => setBGState(bgState),
     }
