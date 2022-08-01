@@ -157,14 +157,14 @@ export function wrap<T extends { hasValue: true }>(
 }
 
 function _wrap<T extends { hasValue: true }>(
-    t: T | { hasValue: false },
-    was: T | { hasValue: false }
+    t: T | { hasValue: false }, // 直前のor/applyで引数の関数で見つかったノード
+    was: T | { hasValue: false } // or/applyの関数に、引数として渡されたノード
 ): Wrapped<T> {
     return {
         apply: (f: (arg: T) => T | { hasValue: false }) =>
             _wrap(t.hasValue ? f(t) : t, t),
         or: (f: (arg: T) => T | { hasValue: false }) =>
-            _wrap(t.hasValue ? t : was.hasValue ? f(was) : was, t),
+            _wrap(t.hasValue ? t : was.hasValue ? f(was) : was, was),
         unwrap: t,
     }
 }
