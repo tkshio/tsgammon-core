@@ -33,7 +33,7 @@ export type GameConf = {
     movesForDoublet?: number
 
     /**
-     * 終局判定関数
+     * 終局判定関数、省略時は全ての駒を上りにしたら終局
      */
     isEoGFunc?: (board: BoardState) => boolean
 }

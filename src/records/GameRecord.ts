@@ -38,7 +38,7 @@ type _GameRecord<T> = {
 /**
  * 開始直後の状態のゲームの記録を生成する
  *
- * @param scoreBefore ゲーム開始時の累計点
+ * @param matchState 開始時点のマッチ状態
  * @returns 進行中のゲームの記録
  */
 export function gameRecordInPlay<T>(

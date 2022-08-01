@@ -5,6 +5,13 @@ import { GameState } from '../GameState'
 import { MatchState } from '../MatchState'
 import { ResignOffer } from '../ResignOffer'
 
+/**
+ * 指定の局面から、GNU Backgammon仕様のMatchIDを含むオブジェクトを生成する
+ *
+ * @param matchState マッチスコアの状態
+ * @param gameState 手番など、現在のゲームの状態
+ * @returns
+ */
 export function toMatchID(matchState: MatchState, gameState: GameState) {
     const cubeState = gameState.cubeState
 
@@ -159,6 +166,12 @@ function revertBits(v: Bit): Bit {
     return { bit: ret, len: v.len }
 }
 
+/**
+ * 与えられたBitオブジェクトを8bitずつリトルエンディアンでまとめてBufferに書き込むreducerを生成する
+ * @param buffer
+ * @param pos
+ * @returns
+ */
 export function littleEndianReducer(
     buffer: ArrayBuffer,
     pos = 0

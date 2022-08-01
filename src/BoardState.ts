@@ -52,18 +52,40 @@ export interface BoardState {
      * 自分のピップカウント
      */
     myPipCount: number
+
     /**
      * 相手のピップカウント
      */
     opponentPipCount: number
 
+    /**
+     * 終局状態に達しているならtrue
+     */
     isEndOfGame(): boolean
+
+    /**
+     * 終局状態に達していて、かつギャモンならtrue
+     */
     isGammonish(): boolean
+
+    /**
+     * 終局状態に達していて、かつバックギャモンならtrue
+     */
     isBackgammonishAlso(): boolean
 
+    /**
+     * ランニングゲーム（駒同士のコンタクトがない）状態ならtrue
+     */
     isRunningGame(): boolean
 
+    /**
+     * 自分のまだ上がっていない駒の数
+     */
     pieceCount: number
+
+    /**
+     * 相手のまだ上がっていない駒の数
+     */
     opponentPieceCount: number
 
     /**
@@ -79,20 +101,21 @@ type Board = {
     // all gone
 } & BoardState
 
-export function countWhitePieces(pieces: number[]) {
+function countWhitePieces(pieces: number[]) {
     return pieces.filter((n) => n > 0).reduce((n, m) => n + m, 0)
 }
 
-export function countRedPieces(pieces: number[]) {
+function countRedPieces(pieces: number[]) {
     return countWhitePieces(pieces.map((n) => -n))
 }
+
 /**
  * 駒の配置を格納した配列から、BoardStateを生成する
  *
  * @param pieces 駒の配置（省略時は標準ルールでの開始時な配置）
  * @param bornOffs すでにベアリングオフした駒の数の対（順に自分、相手：省略時は0）
  * @param innerPos この値とそれ以降がインナーボードとなる
- * @param outerPos この値
+ * @param isEoGFunc 終局判定関数（終局時にtrueを返す）
  * @returns 盤面
  */
 export function boardState(
@@ -104,9 +127,11 @@ export function boardState(
 ): BoardState {
     return initBoardState(pieces, bornOffs, innerPos, isEoGFunc)
 }
+
 function posInverterFor(points: number[]): (pos: number) => number {
     return (pos: number) => points.length - 1 - pos
 }
+
 function initBoardState(
     points: number[],
     bornOffs: [number, number] = [0, 0],

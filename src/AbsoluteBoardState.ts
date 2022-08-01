@@ -28,6 +28,12 @@ export interface AbsoluteBoardState {
     redBornOff(): number
 }
 
+/**
+ * 絶対表記の盤面状態を生成する
+ * @param pieces 駒の配置を表す配列
+ * @param bornOffs すでに上げた駒の数の配列:bornOffs[0]は赤、[1]は白（省略時はいずれも0）
+ * @returns
+ */
 export function initAbsoluteBoard(
     pieces: number[] = standardConf.initialPos,
     bornOffs: [number, number] = [0, 0]

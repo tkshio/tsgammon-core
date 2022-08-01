@@ -2,6 +2,7 @@
  * ダイスの目のペアを表す
  */
 export type DiceRoll = { dice1: DicePip; dice2: DicePip }
+
 /**
  * ダイスの目のペアを生成する
  *
@@ -26,8 +27,9 @@ export type Dice = {
      * ダイスの目
      */
     pip: DicePip
+
     /**
-     * 駒の移動により使用、または最初から使用できない場合 true
+     * 駒の移動により使用された場合、または最初から使用できない場合 true
      */
     used: boolean
 }
@@ -43,9 +45,9 @@ export function dices(dicePip: DicePip, count: number): Dice[] {
 }
 
 /**
- * DicePipを、Diceに変換する
- * @param dicePips ダイスの目を格納した配列
- * @returns 未使用の状態のDice配列
+ * ダイスの目を使用状態を持たせてオブジェクトにする
+ * @param pip ダイスの目
+ * @returns 未使用の状態のダイス
  */
 export function dice(pip: DicePip): Dice {
     return { pip, used: false }

@@ -11,7 +11,6 @@ import { NodeBuilder } from './NodeBuilder'
  *
  * @param board 盤面
  * @param dicePip 盤面に対して使用したいダイス目
- * @param lastMoves この局面に至るまでに適用したムーブ
  * @param nodeBuilder ダイスが適用可能なポイントについて、適用後の状態を表す子局面ノードを生成する関数
  * @param mark この局面での未使用のダイスの数
  * @returns 各ポイントへのダイス適用可否（可の場合は{@link BoardStateNode}、否の場合は{@link NoMove}）を返す関数と、使用できなかったダイスの数（必ずmark以下の値となる）が返る

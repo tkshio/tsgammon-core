@@ -42,6 +42,11 @@ export type MatchRecorder<T> = {
     resumeTo: (index: number) => PlyStateRecord<T>
 }
 
+/**
+ * MatchRecorderをラップして、SingleGameListnerとして返す
+ * @param matchRecorder ラップされるMatchRecorder
+ * @returns
+ */
 export function matchRecorderAsSG(
     matchRecorder: MatchRecorder<SGState>
 ): Partial<SingleGameListener> {
@@ -64,6 +69,11 @@ export function matchRecorderAsSG(
     }
 }
 
+/**
+ * MatchRecorderをラップして、BGListnerとして返す
+ * @param matchRecorder ラップされるMatchRecorder
+ * @returns
+ */
 export function matchRecorderAsBG(
     gameConf: GameConf,
     matchRecorder: MatchRecorder<BGState>
@@ -125,6 +135,13 @@ export function matchRecorderAsBG(
     }
 }
 
+/**
+ * MatchRecorderオブジェクトを生成する
+ *
+ * @param matchRecord
+ * @param setMatchRecord
+ * @returns
+ */
 export function buildMatchRecorder<T>(
     matchRecord: MatchRecord<T>,
     setMatchRecord: (f: (prev: MatchRecord<T>) => MatchRecord<T>) => void

@@ -9,6 +9,11 @@ import { DicePip } from '../Dices'
 import { COLOUR, DIRECTION, FIBSBoard, initBoard, TURN } from './FIBSBoard'
 import { FIBSScore, FIBSState } from './FIBSState'
 
+/**
+ * FIBS形式の文字列を解析する。
+ * @param fibs FIBS形式の文字列
+ * @returns 解析結果、不備がある場合は isValid:false が返る
+ */
 export function decodeFIBS(
     fibs: string
 ): { isValid: false } | ({ isValid: true } & FIBSState) {

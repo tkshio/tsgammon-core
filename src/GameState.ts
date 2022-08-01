@@ -2,6 +2,9 @@ import { CubeState } from './CubeState'
 import { Dice } from './Dices'
 import { ResignOffer } from './ResignOffer'
 
+/**
+ * ゲームの進行状態を表す。実質的には、MatchID生成のための定義。
+ */
 export type GameState = GSOpening | GSInPlay | GSEoG
 
 type _GameState = {

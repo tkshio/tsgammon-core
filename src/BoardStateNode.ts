@@ -127,6 +127,10 @@ export function nodeWithEmptyDice(board: BoardState): BoardStateNode {
     return emptyNode(board, [])
 }
 
+/**
+ * BoardStateNodeが保持する、適用可能な手を表したツリーに対して、
+ * 任意のノードを選択する関数を順次受け付けるためのラッパー
+ */
 export type Wrapped<T extends { hasValue: boolean }> = {
     /**
      * wrap()に渡した値、または直前のapply()/or()がhasValue=trueを満たすなら、指定された関数fを適用する。
@@ -136,18 +140,31 @@ export type Wrapped<T extends { hasValue: boolean }> = {
      * wrap()に渡した値、または直前のapply()/or()がhasValue=falseの場合のみ、指定された関数fを適用する
      */
     or: (f: (a: T) => T | { hasValue: false }) => Wrapped<T>
+    /**
+     * 現時点で選択されたノード（または該当なし）を返す
+     */
     unwrap: T | { hasValue: false }
 }
-
+/**
+ * 指定されたノードをWrapperに変換する
+ * @param t Wrapperにしたいノード
+ * @returns
+ */
 export function wrap<T extends { hasValue: true }>(
+    t: T | { hasValue: false }
+): Wrapped<T> {
+    return _wrap(t, { hasValue: false })
+}
+
+function _wrap<T extends { hasValue: true }>(
     t: T | { hasValue: false },
-    was: T | { hasValue: false } = { hasValue: false }
+    was: T | { hasValue: false }
 ): Wrapped<T> {
     return {
         apply: (f: (arg: T) => T | { hasValue: false }) =>
-            wrap(t.hasValue ? f(t) : t, t),
+            _wrap(t.hasValue ? f(t) : t, t),
         or: (f: (arg: T) => T | { hasValue: false }) =>
-            wrap(t.hasValue ? t : was.hasValue ? f(was) : was, t),
+            _wrap(t.hasValue ? t : was.hasValue ? f(was) : was, t),
         unwrap: t,
     }
 }

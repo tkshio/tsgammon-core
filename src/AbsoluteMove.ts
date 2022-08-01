@@ -23,6 +23,12 @@ export interface AbsoluteMove {
     pip: number
 }
 
+/**
+ * 相対表記のムーブの配列を、白の手番のムーブとして絶対表記のムーブの配列に変換する
+ * @param moves 相対表記のムーブの配列
+ * @param invertPos 座標変換関数
+ * @returns
+ */
 export function absoluteMovesWhite(
     moves: { from: number; to: number; isHit?: boolean }[],
     invertPos?: (pos: number) => number
@@ -38,6 +44,13 @@ export function absoluteMovesWhite(
         )
     )
 }
+
+/**
+ * 相対表記のムーブの配列を、赤の手番のムーブとして絶対表記のムーブの配列に変換する
+ * @param moves 相対表記のムーブの配列
+ * @param invertPos 座標変換関数
+ * @returns
+ */
 export function absoluteMovesRed(
     moves: { from: number; to: number; isHit?: boolean }[],
     invertPos?: (pos: number) => number
@@ -57,6 +70,12 @@ export function absoluteMovesRed(
 type AMove = Pick<Move, 'from' | 'to' | 'isHit' | 'pip'>
 const invertPosDefault = (pos: number) => 25 - pos
 
+/**
+ * 最小限の項目からなる相対表記のムーブの配列を、白の手番のムーブとして絶対表記のムーブの配列に変換する
+ * @param moves 相対表記のムーブの配列
+ * @param invertPos 座標変換関数
+ * @returns
+ */
 export function makeMovesAbsoluteAsWhite(
     moves: AMove[],
     invertPos?: (pos: number) => number
@@ -64,6 +83,12 @@ export function makeMovesAbsoluteAsWhite(
     return moves.map((move: AMove) => makeMoveAbsoluteAsWhite(move, invertPos))
 }
 
+/**
+ * 最小限の項目からなる相対表記のムーブの配列を、赤の手番のムーブとして絶対表記のムーブの配列に変換する
+ * @param moves 相対表記のムーブの配列
+ * @param invertPos 座標変換関数
+ * @returns
+ */
 export function makeMovesAbsoluteAsRed(
     moves: AMove[],
     invertPos?: (pos: number) => number
@@ -71,6 +96,12 @@ export function makeMovesAbsoluteAsRed(
     return moves.map((move: AMove) => makeMoveAbsoluteAsRed(move, invertPos))
 }
 
+/**
+ * 最小限の項目からなる相対表記のムーブを、白の手番のムーブとして絶対表記のムーブに変換する
+ * @param moves 相対表記のムーブ
+ * @param invertPos 座標変換関数
+ * @returns
+ */
 export function makeMoveAbsoluteAsWhite(
     move: AMove,
     invertPos: (pos: number) => number = invertPosDefault
@@ -78,6 +109,12 @@ export function makeMoveAbsoluteAsWhite(
     return makeMoveAbsolute(move, invertPos, (n) => n)
 }
 
+/**
+ * 最小限の項目からなる相対表記のムーブを、赤の手番のムーブとして絶対表記のムーブに変換する
+ * @param moves 相対表記のムーブ
+ * @param invertPos 座標変換関数
+ * @returns
+ */
 export function makeMoveAbsoluteAsRed(
     move: AMove,
     invertPos: (pos: number) => number = invertPosDefault

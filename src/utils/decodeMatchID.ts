@@ -1,5 +1,10 @@
 import { decode as decodeBase64 } from '@borderless/base64'
 
+/**
+ * Gnu Backgammon仕様のMatchIDを解析し、各項目の情報を返す。
+ * @param matchID MatchIDないし任意の文字列
+ * @returns 解析結果：内容のチェックはしないので、どの文字列にたいしても何らかの結果が返る
+ */
 export function decodeMatchID(matchID: string) {
     const decoded = new Uint8Array(decodeBase64(matchID.substring(0, 14)))
     const cube = decoded[0] & 15
