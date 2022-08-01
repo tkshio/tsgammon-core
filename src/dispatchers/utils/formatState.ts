@@ -7,6 +7,17 @@ import { CheckerPlayState } from '../CheckerPlayState'
 import { CBState } from '../CubeGameState'
 import { SGState } from '../SingleGameState'
 
+/**
+ * 現局面を単純な文字列で表記する
+ *
+ * @param sgState
+ * @param cbState
+ * @param cpState
+ * @param moveFormatDirection
+ * @param red
+ * @param white
+ * @returns
+ */
 export function formatState(
     sgState: SGState,
     cbState?: CBState,

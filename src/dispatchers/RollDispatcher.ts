@@ -4,18 +4,25 @@ import { SingleGameDispatcher } from './SingleGameDispatcher'
 import { SingleGameListener } from './SingleGameListener'
 import { SGOpening, SGToRoll } from './SingleGameState'
 
-export interface RollDispatcher {
-    doRollRequest(rollReq: (dices: DiceRoll) => void): void
-}
-
+/**
+ * ロールが必要な処理を受け付けるListener: これは、ダイスロールを非同期的に行うために設けられている
+ */
 export interface RollListener {
     onRollRequest: (rollReq: (dices: DiceRoll) => void) => void
 }
 
+/**
+ * ダイスロールを要求するタスクの定義
+ */
 export type RollReqs = {
     reqs: ((dices: DiceRoll) => void)[]
 }
 
+/**
+ * 設定情報からRollListenerオブジェクトを生成する
+ * @param conf RollReqを受け付ける関数、または単純にロール目を生成するDiceSourceオブジェクトを指定する
+ * @returns
+ */
 export function rollListener(
     conf: {
         onRollRequest?: (rollReq: (dices: DiceRoll) => void) => void
@@ -37,6 +44,9 @@ export function rollListener(
     }
 }
 
+/**
+ * SingleGameDispatcherを、ロール目を意識しない形に読み替えた形
+ */
 export type SingleGameDispatcherWithRL = Omit<
     SingleGameDispatcher,
     'doRoll' | 'doOpeningRoll'
@@ -54,6 +64,12 @@ export type SingleGameDispatcherWithRL = Omit<
     ) => void
 }
 
+/**
+ * SingleGameDispatcherをロール目を意識しない形に読み替える
+ * @param singleGameDispatcher
+ * @param rollListener
+ * @returns
+ */
 export function withRL(
     singleGameDispatcher: SingleGameDispatcher,
     rollListener: RollListener

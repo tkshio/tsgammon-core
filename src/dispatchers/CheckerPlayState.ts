@@ -4,6 +4,9 @@ import { BoardStateNode } from '../BoardStateNode'
 import { Ply } from '../Ply'
 import { SGInPlay } from './SingleGameState'
 
+/**
+ * チェッカープレイが未確定の状態を表す
+ */
 export type CheckerPlayState = {
     isCommitted: false
 
@@ -19,11 +22,19 @@ export type CheckerPlayState = {
     revertDicesFlag: boolean
 }
 
+/**
+ * チェッカープレイが確定した状態を表す
+ */
 export type CheckerPlayStateCommitted = {
     isCommitted: true
     boardStateNode: BoardStateNode
 }
 
+/**
+ * チェッカープレイ開始状態を示すSGStateオブジェクトを、CheckerPlayStateオブジェクトに変換する
+ * @param sgInPlay
+ * @returns
+ */
 export function asCheckerPlayState(sgInPlay: SGInPlay): CheckerPlayState {
     const { boardStateNode, absBoard, revertTo, toAbsBoard, toPly, toPos } =
         sgInPlay

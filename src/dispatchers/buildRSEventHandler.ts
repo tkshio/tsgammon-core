@@ -4,6 +4,12 @@ import { RSNONE, RSOffered } from './ResignState'
 import { ResignOffer } from '../ResignOffer'
 import { ResignEventHandler } from './ResignEventHandlers'
 
+/**
+ * RSEventHandlerオブジェクトを生成する
+ *
+ * @param listeners ResignHandlerから呼ばせるListener
+ * @returns
+ */
 export function buildRSEventHandler(
     listeners: Partial<{
         offerResign: (resignState: RSOffered) => void
@@ -11,12 +17,17 @@ export function buildRSEventHandler(
         rejectResign: (resignState: RSOffered) => void
     }>
 ): ResignEventHandler {
+    // どの条件で降参するかの選択は、U.I.側の管理なのでここには登場しない
+    // ResignEventHandlerでは条件での分岐がないので、dispatcherはなく、
+    // 単純にListenerに発生したイベントを通知するだけになっている
     return {
         onOfferResign: (offer: ResignOffer, isRed: boolean) =>
             isRed ? offerFromRedToWhite(offer) : offerFromWhiteToRed(offer),
+
         onRejectResign: (resignState: RSOffered) => {
             listeners.rejectResign?.(resignState)
         },
+
         onAcceptResign: (resignState: RSOffered) => {
             const offer = resignState.offer
             // resignState（=ResignをOfferされた側）がRedなら、Redの勝利
@@ -33,6 +44,7 @@ export function buildRSEventHandler(
         },
     }
 
+    // 以下の二つは、Red/Whiteのどちらからどちらへの降参かを明示するための定義
     function offerFromRedToWhite(offer: ResignOffer) {
         const offered = RSNONE.doOfferResignRed(offer)
         listeners.offerResign?.(offered)

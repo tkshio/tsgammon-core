@@ -9,6 +9,10 @@ import { SingleGameListener } from './SingleGameListener'
 import { SGState } from './SingleGameState'
 import { concat1 } from './utils/concat'
 
+/**
+ * ゲームを終了させるときに呼ぶ操作：降参時、またはキューブありのゲームでチェッカープレイでの終局時に呼ばれる
+ * （キューブパスの場合の終局は、cubeGameDispatcherの管理となる）。
+ */
 export type BGEoGHandler = {
     onEndOfBGGame: (
         bgState: BGState,

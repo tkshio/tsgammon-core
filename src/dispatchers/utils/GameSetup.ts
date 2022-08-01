@@ -49,12 +49,17 @@ export enum GameStatus {
     EOG_WHITEWON,
 }
 
+/**
+ * ゲーム中の一局面を表すオブジェクトを構成するためのパラメーターの定義：局面に応じて、必要な項目は変化する
+ */
 export type GameSetup =
+    // 開始局面では、駒の配置とキューブだけ決まっていれば良い
     | {
           gameStatus?: GameStatus.OPENING
           absPos?: number[]
           cubeState?: CubeState
       }
+    // ロール前の局面
     | {
           gameStatus:
               | GameStatus.TOROLL_RED
@@ -68,6 +73,7 @@ export type GameSetup =
           cubeState?: CubeState
           lastPly?: Ply
       }
+    // 終局後の局面
     | {
           gameStatus: GameStatus.EOG_REDWON | GameStatus.EOG_WHITEWON
 
@@ -76,6 +82,7 @@ export type GameSetup =
           cubeState?: CubeState
           lastPly?: Ply
       }
+    //ロール後の局面
     | {
           gameStatus: GameStatus.INPLAY_RED | GameStatus.INPLAY_WHITE
 

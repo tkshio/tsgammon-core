@@ -17,6 +17,9 @@ import { Ply } from '../Ply'
 import { SGResult } from '../records/SGResult'
 import { score, Score, scoreAsRed, scoreAsWhite } from '../Score'
 
+/**
+ * キューブレスのバックギャモンの局面の状態を定義した型
+ */
 export type SGState = SGOpening | SGInPlay | SGToRoll | SGEoG
 export type SGInPlay = SGInPlayRed | SGInPlayWhite
 export type SGToRoll = SGToRollRed | SGToRollWhite

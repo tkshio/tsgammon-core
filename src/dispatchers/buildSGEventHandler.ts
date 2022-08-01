@@ -9,6 +9,13 @@ import {
 } from './SingleGameEventHandler'
 import { concat0, concat1 } from './utils/concat'
 
+/**
+ * チェッカープレイを管理する、SingleGameEventHandler
+ * (SingleGameEventHandlerExtensible)オブジェクトを生成する
+ * @param rListener
+ * @param listeners
+ * @returns
+ */
 export function buildSGEventHandler(
     rListener: RollListener = rollListener(),
     ...listeners: Partial<SingleGameListener>[]

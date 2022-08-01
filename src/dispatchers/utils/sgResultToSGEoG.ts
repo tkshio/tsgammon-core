@@ -7,6 +7,13 @@ import {
     eogStateNogame,
 } from '../SingleGameState'
 
+/**
+ * 任意の局面と、勝敗の指定からSGEoGオブジェクトを生成する
+ * @param sgState 現局面
+ * @param sgResult 勝敗
+ * @param eogStatus 終局状態
+ * @returns
+ */
 export function sgResultToSGEoG(
     sgState: SGState,
     sgResult: SGResult,

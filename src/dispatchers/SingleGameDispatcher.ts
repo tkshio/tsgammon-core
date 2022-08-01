@@ -5,10 +5,17 @@ import { SingleGameListener } from './SingleGameListener'
 import { SGInPlay, SGOpening, SGState, SGToRoll } from './SingleGameState'
 import { sgResultToSGEoG } from './utils/sgResultToSGEoG'
 
+/**
+ * SingleGameについての操作を受け付け、結果に応じてListenerを呼ぶ。
+ *
+ */
 export type SingleGameDispatcher = {
+    // ゲームを開始する
     doStartGame: () => (
         listener: Pick<SingleGameListener, 'onGameStarted'>
     ) => void
+
+    // オープニングロールを行う
     doOpeningRoll: (
         state: SGOpening,
         dices: DiceRoll
@@ -18,6 +25,8 @@ export type SingleGameDispatcher = {
             'onOpeningCheckerPlayStarted' | 'onRerollOpening'
         >
     ) => void
+
+    // チェッカープレイを確定させる
     doCommitCheckerPlay: (
         state: SGInPlay
     ) => (
@@ -26,10 +35,14 @@ export type SingleGameDispatcher = {
             'onEndOfGame' | 'onAwaitRoll' | 'onCheckerPlayCommitted'
         >
     ) => void
+
+    // ロールを行う
     doRoll: (
         state: SGToRoll,
         dices: DiceRoll
     ) => (listener: Pick<SingleGameListener, 'onCheckerPlayStarted'>) => void
+
+    // 終局する
     doEndOfGame: (
         state: SGState,
         result: SGResult,
@@ -37,6 +50,9 @@ export type SingleGameDispatcher = {
     ) => (listeners: Pick<SingleGameListener, 'onEndOfGame'>) => void
 }
 
+/**
+ * SingleGameDispatcherオブジェクトを生成する
+ */
 export const singleGameDispatcher: SingleGameDispatcher = {
     doStartGame: () => {
         return (listener: Pick<SingleGameListener, 'onGameStarted'>) => {

@@ -1,7 +1,13 @@
 import { ResignOffer } from '../ResignOffer'
 
+/**
+ * 降参状態を示す：ここでは降参を申し出ているか、何もないかの状態しかなく、
+ * どの条件で降参するかを選択するための状態遷移は、U.I.側の管理に委ねている
+ */
 export type ResignState = RSNone | RSOffered
 
+/** 降参が始まっていない状態を表す：意味のある情報は保持していないので、
+ * 個別にオブジェクトは生成せず、シングルトンであるRSNONEを使用する */
 export type RSNone = {
     tag: 'RSNone'
     doOfferResignRed(offer: ResignOffer): RSOfferedWhite

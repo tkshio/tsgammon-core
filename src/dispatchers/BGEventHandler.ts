@@ -12,23 +12,54 @@ import { SingleGameEventHandler } from './SingleGameEventHandler'
 import { SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 import { concat0, concat1, concat2 } from './utils/concat'
 
+/**
+ * 標準的なバックギャモン、キューブありの時にU.I.として提供する操作の定義：引数には、イベント発生前の状態を渡さないといけない。
+ *
+ */
 export type BGEventHandler = {
+    /**
+     * オープニングロールを行う
+     */
     onRollOpening: (bgState: { cbState: CBOpening; sgState: SGOpening }) => void
 
+    /**
+     * 駒の移動を確定する
+     */
     onCommit: (bgState: { cbState: CBInPlay; sgState: SGInPlay }) => void
 
+    /**
+     * ロールを行う
+     */
     onRoll: (bgState: {
         cbState: CBToRoll | CBAction
         sgState: SGToRoll
     }) => void
 
+    /**
+     * ゲームを開始する
+     */
     onStartGame: () => void
 
+    /**
+     * ダブルする
+     */
     onDouble: (bgState: { cbState: CBAction; sgState: SGToRoll }) => void
+
+    /**
+     * テイクする
+     */
     onTake: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => void
+
+    /**
+     * パスする
+     */
     onPass: (bgState: { cbState: CBResponse; sgState: SGToRoll }) => void
 }
 
+/**
+ * BGHandlerをSingleGameHandlerに変換する
+ * @returns
+ */
 export function asSGEventHandler(
     cbState: CBState,
     handlers: Partial<BGEventHandler>
@@ -55,6 +86,13 @@ export function asSGEventHandler(
     }
 }
 
+/**
+ * BGListenerを接合し、一つのBGListenerにする
+ *
+ * @param bg1 BGListener（先に実行される）
+ * @param bg2 BGListener（後に実行される）
+ * @returns
+ */
 export function concatBGListeners(
     bg1: Partial<BGListener>,
     bg2: Partial<BGListener>
@@ -89,6 +127,13 @@ export function concatBGListeners(
     }
 }
 
+/**
+ * 状態の保持を行うためのBGListenerを生成する
+ *
+ * @param defaultState ゲーム開始時の初期配置
+ * @param setBGState 状態保持関数
+ * @returns
+ */
 export function setBGStateListener(
     defaultState: BGState,
     setBGState: (bgState: BGState) => void

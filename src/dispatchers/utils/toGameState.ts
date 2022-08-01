@@ -2,6 +2,12 @@ import { GameState } from '../../GameState'
 import { BGState } from '../BGState'
 import { ResignState } from '../ResignState'
 
+/**
+ * 現局面を、GameStateオブジェクトに読み替える
+ * @param bgState
+ * @param rsState
+ * @returns
+ */
 export function toGameState(bgState: BGState, rsState: ResignState): GameState {
     const { cbState, sgState } = bgState
     switch (cbState.tag) {

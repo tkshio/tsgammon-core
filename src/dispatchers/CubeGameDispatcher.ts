@@ -13,11 +13,14 @@ import {
 } from './CubeGameState'
 import { concat0, concat1, concat2 } from './utils/concat'
 
+/**
+ * キューブの状態のみを管理するDispatcher
+ */
 export type CubeGameDispatcher = {
     doStartCubeGame: () => (
         listener: Partial<Pick<CubeGameListener, 'onCubeGameStarted'>>
     ) => void
-    // キューブアクション固有のU.I.から能動的に使用する操作
+
     doDouble: (
         state: CBAction
     ) => (listeners: Partial<Pick<CubeGameListener, 'onDoubled'>>) => void
@@ -25,9 +28,7 @@ export type CubeGameDispatcher = {
     doTake: (
         state: CBResponse
     ) => (
-        listeners: Partial<
-            Pick<CubeGameListener, 'onDoubleAccepted' | 'onPassed'>
-        >
+        listeners: Partial<Pick<CubeGameListener, 'onDoubleAccepted'>>
     ) => void
 
     doPass: (

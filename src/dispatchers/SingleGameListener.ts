@@ -1,5 +1,8 @@
 import { SGEoG, SGInPlay, SGOpening, SGToRoll } from './SingleGameState'
 
+/**
+ * SingleGameについての状態遷移の通知を受け付けるListener
+ */
 export type SingleGameListener = {
     onGameStarted: () => void
     onOpeningCheckerPlayStarted: (nextState: SGInPlay) => void

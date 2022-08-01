@@ -6,6 +6,10 @@ import {
     CBToRoll,
 } from './CubeGameState'
 
+/**
+ * キューブ状態を操作するための定義: 現在はBGEventHandlerで操作するので、
+ * このインターフェースは実装されていない
+ */
 export type CubeGameEventHandler = {
     onStartCubeGame: () => void
 

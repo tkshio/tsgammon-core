@@ -4,18 +4,34 @@ import { findMove } from '../utils/findMove'
 import { makePoint } from '../utils/makePoint'
 import { CheckerPlayState, CheckerPlayStateCommitted } from './CheckerPlayState'
 
+/**
+ * 未確定の状態のチェッカープレイを管理する：CheckerPlayでは機能追加の必要性が薄いので、
+ * CheckerPlayHandlerを設けず簡素な定義のままになっている
+ */
 export type CheckerPlayDispatcher = {
+    // チェッカープレイを行う
     doCheckerPlay: (
         state: CheckerPlayState,
         absPos: number,
         dices: Dice[]
     ) => void
+
+    // ダイスの使用順序を入れ替える
     doRevertDices: (state: CheckerPlayState) => void
+
+    // チェッカープレイを取り消す
     doUndo: (state: CheckerPlayState) => void
+
+    // チェッカープレイを確定させる
     doCommitCheckerPlay: (state: CheckerPlayState) => void
+
+    // 取り消したチェッカープレイをやり直す
     doRedo: (state: CheckerPlayState) => void
 }
 
+/**
+ * 未確定の状態のチェッカープレイによって発生するイベントの通知先
+ */
 export type CheckerPlayListeners = {
     onCheckerPlay: (state: CheckerPlayState) => void
     onRevertDices: (state: CheckerPlayState) => void
@@ -24,6 +40,11 @@ export type CheckerPlayListeners = {
     onRedo: (state: CheckerPlayState) => void
 }
 
+/**
+ * CheckerPlayDispatcherオブジェクトを生成する
+ * @param listeners
+ * @returns
+ */
 export function checkerPlayDispatcher(
     listeners: CheckerPlayListeners
 ): CheckerPlayDispatcher {
@@ -79,6 +100,15 @@ export function checkerPlayDispatcher(
     }
 }
 
+/**
+ * 任意のポイントがクリックされたとき、それに対応するムーブを決定し、
+ * そのムーブの適用後の局面を返す
+ *
+ * @param state 現局面（そこから可能な局面のツリーを含む）
+ * @param absPos クリックされたポイントの絶対座標（=White視点の座標）
+ * @param dices ダイス状態の配列：インデックスの小さいものを優先して使用する
+ * @returns
+ */
 export function applyCheckerPlay(
     state: CheckerPlayState,
     absPos: number,
@@ -95,9 +125,15 @@ export function applyCheckerPlay(
         !dices[0].used &&
         !dices[1].used
 
-    const node = wrap(state.curBoardState)
-        .apply((node) => findMove(node, pos, useMinorFirst))
-        .or((node) => makePoint(node, pos)).unwrap
+    const node =
+        // TODO: クリック位置へ移動できる
+        // 最終結果
+        wrap(state.curBoardState)
+            // クリック位置から動かせる駒がある
+            .apply((node) => findMove(node, pos, useMinorFirst))
+            // クリック位置でポイントを作れる
+            .or((node) => makePoint(node, pos)).unwrap
+
     return node.hasValue
         ? {
               isValid: true,

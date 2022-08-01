@@ -6,6 +6,9 @@ import {
     CBToRoll,
 } from './CubeGameState'
 
+/**
+ * キューブ状態の遷移の通知を受け付けるListener
+ */
 export type CubeGameListener = {
     onCubeGameStarted: () => void
 

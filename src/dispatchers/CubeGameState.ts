@@ -4,6 +4,9 @@ import { SGResult } from '../records/SGResult'
 import { score, Score, scoreAsRed, scoreAsWhite } from '../Score'
 import { applyStakeConf, StakeConf } from '../StakeConf'
 
+/**
+ * バックギャモンの局面を示す状態を、キューブのみに限定した定義
+ */
 export type CBState =
     | CBOpening
     | CBInPlay
