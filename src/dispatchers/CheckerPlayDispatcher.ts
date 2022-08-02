@@ -1,6 +1,7 @@
 import { wrap } from '../BoardStateNode'
 import { Dice } from '../Dices'
 import { findMove } from '../utils/findMove'
+import { makeLeap } from '../utils/makeLeap'
 import { makePoint } from '../utils/makePoint'
 import { CheckerPlayState, CheckerPlayStateCommitted } from './CheckerPlayState'
 
@@ -125,14 +126,13 @@ export function applyCheckerPlay(
         !dices[0].used &&
         !dices[1].used
 
-    const node =
-        // TODO: クリック位置へ移動できる
-        // 最終結果
-        wrap(state.curBoardState)
-            // クリック位置から動かせる駒がある
-            .apply((node) => findMove(node, pos, useMinorFirst))
-            // クリック位置でポイントを作れる
-            .or((node) => makePoint(node, pos)).unwrap
+    const node = wrap(state.curBoardState)
+        // クリック位置から動かせる駒がある
+        .apply((node) => findMove(node, pos, useMinorFirst))
+        // クリック位置でポイントを作れる
+        .or((node) => makePoint(node, pos))
+        // クリック位置へ動かせる
+        .or((node) => makeLeap(node, pos, useMinorFirst)).unwrap
 
     return node.hasValue
         ? {
