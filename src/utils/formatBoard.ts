@@ -6,10 +6,19 @@ import { BoardState } from '../BoardState'
  * @param board boardState to format
  * @returns lines of formatted text
  */
-export function formatBoard(board: BoardState): string[] {
-    const upperIndexRow = ' +13-14-15-16-17-18------19-20-21-22-23-24-+   '
-    const lowerIndexRow = ' +12-11-10--9--8--7-------6--5--4--3--2--1-+   '
-    const cubeRow = '^|                  |BAR|                  |   '
+export function formatBoard(board: BoardState, bearToLeft = false): string[] {
+    const { upperIndexRow, lowerIndexRow } = bearToLeft
+        ? {
+              upperIndexRow: '    +24-23-22-21-20-19------18-17-16-15-14-13-+',
+              lowerIndexRow: '    +-1--2--3--4--5--6-------7--8--9-10-11-12-+',
+          }
+        : {
+              upperIndexRow: ' +13-14-15-16-17-18------19-20-21-22-23-24-+   ',
+              lowerIndexRow: ' +12-11-10--9--8--7-------6--5--4--3--2--1-+   ',
+          }
+    const cubeRow = bearToLeft
+        ? '    |                  |BAR|                  |^'
+        : '^|                  |BAR|                  |   '
     return [
         upperIndexRow,
         upperRow(0),
@@ -68,8 +77,12 @@ export function formatBoard(board: BoardState): string[] {
 
         const print = mayOverflow ? printOverflow : printPiece
 
-        const left = pieces.slice(0, 6).map(print).join('  ')
-        const right = pieces.slice(6, 12).map(print).join('  ')
+        const _pieces = bearToLeft
+            ? pieces.map((_, idx, array) => array[array.length - 1 - idx])
+            : pieces
+
+        const left = _pieces.slice(0, 6).map(print).join('  ')
+        const right = _pieces.slice(6, 12).map(print).join('  ')
 
         const piecesOnTheBoard = ` | ${left} | ${print(onTheBar)} | ${right} |`
 
@@ -86,8 +99,9 @@ export function formatBoard(board: BoardState): string[] {
                 : bornOff < -10
                 ? printPiece(bornOff + 10)
                 : ' '
-        const piecesBornOff = `${bornOff0}${bornOff5}${bornOff10}`
 
-        return piecesOnTheBoard + piecesBornOff
+        return bearToLeft
+            ? `${bornOff10}${bornOff5}${bornOff0}` + piecesOnTheBoard
+            : piecesOnTheBoard + `${bornOff0}${bornOff5}${bornOff10}`
     }
 }
