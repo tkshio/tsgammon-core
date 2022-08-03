@@ -184,7 +184,7 @@ function initBoardState(
             return this.opponentBornOff === 0
         },
         isBackgammonishAlso(): boolean {
-            // 自分のinnerPosとバーが、相手のアウターになる
+            // 自分のinnerPosとバーの間が、相手のアウターになる
             const outerPos = points.length - innerPos // 7 = 26 - 19
             const opponentOuterAndBar = [...Array(outerPos)].map(
                 (_, index) => index + innerPos
@@ -192,7 +192,8 @@ function initBoardState(
             return (
                 opponentOuterAndBar
                     .map((pos) => this.points[pos])
-                    .reduce((m, n) => m + n) < 0
+                    .filter((c) => c < 0)
+                    .reduce((m, n) => m + n, 0) < 0
             )
         },
         isRunningGame(): boolean {

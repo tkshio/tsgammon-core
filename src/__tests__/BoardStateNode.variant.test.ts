@@ -1,3 +1,4 @@
+import { boardState } from '../BoardState'
 import { DicePip } from '../Dices'
 import { honsugorokuConf } from '../GameConf'
 import { listupMovesTest } from './BoardStateNode.listup.common'
@@ -145,8 +146,51 @@ describe('listup moves', () => {
 })
 describe('honsugoroku eog', () => {
     testWith(honsugorokuTest)
+
+    test('gammon', () => {
+        // prettier-ignore
+        const pieces = [
+            0, 
+            -15, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, 0, 0, 
+              0, 0, 0, 0, 0, 0, /* bar */ 2, 2, 2, 2, 2, 5,
+            0,
+        ]
+        const board = boardState(
+            pieces,
+            [0, 0],
+            undefined,
+            honsugorokuConf.isEoGFunc
+        )
+        const eog = board.eogStatus()
+
+        expect(eog.isEndOfGame).toBeTruthy()
+        expect(eog.isGammon).toBeTruthy()
+        expect(eog.isBackgammon).toBeFalsy()
+    })
+
+    test('backgammon', () => {
+        // prettier-ignore
+        const pieces = [
+            0, 
+            0, 0, 0, 0, 0, 0, /* bar */ 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, /* bar */ 2, 2, 2, 2, 2, -1, 
+            -1,
+        ]
+        const board = boardState(
+            pieces,
+            [0, 0],
+            undefined,
+            honsugorokuConf.isEoGFunc
+        )
+        const eog = board.eogStatus()
+
+        expect(eog.isEndOfGame).toBeTruthy()
+        expect(eog.isGammon).toBeTruthy()
+        expect(eog.isBackgammon).toBeTruthy()
+    })
 })
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["listupMovesTest"] }] */
+
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect","listupMovesTest"] }] */
 function testWith(testConds: { name: string; args: ListupMovesTestArg }[]) {
     testConds.forEach(
         ({ name, args }: { name: string; args: ListupMovesTestArg }) => {
