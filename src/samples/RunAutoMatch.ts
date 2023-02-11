@@ -1,13 +1,14 @@
-import { simpleNNEngine } from '../engines/SimpleNNGammon'
 import {
     AbsoluteMove,
     absoluteMovesRed,
     absoluteMovesWhite,
 } from '../AbsoluteMove'
 import { BoardState, boardState } from '../BoardState'
-import { BoardStateNode, boardStateNode } from '../BoardStateNode'
+import { BoardStateNode } from '../BoardStateNode'
+import { boardStateNode } from '../BoardStateNodeBuilders'
 import { Dice, DiceRoll } from '../Dices'
-import { standardConf } from '../GameConf'
+import { simpleNNEngine } from '../engines/SimpleNNGammon'
+import { standardConf } from '../GameConfs'
 import { Ply } from '../Ply'
 import { score, scoreAsRed, scoreAsWhite } from '../Score'
 import { randomDiceSource } from '../utils/DiceSource'
@@ -35,7 +36,7 @@ function runAutoMatch() {
         console.log(formatPly(ply))
     }
 
-    const eogStatus = boardStateNode.board.eogStatus()
+    const eogStatus = boardStateNode.eogStatus
     const stake = (ply.isRed ? scoreAsRed : scoreAsWhite)(
         eogStatus.calcStake(1)
     )
@@ -67,7 +68,7 @@ function doCheckerPlay(boardState: BoardState, roll: DiceRoll, isRed: boolean) {
 
     const amoves: AbsoluteMove[] = (
         isRed ? absoluteMovesRed : absoluteMovesWhite
-    )(nextNode.lastMoves())
+    )(nextNode.lastMoves)
 
     const lastPly: Ply = {
         moves: amoves,
@@ -79,7 +80,7 @@ function doCheckerPlay(boardState: BoardState, roll: DiceRoll, isRed: boolean) {
 }
 
 function isEoG(boardStateNode: BoardStateNode): boolean {
-    return boardStateNode.board.eogStatus().isEndOfGame
+    return boardStateNode.eogStatus.isEndOfGame
 }
 
 runAutoMatch()

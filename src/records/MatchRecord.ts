@@ -5,7 +5,7 @@ import {
     matchStateLastGame,
     matchStateNewGame,
 } from '../MatchState'
-import { GameConf, standardConf } from '../GameConf'
+import { GameConf } from '../GameConf'
 import {
     gameRecordEoG,
     GameRecordEoG,
@@ -13,6 +13,7 @@ import {
     gameRecordInPlay,
 } from './GameRecord'
 import { PlyRecordEoG, PlyRecordInPlay } from './PlyRecord'
+import { standardConf } from '../GameConfs'
 
 /**
  * マッチ全体の記録

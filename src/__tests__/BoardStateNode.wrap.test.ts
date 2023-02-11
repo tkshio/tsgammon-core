@@ -1,12 +1,23 @@
-import { boardStateNodeFromArray, wrap } from '../BoardStateNode'
-import { standardConf } from '../GameConf'
+import { wrap } from '../BoardStateNode'
+import { boardStateNodeFromArray } from '../BoardStateNodeBuilders'
+import { standardConf } from '../GameConfs'
 
-const nodeWithValue = boardStateNodeFromArray(standardConf.initialPos, 1, 2)
+const nodeWithValue = boardStateNodeFromArray(
+    standardConf.initialPos,
+    1,
+    2,
+    standardConf.transition.ruleSet
+)
 const nodeNoValue = nodeWithValue.majorFirst(2)
 
 describe('Wrapper.apply', () => {
     test('applies func if node.hasValue()', () => {
-        const node = boardStateNodeFromArray(standardConf.initialPos, 1, 2)
+        const node = boardStateNodeFromArray(
+            standardConf.initialPos,
+            1,
+            2,
+            standardConf.transition.ruleSet
+        )
         const wrapped = wrap(node)
         expect(wrapped.apply((node) => node).unwrap.hasValue).toBeTruthy()
     })
@@ -33,7 +44,8 @@ describe('Wrapper.or', () => {
         const nodeNoValue = boardStateNodeFromArray(
             standardConf.initialPos,
             1,
-            2
+            2,
+            standardConf.transition.ruleSet
         ).majorFirst(2)
         const wrapped = wrap(nodeNoValue)
         expect(wrapped.or(() => nodeWithValue).unwrap.hasValue).toBeFalsy()
@@ -42,7 +54,8 @@ describe('Wrapper.or', () => {
         const nodeNoValue = boardStateNodeFromArray(
             standardConf.initialPos,
             1,
-            2
+            2,
+            standardConf.transition.ruleSet
         ).majorFirst(2)
         const wrapped = wrap(nodeWithValue)
         expect(
@@ -54,7 +67,8 @@ describe('Wrapper.or', () => {
         const nodeNoValue = boardStateNodeFromArray(
             standardConf.initialPos,
             1,
-            2
+            2,
+            standardConf.transition.ruleSet
         ).majorFirst(2)
         const wrapped = wrap(nodeWithValue)
         expect(

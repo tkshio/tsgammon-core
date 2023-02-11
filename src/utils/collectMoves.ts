@@ -10,7 +10,7 @@ import { Move } from '../Move'
 export function collectMoves(node: BoardStateNode): Moves[] {
     const nodes = collectNodes(node)
     return nodes.map((n) => ({
-        moves: n.lastMoves(),
+        moves: n.lastMoves,
         isRedundant: n.isRedundant,
     }))
 }

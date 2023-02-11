@@ -1,9 +1,13 @@
-import { nodeWithEmptyDice } from '../../BoardStateNode'
 import { boardState as _boardState } from '../../BoardState'
+import {
+    buildBoardStateNodeBuilder,
+    nodeWithEmptyDice,
+} from '../../BoardStateNodeBuilders'
 import { cube, CubeState } from '../../CubeState'
 import { DicePip } from '../../Dices'
 import { eog } from '../../EOGStatus'
-import { GameConf, standardConf } from '../../GameConf'
+import { GameConf } from '../../GameConf'
+import { standardConf } from '../../GameConfs'
 import { Ply } from '../../Ply'
 import { SGResult } from '../../records/SGResult'
 import { Score } from '../../Score'
@@ -30,10 +34,6 @@ import {
     toRollStateRed,
     toRollStateWhite,
 } from '../SingleGameState'
-import {
-    redViewAbsoluteBoard,
-    whiteViewAbsoluteBoard,
-} from '../../AbsoluteBoardState'
 
 export enum GameStatus {
     OPENING,
@@ -129,20 +129,20 @@ export function toSGState(
     gameState: GameSetup = {},
     gameConf: GameConf = standardConf
 ): SGState {
-    const { movesForDoublet = 4 } = gameConf
     if (gameState.gameStatus === undefined) {
         return openingState(
             boardState(gameState.absPos ?? standardConf.initialPos),
-            undefined,
-            movesForDoublet
+            undefined
         )
     }
+    const boardStateNodeFunc = buildBoardStateNodeBuilder(
+        gameConf.transition.ruleSet
+    )
     switch (gameState.gameStatus) {
         case GameStatus.OPENING:
             return openingState(
                 boardState(gameState.absPos ?? standardConf.initialPos),
-                undefined,
-                movesForDoublet
+                undefined
             )
         case GameStatus.CUBEACTION_RED:
         case GameStatus.TOROLL_RED:
@@ -151,8 +151,7 @@ export function toSGState(
             const lastStateNode = nodeWithEmptyDice(board)
             return toRollStateRed(
                 lastStateNode.board.revert(),
-                gameState.lastPly,
-                movesForDoublet
+                gameState.lastPly
             )
         }
         case GameStatus.CUBEACTION_WHITE:
@@ -162,39 +161,27 @@ export function toSGState(
             const lastStateNode = nodeWithEmptyDice(lastBoardState)
             return toRollStateWhite(
                 lastStateNode.board.revert(),
-                gameState.lastPly,
-                movesForDoublet
+                gameState.lastPly
             )
         }
         case GameStatus.INPLAY_RED:
             return inPlayStateRed(
-                boardState(gameState.absPos).revert(),
-                gameState,
-                movesForDoublet
+                boardStateNodeFunc(
+                    boardState(gameState.absPos).revert(),
+                    gameState
+                )
             )
         case GameStatus.INPLAY_WHITE:
             return inPlayStateWhite(
-                boardState(gameState.absPos),
-                gameState,
-                movesForDoublet
+                boardStateNodeFunc(boardState(gameState.absPos), gameState)
             )
         case GameStatus.EOG_REDWON: {
             const lastBoardState = boardState(gameState.absPos).revert()
-            return eogStateRed(
-                1,
-                eog(),
-                redViewAbsoluteBoard(lastBoardState),
-                lastBoardState
-            )
+            return eogStateRed(1, eog(), lastBoardState)
         }
         case GameStatus.EOG_WHITEWON: {
             const lastBoardState = boardState(gameState.absPos).revert()
-            return eogStateWhite(
-                1,
-                eog(),
-                whiteViewAbsoluteBoard(lastBoardState),
-                lastBoardState
-            )
+            return eogStateWhite(1, eog(), lastBoardState)
         }
     }
 
@@ -212,8 +199,7 @@ export function toSGState(
         return _boardState(
             pos,
             [15 - pieces.me, 15 - pieces.opp],
-            gameConf.innerPos,
-            gameConf.isEoGFunc
+            gameConf.innerPos
         )
     }
 }

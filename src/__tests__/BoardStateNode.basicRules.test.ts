@@ -1,6 +1,7 @@
-import { boardStateNodeFromArray } from '../BoardStateNode'
-import { collectMoves } from '../utils/collectMoves'
+import { boardStateNodeFromArray } from '../BoardStateNodeBuilders'
 import { DicePip } from '../Dices'
+import { standardConf } from '../GameConfs'
+import { collectMoves } from '../utils/collectMoves'
 import { move, sortMoves } from './BoardStateNode.common'
 
 type Moves = [number, number, boolean?][]
@@ -306,9 +307,9 @@ function basicTest(arg: BasicTestArg) {
     const node = boardStateNodeFromArray(
         arg.pos,
         arg.diceRoll[0],
-        arg.diceRoll[1]
+        arg.diceRoll[1],
+        standardConf.transition.ruleSet
     )
-
     const collected = collectMoves(node).sort((a, b) =>
         sortMoves(a.moves, b.moves)
     )

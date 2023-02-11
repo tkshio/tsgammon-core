@@ -23,9 +23,9 @@ export function sgResultToSGEoG(
     const { absBoard, boardState } = sgState
     switch (sgResult) {
         case SGResult.WHITEWON:
-            return eogStateWhite(stakeValue, eogStatus, absBoard, boardState)
+            return eogStateWhite(stakeValue, eogStatus, boardState)
         case SGResult.REDWON:
-            return eogStateRed(stakeValue, eogStatus, absBoard, boardState)
+            return eogStateRed(stakeValue, eogStatus, boardState)
         case SGResult.NOGAME:
             return eogStateNogame(eogStatus, absBoard, boardState)
     }

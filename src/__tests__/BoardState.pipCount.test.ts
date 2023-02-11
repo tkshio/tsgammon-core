@@ -1,7 +1,8 @@
 import { boardState } from '../BoardState'
+import { standardConf } from '../GameConfs'
 
 describe('pipCount', () => {
-    const board = boardState()
+    const board = boardState(standardConf.initialPos)
     test('returns 167 for initialPos', () => {
         expect(board.myPipCount).toBe(167)
         expect(board.opponentPipCount).toBe(167)

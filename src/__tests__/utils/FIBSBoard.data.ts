@@ -1,6 +1,6 @@
 import { FIBSCube } from '../../utils/FIBSCube'
 import { DiceRoll } from '../../Dices'
-import { standardConf } from '../../GameConf'
+import { standardConf } from '../../GameConfs'
 import { COLOUR, DIRECTION, TURN } from '../../utils/FIBSBoard'
 import { FIBSScore } from '../../utils/FIBSState'
 

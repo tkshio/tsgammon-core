@@ -1,5 +1,7 @@
 import { boardState } from '../../BoardState'
-import { BoardStateNode, boardStateNodeFromArray } from '../../BoardStateNode'
+import { BoardStateNode } from '../../BoardStateNode'
+import { boardStateNodeFromArray } from '../../BoardStateNodeBuilders'
+import { standardConf } from '../../GameConfs'
 import { toFIBSBoard } from '../../utils/toFIBSBoardString'
 import { testData, testDataAfterMove, testDataWithRoll } from './FIBSBoard.data'
 
@@ -30,6 +32,7 @@ describe('encode BoardStateNode', () => {
             data.pos,
             data.roll.dice1,
             data.roll.dice2,
+            standardConf.transition.ruleSet,
             [myBearOff, oppBearOff]
         )
         const opt = {
@@ -55,6 +58,7 @@ describe('encode intermediate state', () => {
             data.pos,
             data.roll.dice1,
             data.roll.dice2,
+            standardConf.transition.ruleSet,
             [myBearOff, oppBearOff]
         )
         const node = data.moves.reduce(

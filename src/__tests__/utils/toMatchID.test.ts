@@ -1,5 +1,17 @@
 import { boardState } from '../../BoardState'
+import { buildBoardStateNodeBuilder } from '../../BoardStateNodeBuilders'
 import { cube, CubeOwner } from '../../CubeState'
+import { standardConf } from '../../GameConfs'
+import { GameState } from '../../GameState'
+import {
+    MatchState,
+    matchStateForPointMatch,
+    matchStateForUnlimitedMatch,
+    MatchStateInPlay,
+} from '../../MatchState'
+import { ResignOffer } from '../../ResignOffer'
+import { standardRuleSet } from '../../rules/standardRuleSet'
+import { score } from '../../Score'
 import {
     cbActionRed,
     cbActionWhite,
@@ -9,26 +21,19 @@ import {
     cbResponseWhite,
     cbToRollRed,
     cbToRollWhite,
-} from '../../dispatchers/CubeGameState'
-import { GameState } from '../../GameState'
-import {
-    MatchState,
-    matchStateForPointMatch,
-    matchStateForUnlimitedMatch,
-    MatchStateInPlay,
-} from '../../MatchState'
-import { RSNONE, rsOfferedRed } from '../../dispatchers/ResignState'
-import { ResignOffer } from '../../ResignOffer'
+} from '../../states/CubeGameState'
+import { RSNONE, rsOfferedRed } from '../../states/ResignState'
 import {
     inPlayStateRed,
     inPlayStateWhite,
     toRollStateRed,
     toRollStateWhite,
-} from '../../dispatchers/SingleGameState'
+} from '../../states/SingleGameState'
+import { toGameState } from '../../states/utils/toGameState'
 import { Bit, littleEndianReducer, toMatchID } from '../../utils/toMatchID'
-import { score } from '../../Score'
-import { toGameState } from '../../dispatchers/utils/toGameState'
 
+const initialPos = standardConf.initialPos
+const boardStateNodeFunc = buildBoardStateNodeBuilder(standardRuleSet)
 describe('toMatchID()', () => {
     test('encodes matchState', () => {
         const matchState: MatchStateInPlay = {
@@ -42,7 +47,12 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbInPlayWhite(cube(2, CubeOwner.RED, 16)),
-                sgState: inPlayStateWhite(boardState(), { dice1: 5, dice2: 2 }),
+                sgState: inPlayStateWhite(
+                    boardStateNodeFunc(boardState(initialPos), {
+                        dice1: 5,
+                        dice2: 2,
+                    })
+                ),
             },
             RSNONE
         )
@@ -54,7 +64,7 @@ describe('toMatchID()', () => {
     const _gameState: GameState = toGameState(
         {
             cbState: cbToRollRed(cube(1), 'Skip'),
-            sgState: toRollStateRed(boardState()),
+            sgState: toRollStateRed(boardState(initialPos)),
         },
         RSNONE
     )
@@ -73,7 +83,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbToRollRed(cube(4), 'Skip'),
-                sgState: toRollStateRed(boardState()),
+                sgState: toRollStateRed(boardState(initialPos)),
             },
             RSNONE
         )
@@ -88,7 +98,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbToRollRed(cube(4, CubeOwner.RED), 'Skip'),
-                sgState: toRollStateRed(boardState()),
+                sgState: toRollStateRed(boardState(initialPos)),
             },
             RSNONE
         )
@@ -103,7 +113,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbToRollRed(cube(4, CubeOwner.WHITE), 'Skip'),
-                sgState: toRollStateRed(boardState()),
+                sgState: toRollStateRed(boardState(initialPos)),
             },
             RSNONE
         )
@@ -118,7 +128,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbToRollWhite(cube(4, CubeOwner.WHITE), 'Skip'),
-                sgState: toRollStateWhite(boardState()),
+                sgState: toRollStateWhite(boardState(initialPos)),
             },
             RSNONE
         )
@@ -133,7 +143,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbActionWhite(cube(4, CubeOwner.WHITE)),
-                sgState: toRollStateWhite(boardState()),
+                sgState: toRollStateWhite(boardState(initialPos)),
             },
             RSNONE
         )
@@ -148,7 +158,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbResponseWhite(cube(1)),
-                sgState: toRollStateRed(boardState()),
+                sgState: toRollStateRed(boardState(initialPos)),
             },
             RSNONE
         )
@@ -163,7 +173,12 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbInPlayWhite(cube(4, CubeOwner.WHITE)),
-                sgState: inPlayStateWhite(boardState(), { dice1: 5, dice2: 3 }),
+                sgState: inPlayStateWhite(
+                    boardStateNodeFunc(boardState(initialPos), {
+                        dice1: 5,
+                        dice2: 3,
+                    })
+                ),
             },
             RSNONE
         )
@@ -178,7 +193,12 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbInPlayWhite(cube(4, CubeOwner.WHITE)),
-                sgState: inPlayStateWhite(boardState(), { dice1: 3, dice2: 5 }),
+                sgState: inPlayStateWhite(
+                    boardStateNodeFunc(boardState(initialPos), {
+                        dice1: 3,
+                        dice2: 5,
+                    })
+                ),
             },
             RSNONE
         )
@@ -195,7 +215,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbToRollRed(cube(1), 'Skip'),
-                sgState: toRollStateRed(boardState()),
+                sgState: toRollStateRed(boardState(initialPos)),
             },
             RSNONE
         )
@@ -211,7 +231,7 @@ describe('toMatchID()', () => {
             {
                 ..._gameState,
                 cbState: cbActionRed(cube(1)),
-                sgState: toRollStateRed(boardState()),
+                sgState: toRollStateRed(boardState(initialPos)),
             },
             RSNONE
         )
@@ -226,7 +246,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbResponseRed(cube(1)),
-                sgState: toRollStateWhite(boardState()),
+                sgState: toRollStateWhite(boardState(initialPos)),
             },
             RSNONE
         )
@@ -241,7 +261,12 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbInPlayRed(cube(1)),
-                sgState: inPlayStateRed(boardState(), { dice1: 5, dice2: 3 }),
+                sgState: inPlayStateRed(
+                    boardStateNodeFunc(boardState(initialPos), {
+                        dice1: 5,
+                        dice2: 3,
+                    })
+                ),
             },
             RSNONE
         )
@@ -256,7 +281,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbToRollRed(cube(1), 'Skip'),
-                sgState: toRollStateRed(boardState()),
+                sgState: toRollStateRed(boardState(initialPos)),
             },
             RSNONE
         )
@@ -274,7 +299,7 @@ describe('toMatchID()', () => {
         const gameState: GameState = toGameState(
             {
                 cbState: cbToRollWhite(cube(1), 'Skip'),
-                sgState: toRollStateWhite(boardState()),
+                sgState: toRollStateWhite(boardState(initialPos)),
             },
             rsOfferedRed(ResignOffer.Backgammon)
         )

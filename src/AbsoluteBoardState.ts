@@ -1,5 +1,4 @@
 import { boardState, BoardState } from './BoardState'
-import { standardConf } from './GameConf'
 
 /**
  * 盤面を絶対座標で表現した、主に表示用のインターフェース
@@ -35,7 +34,7 @@ export interface AbsoluteBoardState {
  * @returns
  */
 export function initAbsoluteBoard(
-    pieces: number[] = standardConf.initialPos,
+    pieces: number[],
     bornOffs: [number, number] = [0, 0]
 ): AbsoluteBoardState {
     const board = boardState(pieces, bornOffs)

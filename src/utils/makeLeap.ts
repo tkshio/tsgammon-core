@@ -31,7 +31,7 @@ export function makeLeap(
     // 意識する意味がない
     if (
         withMajor.hasValue &&
-        withMajor.lastMoves()[withMajor.lastMoves().length - 1].to === pos
+        withMajor.lastMoves[withMajor.lastMoves.length - 1].to === pos
     ) {
         return withMajor
     }
@@ -44,7 +44,7 @@ export function makeLeap(
         pos - minor >= 0 ? findMove(node, pos - minor, true) : NO_MOVE
     if (
         withMinor.hasValue &&
-        withMinor.lastMoves()[withMinor.lastMoves().length - 1].to === pos
+        withMinor.lastMoves[withMinor.lastMoves.length - 1].to === pos
     ) {
         return withMinor
     }

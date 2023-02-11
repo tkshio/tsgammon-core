@@ -1,6 +1,7 @@
 import { boardState } from '../BoardState'
 import { cube } from '../CubeState'
-import { GameConf, standardConf } from '../GameConf'
+import { GameConf } from '../GameConf'
+import { standardConf } from '../GameConfs'
 import { cbOpening } from './CubeGameState'
 import { openingState } from './SingleGameState'
 
@@ -23,13 +24,7 @@ export function defaultBGState(gameConf: GameConf = standardConf) {
  */
 export function defaultSGState(gameConf: GameConf = standardConf) {
     return openingState(
-        boardState(
-            gameConf.initialPos,
-            [0, 0],
-            gameConf.innerPos,
-            gameConf.isEoGFunc
-        ),
-        undefined,
-        gameConf.movesForDoublet
+        boardState(gameConf.initialPos, [0, 0], gameConf.innerPos),
+        undefined
     )
 }

@@ -1,12 +1,9 @@
 import { boardState } from '../BoardState'
-import {
-    boardStateNode,
-    BoardStateNode,
-    nodeWithEmptyDice,
-} from '../BoardStateNode'
-import { FIBSCube } from './FIBSCube'
+import { BoardStateNode } from '../BoardStateNode'
+import { boardStateNode, nodeWithEmptyDice } from '../BoardStateNodeBuilders'
 import { DicePip } from '../Dices'
 import { COLOUR, DIRECTION, FIBSBoard, initBoard, TURN } from './FIBSBoard'
+import { FIBSCube } from './FIBSCube'
 import { FIBSScore, FIBSState } from './FIBSState'
 
 /**

@@ -1,5 +1,5 @@
 import { BoardState, boardState } from '../BoardState'
-import { standardConf } from '../GameConf'
+import { standardConf } from '../GameConfs'
 
 const standard = standardConf.initialPos
 
@@ -21,9 +21,10 @@ test('initialize board', () => {
         })
         expect(board.myBornOff).toBe(bornOffs[0])
         expect(board.opponentBornOff).toBe(bornOffs[1])
-        expect(board.eogStatus().isEndOfGame).toBeFalsy()
-        expect(board.eogStatus().isGammon).toBeFalsy()
-        expect(board.eogStatus().isBackgammon).toBeFalsy()
+        const eog = standardConf.transition.ruleSet.isEndOfGame(board)
+        expect(eog.isEndOfGame).toBeFalsy()
+        expect(eog.isGammon).toBeFalsy()
+        expect(eog.isBackgammon).toBeFalsy()
     }
 })
 
@@ -121,7 +122,7 @@ describe('endOfGame', () => {
             /* bar */ 0, 0, 0, 0, 0, -1, 0,
         ]
         const board = boardState(pieces, [0, 15])
-        const eog = board.eogStatus()
+        const eog = standardConf.transition.ruleSet.isEndOfGame(board)
         expect(eog.isEndOfGame).toBeTruthy()
         expect(eog.isGammon).toBeFalsy()
         expect(eog.isBackgammon).toBeFalsy()
@@ -132,7 +133,7 @@ describe('endOfGame', () => {
             /* bar */ 0, 0, 0, 0, 0, 0, 0,
         ]
         const board = boardState(pieces, [0, 0]) // 駒の総数は管理していない
-        const eog = board.eogStatus()
+        const eog = standardConf.transition.ruleSet.isEndOfGame(board)
         expect(eog.isEndOfGame).toBeTruthy()
         expect(eog.isGammon).toBeTruthy()
         expect(eog.isBackgammon).toBeFalsy()
@@ -143,7 +144,7 @@ describe('endOfGame', () => {
             /* bar */ 0, 0, 0, 0, 0, -1, 0,
         ]
         const board = boardState(pieces, [0, 0])
-        const eog = board.eogStatus()
+        const eog = standardConf.transition.ruleSet.isEndOfGame(board)
         expect(eog.isEndOfGame).toBeTruthy()
         expect(eog.isGammon).toBeTruthy()
         expect(eog.isBackgammon).toBeTruthy()
@@ -154,7 +155,7 @@ describe('endOfGame', () => {
             /* bar */ 0, 0, 0, 0, 0, 0, -1,
         ]
         const board = boardState(pieces, [0, 0])
-        const eog = board.eogStatus()
+        const eog = standardConf.transition.ruleSet.isEndOfGame(board)
         expect(eog.isEndOfGame).toBeTruthy()
         expect(eog.isGammon).toBeTruthy()
         expect(eog.isBackgammon).toBeTruthy()
@@ -165,7 +166,7 @@ describe('endOfGame', () => {
             /* bar */ 0, 0, 0, 0, 0, 0, -1,
         ]
         const board = boardState(pieces, [0, 1])
-        const eog = board.eogStatus()
+        const eog = standardConf.transition.ruleSet.isEndOfGame(board)
         expect(eog.isEndOfGame).toBeTruthy()
         expect(eog.isGammon).toBeFalsy()
         expect(eog.isBackgammon).toBeFalsy()

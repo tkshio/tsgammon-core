@@ -1,4 +1,5 @@
-import { GameConf, standardConf } from '../GameConf'
+import { GameConf } from '../GameConf'
+import { standardConf } from '../GameConfs'
 import { CBState } from './CubeGameState'
 import { SGState } from './SingleGameState'
 import { GameSetup, toCBState, toSGState } from './utils/GameSetup'

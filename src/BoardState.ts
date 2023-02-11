@@ -1,13 +1,11 @@
 import { DicePip } from './Dices'
-import { eog, EOGStatus } from './EOGStatus'
-import { standardConf } from './GameConf'
 
 /**
  * 相対表記で表現した盤面。常に動かす側の観点になっていて、0はバーポイント、25は上がり、
  * 正の数が自分の駒数となっている。内部的な盤の操作はすべてこのインターフェースを介して行い、
  * 外部へ表示する際にはAbsoluteBoardで変換する
  */
-export interface BoardState {
+export type BoardState = {
     /** 各ポイントの駒数を格納した配列。正の数は自駒、負の数は相手駒 */
     points: number[]
 
@@ -42,12 +40,6 @@ export interface BoardState {
     /** 盤面を相手側視点に変換する */
     revert(): BoardState
 
-    /** 盤面で自分側の駒が全て上がったかどうかを、ギャモン・バックギャモンの有無とあわせて返す。
-     * ギャモン・バックギャモンは純粋に自駒の配置で判断され、ジャコビールールなどは適用されない。
-     * 相手側が終局かどうかは影響しない。
-     */
-    eogStatus(): EOGStatus
-
     /**
      * 自分のピップカウント
      */
@@ -59,24 +51,9 @@ export interface BoardState {
     opponentPipCount: number
 
     /**
-     * 終局状態に達しているならtrue
-     */
-    isEndOfGame(): boolean
-
-    /**
-     * 終局状態に達していて、かつギャモンならtrue
-     */
-    isGammonish(): boolean
-
-    /**
-     * 終局状態に達していて、かつバックギャモンならtrue
-     */
-    isBackgammonishAlso(): boolean
-
-    /**
      * ランニングゲーム（駒同士のコンタクトがない）状態ならtrue
      */
-    isRunningGame(): boolean
+    isRunningGame: boolean
 
     /**
      * 自分のまだ上がっていない駒の数
@@ -115,17 +92,15 @@ function countRedPieces(pieces: number[]) {
  * @param pieces 駒の配置（省略時は標準ルールでの開始時な配置）
  * @param bornOffs すでにベアリングオフした駒の数の対（順に自分、相手：省略時は0）
  * @param innerPos この値とそれ以降がインナーボードとなる
- * @param isEoGFunc 終局判定関数（終局時にtrueを返す）
+ * @param eogStatus 終局状態
  * @returns 盤面
  */
 export function boardState(
-    pieces: number[] = standardConf.initialPos,
+    pieces: number[],
     bornOffs: [number, number] = [0, 0],
-    innerPos = 19,
-    isEoGFunc: (board: Board) => boolean = (board: Board) =>
-        board.pieceCount === 0
+    innerPos = 19
 ): BoardState {
-    return initBoardState(pieces, bornOffs, innerPos, isEoGFunc)
+    return initBoardState(pieces, bornOffs, innerPos)
 }
 
 function posInverterFor(points: number[]): (pos: number) => number {
@@ -135,8 +110,7 @@ function posInverterFor(points: number[]): (pos: number) => number {
 function initBoardState(
     points: number[],
     bornOffs: [number, number] = [0, 0],
-    innerPos: number,
-    isEoGFunc: (board: Board) => boolean
+    innerPos: number
 ): BoardState {
     const myBornOff = bornOffs[0]
     const opponentBornOff = bornOffs[1]
@@ -155,8 +129,8 @@ function initBoardState(
 
     const myPipCount = countPip(points)
     const opponentPipCount = countPip(reverted)
-
-    const board = {
+    const isRunningGame = lastPiecePos < opponentLastPiecePos
+    const board: BoardState = {
         points,
         pieceCount,
         opponentPieceCount,
@@ -167,38 +141,7 @@ function initBoardState(
         lastPiecePos,
         opponentLastPiecePos,
         isBearable,
-        eogStatus() {
-            const isEndOfGame = this.isEndOfGame()
-            const isGammon = isEndOfGame && this.isGammonish()
-            const isBackgammon = isGammon && this.isBackgammonishAlso()
-            return eog({
-                isEndOfGame,
-                isGammon,
-                isBackgammon,
-            })
-        },
-        isEndOfGame(): boolean {
-            return isEoGFunc(this)
-        },
-        isGammonish(): boolean {
-            return this.opponentBornOff === 0
-        },
-        isBackgammonishAlso(): boolean {
-            // 自分のinnerPosとバーの間が、相手のアウターになる
-            const outerPos = points.length - innerPos // 7 = 26 - 19
-            const opponentOuterAndBar = [...Array(outerPos)].map(
-                (_, index) => index + innerPos
-            )
-            return (
-                opponentOuterAndBar
-                    .map((pos) => this.points[pos])
-                    .filter((c) => c < 0)
-                    .reduce((m, n) => m + n, 0) < 0
-            )
-        },
-        isRunningGame(): boolean {
-            return this.lastPiecePos < this.opponentLastPiecePos
-        },
+        isRunningGame,
         piecesAt(n: number): number {
             return this.points[n]
         },
@@ -228,7 +171,6 @@ function initBoardState(
         myPipCount,
         opponentPipCount,
         innerPos,
-        outerPos: points.length - 1 - innerPos, // 6 = 25 - 19
     }
 
     return board
@@ -269,13 +211,13 @@ function doMove(
         return board
     }
 
-    // 駒を取り上げる
+    // 駒を取り上げたあとの盤面を作る
     const piecesAfter = board.points.slice()
     piecesAfter[from] = piecesAfter[from] - 1
 
     // 必要なら自分の最後尾の駒の位置を更新する
 
-    // 上がりなら、上がり数を更新して終了
+    // 上がりなら、上げた駒の数と最後尾の駒の位置を更新した盤面を返す
     if (isBearOff) {
         const lastPiecePos = recalcLastPiecePos(from, board, piecesAfter)
         const myPipCount = board.myPipCount - (boardSize - from)
@@ -328,7 +270,13 @@ function doMove(
     }
 }
 
-function recalcLastPiecePos(from: number, board: Board, piecesAfter: number[]) {
+function recalcLastPiecePos(
+    from: number,
+    board: Board,
+    piecesAfter: number[]
+): number {
+    // 動かした駒の位置が最後尾で、そこにあった駒の数が1だった（つまり動かして0になる）なら、
+    // あらためて最後尾の駒を探す
     return from == board.lastPiecePos && board.points[from] == 1
         ? piecesAfter.findIndex((n) => 0 < n)
         : board.lastPiecePos

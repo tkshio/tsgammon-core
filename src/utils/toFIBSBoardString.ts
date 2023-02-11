@@ -1,5 +1,5 @@
 import { boardState, BoardState } from '../BoardState'
-import { BoardStateNode, nodeWithEmptyDice } from '../BoardStateNode'
+import { BoardStateNode } from '../BoardStateNode'
 import { FIBSCube } from './FIBSCube'
 import { DicePip, DiceRoll } from '../Dices'
 
@@ -12,6 +12,7 @@ import {
     DIRECTION,
 } from './FIBSBoard'
 import { FIBSScore } from './FIBSState'
+import { nodeWithEmptyDice } from '../BoardStateNodeBuilders'
 
 /**
  * BoardState/BoardStateNode/number[]で表された状況を、FIBS Clientの仕様で
@@ -104,7 +105,7 @@ function boardStateToFIBSBoard(
             ? { dice1: dices[0].pip, dice2: 0 }
             : { dice1: 0, dice2: 0 }
     const canMove = node.hasValue
-        ? node.dices.filter((dice) => !dice.used).length - node.lastMoves.length
+        ? node.dices.filter((dice) => !dice.used).length
         : 0
 
     const posArr =

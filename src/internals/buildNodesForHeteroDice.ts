@@ -1,143 +1,222 @@
 import { BoardState } from '../BoardState'
 import { BoardStateNode, NoMove, NO_MOVE } from '../BoardStateNode'
-import { Dice, DicePip } from '../Dices'
-import { Move } from '../Move'
-import { applyDicePipToPoints } from './applyDicePipToPoints'
-import { buildNodeForEoG, leaveNodeBuilder, NodeBuilder } from './NodeBuilder'
+import { DicePip } from '../Dices'
+import {
+    InternalBoardStateNodeBuilders,
+    InternalRecursiveNodeBuilder,
+    NodeAndDiceUsage,
+    recursiveNodeBuilder,
+    TmpNode,
+} from './internalBoardStateNodeBuilders'
 
-/**
- * ゾロ目でないダイスのペアに対して、バックギャモンのルールに基づいて可能な手を列挙し、BoardStateNodeとして返す
- *
- * @param board 盤面
- * @param dice1 ダイスの目
- * @param dice2 ダイスの目
- * @returns
- */
-export function buildNodesForHeteroDice(
+export function buildHeteroDiceNodeBuilder(
+    internalNodeBuilders: InternalBoardStateNodeBuilders
+): (board: BoardState, dice1: DicePip, dice2: DicePip) => BoardStateNode {
+    // 共通ルールの設定
+    const commonBuilder =
+        // 最大限のダイスを使う
+        addDiceUsagePruner(
+            // EoGになる場合は、最大限のダイスを使わなくても合法手
+            addEoGHandling(internalNodeBuilders)
+        )
+
+    // 大の目を先に使った場合のノードツリー
+    const majorNodeBuilder = recursiveNodeBuilder(
+        // 大の目先行の場合、駒の移動が前後するだけの冗長な手だけを除去
+        addDeduplicator(commonBuilder, isRedundantMajor)
+    )
+    // 小の目のノードツリー構築は、大の目先行の場合の結果を参照する必要がある
+    const minorNodeBuilder = (
+        majorNodes: (pos: number) => BoardStateNode | NoMove
+    ) =>
+        recursiveNodeBuilder(
+            // 大の目先行の場合と同じ結果になる手を除去
+            addDeduplicator(commonBuilder, isRedundantMinor(majorNodes))
+        )
+
+    return (board: BoardState, dice1: DicePip, dice2: DicePip) =>
+        buildNodesForHeteroDice(
+            board,
+            dice1,
+            dice2,
+            majorNodeBuilder,
+            minorNodeBuilder
+        )
+}
+
+function buildNodesForHeteroDice(
     board: BoardState,
     dice1: DicePip,
-    dice2: DicePip
+    dice2: DicePip,
+    majorNodeBuilder: InternalRecursiveNodeBuilder,
+    minorNodeBuilder: (
+        majorNodes: (pos: number) => BoardStateNode | NoMove
+    ) => InternalRecursiveNodeBuilder
 ): BoardStateNode {
+    // ゾロ目は対応しない
     if (dice1 === dice2) {
         throw Error('Unexpected doublet: ' + dice1 + ',' + dice2)
     }
-    const majorPip = dice1 > dice2 ? dice1 : dice2
-    const minorPip = dice1 < dice2 ? dice1 : dice2
 
-    // 大きい目を先に使った場合の候補手
-    const [majorTmp, majorMarked] = applyMajorPipFirst(
-        board,
-        majorPip,
-        minorPip
-    )
+    // ダイスの大小を識別する
+    const [pips, isMajorFirst] =
+        dice1 > dice2 ? [[dice1, dice2], true] : [[dice2, dice1], false]
+    const [majorPip, minorPip] = pips
 
-    // 小さい目を先に使う場合、上記の結果を踏まえた冗長判定がある
-    const [minorTmp, minorMarked] = applyMinorPipFirst(
-        board,
-        majorPip,
+    // 大の目を先に使った場合のノードツリー
+    const major = majorNodeBuilder(board, pips)
+
+    // 小の目を先に使った場合のノードツリー
+    const minor = minorNodeBuilder(major.node.majorFirst)(board, [
         minorPip,
-        majorTmp
-    )
+        majorPip,
+    ])
 
-    // marked=使えないダイスの個数を見て、適用可能な手を絞り込む
-    let major: (pos: number) => BoardStateNode | NoMove
-    let minor: (pos: number) => BoardStateNode | NoMove
-    let usableDice: Dice[]
+    // 大の目先行、小の目先行それぞれの場合を統合して、最終的な結果を得る
+    if (hasNoMove(minor)) {
+        // どちらのダイスでも全く動かせない場合は、オリジナルのダイス順で返す
+        return hasNoMove(major)
+            ? {
+                  ...major.node,
+                  dices: [
+                      { pip: dice1, used: true },
+                      { pip: dice2, used: true },
+                  ],
+              }
+            : major.node // 小の目が使えないので、大の目のみ使用
+    }
 
-    if (majorMarked === 0) {
-        // 大ぞろめにきい目を先に使えば、全てのダイスが使える
-        major = majorTmp
-        minor =
-            minorMarked === 0 // すべてのダイスを使えるなら、小さい目を先に使っても良い
-                ? minorTmp
-                : () => NO_MOVE
-        usableDice = [
-            { pip: dice1, used: false },
-            { pip: dice2, used: false },
-        ]
-    } else if (minorMarked === 0) {
-        // 小さい目を先に使えば、すべてのダイスが使える
-        minor = minorTmp
-        major = () => NO_MOVE // majorMarked !== 0はすでに確定している
-        usableDice = [
-            { pip: dice1, used: false },
-            { pip: dice2, used: false },
-        ]
-    } else {
-        // 2個使うことはできない場合
-        // １個しか使えない場合は、大きい目から使う
-        if (majorMarked === 1) {
-            major = majorTmp
-            minor = () => NO_MOVE
-            usableDice = [
-                { pip: majorPip, used: false },
-                { pip: minorPip, used: true },
-            ]
-        } else if (minorMarked === 1) {
-            major = () => NO_MOVE
-            minor = minorTmp
-            usableDice = [
-                { pip: minorPip, used: false },
-                { pip: majorPip, used: true },
-            ]
-        } else {
-            // どの目も使えない
-            major = () => NO_MOVE
-            minor = () => NO_MOVE
-            usableDice = [
-                { pip: dice1, used: true },
-                { pip: dice2, used: true },
-            ]
+    // 大の目が使えなければ、小の目のみ
+    if (hasNoMove(major)) {
+        return {
+            ...minor.node,
+            majorFirst: () => NO_MOVE,
+            minorFirst: minor.node.majorFirst,
         }
     }
 
+    // ダイスを1つしか使えないほうは採用しない
+    if (!canUseBothRolls(minor)) {
+        return major.node
+    }
+    if (!canUseBothRolls(major)) {
+        return {
+            ...minor.node,
+            majorFirst: () => NO_MOVE,
+            minorFirst: minor.node.majorFirst,
+        }
+    }
+
+    // どちらのダイスも使えるので、本来のダイス順に戻して返す
+    const majorDices = major.node.dices
+    const minorDices = minor.node.dices
+    const [majorDie, minorDie] = [
+        {
+            pip: majorDices[0].pip,
+            used: majorDices[0].used && minorDices[1].used,
+        },
+        {
+            pip: majorDices[1].pip,
+            used: majorDices[1].used && minorDices[0].used,
+        },
+    ]
+    const dices = isMajorFirst ? [majorDie, minorDie] : [minorDie, majorDie]
     return {
-        hasValue: true,
-        dices: usableDice,
-        board: board,
-        majorFirst: major,
-        minorFirst: minor,
-        lastMoves: () => [],
-        isRedundant: false,
+        ...major.node,
+        dices,
+        minorFirst: minor.node.majorFirst,
+    }
 
-        // 使えるダイスは左側にある前提
-        isCommitable: usableDice.length > 0 && usableDice[0].used,
+    function canUseBothRolls(arg: { node: BoardStateNode; canUse: number }) {
+        return arg.canUse === 2
+    }
+    function hasNoMove(arg: { node: BoardStateNode; canUse: number }) {
+        return arg.canUse === 0
     }
 }
 
-// 大きい目を先に使う場合の手のリストアップ
-function applyMajorPipFirst(
-    board: BoardState,
-    majorDice: DicePip,
-    minorDice: DicePip
+/**
+ * EoGの状況に限り、最大限ダイスを使わなければいけない制限を緩和する
+ * @param nodeBuilders 対象となるnodeBuilder
+ * @returns
+ */
+function addEoGHandling(
+    nodeBuilders: InternalBoardStateNodeBuilders
+): InternalBoardStateNodeBuilders {
+    // 中間ノードの子局面のいずれかがEoGになるなら(※)その中間ノードでは、ダイスは2個とも使える扱いにする
+    // これにより、一方は2個使わないとEoGにできない場合でも、もう一方の1個しか使わない手を有効にする
+    // ※ この場合、自駒は一つしかないので、いずれかと言っても、実際にはEoGにする手しかない
+    // この処理は、ゾロ目では目の大小を意識しないので必要ない
+    return {
+        ...nodeBuilders,
+        buildBranchNode: (node, childNodes) => {
+            return childNodes.mayTerm
+                ? {
+                      ...nodeBuilders.buildBranchNode(node, childNodes),
+                      canUse: node.unusedDices.length,
+                  }
+                : nodeBuilders.buildBranchNode(node, childNodes)
+        },
+    }
+}
+/**
+ * isRedundant()の返り値が真なら、冗長としてマークする
+ * @param nodeBuilders 対象となるnodeBUilders
+ * @param isRedundant 引数のノードが重複している時に真を返す関数
+ * @returns
+ */
+function addDeduplicator(
+    nodeBuilders: InternalBoardStateNodeBuilders,
+    isRedundant: (nodeAndDice: NodeAndDiceUsage) => boolean
 ) {
-    const isRedundantForMajorPipFirstCase = (move1: Move, move2: Move) => {
-        // 見かけ上同じ駒を２回動かすムーブ
-        // すなわち、p/q/r に対してq/r p/qと動かす場合は冗長
-        if (move2.to === move1.from) {
-            return true
+    return {
+        ...nodeBuilders,
+        ifLeafThenBuild: (
+            tmpNode: TmpNode
+        ):
+            | { hasValue: true; value: NodeAndDiceUsage }
+            | { hasValue: false } => {
+            const maybeNode = nodeBuilders.ifLeafThenBuild(tmpNode)
+            return maybeNode.hasValue
+                ? isRedundant(maybeNode.value)
+                    ? { hasValue: true, value: setIsRedundant(maybeNode.value) }
+                    : maybeNode
+                : maybeNode
+        },
+    }
+}
+
+/**
+ * 大の目を先に使う場合の重複判定：
+ * 見かけ上同じ駒を２回動かすムーブ、すなわち p/q/r に対してq/r p/qと動かす場合は冗長
+ *
+ * @param nodeAndDice 対象ノード
+ * @returns
+ */
+function isRedundantMajor(nodeAndDice: NodeAndDiceUsage) {
+    const moves = nodeAndDice.node.lastMoves
+    return moves.length < 2 ? false : moves[1].to === moves[0].from
+}
+
+/** 小の目を先に使う場合の重複判定：
+ * ダイスの使用順序を入れ替えた手が、既に大の目を先に使った場合に含まれるなら真を返す
+ *
+ * @param majorNodes 大の目を先に使った場合の可能手
+ * @returns
+ */
+function isRedundantMinor(
+    majorNodes: (pos: number) => BoardStateNode | NoMove
+): (nodeAndDice: NodeAndDiceUsage) => boolean {
+    return (nodeAndDice: NodeAndDiceUsage) => {
+        const lastMoves = nodeAndDice.node.lastMoves
+        if (lastMoves.length < 2) {
+            return false
         }
-        return false
-    }
-    return applyDices(
-        board,
-        majorDice,
-        minorDice,
-        isRedundantForMajorPipFirstCase
-    )
-}
 
-// 小さい目を先に使う場合の手のリストアップ
-function applyMinorPipFirst(
-    board: BoardState,
-    majorDice: DicePip,
-    minorDice: DicePip,
-    majorTmp: (pos: number) => BoardStateNode | NoMove
-) {
-    // moves = p/p+n q/q+m に対し、すでにmajorTmpに着手を入れ替えた手q/q+m p/p+nがあるはずなので、原則としては冗長
-    const isRedundantFunc = (move1: Move, move2: Move) => {
+        const [move1, move2] = lastMoves
+
         // 着手を入れ替えた手、q/q+m p/p+nがすでにあれば冗長
-        const node = majorTmp(move2.from)
+        const node = majorNodes(move2.from)
         if (node.hasValue && node.majorFirst(move1.from).hasValue) {
             return true
         }
@@ -145,7 +224,7 @@ function applyMinorPipFirst(
         // 同じ駒を2回動かすムーブで、かつダイスを入れ替えた場合のムーブと比べる
         // すなわち、小さい目を先行して使う手p/p+m/rが、p/p+n/rと実質的に同じかどうかを検出する
         if (move1.to === move2.from) {
-            const swappedMovesNode = majorTmp(move1.from)
+            const swappedMovesNode = majorNodes(move1.from)
             // 2' ダイスを入れ替えて動かせない(p/p+nが禁手)なら、冗長ではない
             if (swappedMovesNode.hasValue) {
                 // ダイスを入れ替えても、二つ目のダイス（小さい目）では動かせない
@@ -159,7 +238,7 @@ function applyMinorPipFirst(
                 }
                 // どちらもヒットでない場合は、冗長
                 const isHit = move1.isHit
-                const swappedMove = swappedMovesNode.lastMoves()[0]
+                const swappedMove = swappedMovesNode.lastMoves[0]
                 return !isHit && !swappedMove.isHit
             } else {
                 return false
@@ -167,87 +246,40 @@ function applyMinorPipFirst(
         }
         return false
     }
-    return applyDices(board, minorDice, majorDice, isRedundantFunc)
 }
 
-function applyDices(
-    board: BoardState,
-    firstDice: DicePip,
-    secondDice: DicePip,
-    isRedundantFunc: (move1: Move, move2: Move) => boolean = () => false
-): [(pos: number) => BoardStateNode | NoMove, number] {
-    const dicesAfterUse = {
-        pip: firstDice,
-        used: true,
+/**
+ * 最大限ダイスを使えるかEoGになる子ノードに絞り込む。
+ * ゾロ目では使えるダイスの数がばらつかないので、この絞り込みは不要
+ *
+ * @param nodeBuilders 対象となるnodeBuilders
+ * @returns
+ */
+function addDiceUsagePruner(
+    nodeBuilders: InternalBoardStateNodeBuilders
+): InternalBoardStateNodeBuilders {
+    return {
+        ...nodeBuilders,
+        buildBranchNode: (parentNode, childNodes): NodeAndDiceUsage =>
+            nodeBuilders.buildBranchNode(parentNode, {
+                ...childNodes,
+                children: childNodes.children.map((child) => {
+                    const { node, canUse } = child
+                    return canUse === childNodes.maxUsage ||
+                        (node.hasValue && node.eogStatus.isEndOfGame)
+                        ? child
+                        : { node: NO_MOVE, canUse: -1 }
+                }),
+            }),
     }
-
-    // ビルダーの事前準備：最初の目を適用した後は、二つ目のダイスに対応するノードを生成する
-    const nodeBuilder: NodeBuilder = leaveNodeAndParentBuilder(
-        secondDice,
-        dicesAfterUse,
-        isRedundantFunc
-    )
-
-    // 各ポイントに最初の目を適用して子ノードを生成する
-    // （内部で各ポイントについて上記のnodeBuilderが呼ばれ、孫ノードが生成される）
-    return applyDicePipToPoints(board, firstDice, nodeBuilder, 2)
 }
 
-// ダイスを1個使った状態を表すノードと、その子ノードとなる末端ノードを構築する
-function leaveNodeAndParentBuilder(
-    pip: DicePip,
-    usedDice: Dice,
-    isRedundantFunc: (move1: Move, move2: Move) => boolean = () => false
-): NodeBuilder {
-    return (board: BoardState, firstMove: Move) => {
-        const lastMovesForLeave = [firstMove]
-        const isEog = board.eogStatus().isEndOfGame
-        if (isEog) {
-            // 盤面が終了状態になっている場合は、Leafノードは生成せず、EoGを表すノードを返す
-            //
-            // この時点ではダイスを一個しか使っていないが、ダイスを入れ替えると二個使える場合、
-            // 一個しか使えない手は無効化されてしまうので、二個目のダイスも使用済とマークし、
-            // marked=0として返すことにより、ダイスを二個使った手として処理させている
-            // （よって、ロール直後は、表示上ダイスは二つとも使える状態で表示される）
-            return buildNodeForEoG(
-                board,
-                [usedDice, { pip, used: true }],
-                lastMovesForLeave,
-                0
-            )
-        }
-
-        // 二つ目のpipを使って末端のノードを構築する
-        const nodeBuilder = leaveNodeBuilder(
-            [usedDice],
-            pip,
-            (secondMove) => [firstMove, secondMove],
-            (secondMove) => isRedundantFunc(firstMove, secondMove)
-        )
-
-        const [major, unusedDices] = applyDicePipToPoints(
-            board,
-            pip,
-            nodeBuilder,
-            1
-        )
-        // applyDicePipToPointsは未使用のダイスの最小値を返すので、
-        // unusedDiceはどこかのポイントがムーブ可能であれば0、
-        // そうでなければ1（ムーブできないのでダイスが1個余る）となる。
-
-        // 末端ノードの親ノードを生成して返す
-        return [
-            {
-                hasValue: true,
-                dices: [usedDice, { pip, used: unusedDices === 1 }],
-                board: board,
-                majorFirst: major,
-                minorFirst: () => NO_MOVE,
-                lastMoves: () => lastMovesForLeave,
-                isRedundant: false,
-                isCommitable: unusedDices === 1,
-            },
-            unusedDices,
-        ]
+function setIsRedundant(nodeAndUsage: NodeAndDiceUsage): NodeAndDiceUsage {
+    return {
+        node: {
+            ...nodeAndUsage.node,
+            isRedundant: true,
+        },
+        canUse: nodeAndUsage.canUse,
     }
 }

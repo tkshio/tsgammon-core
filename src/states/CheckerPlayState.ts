@@ -2,7 +2,7 @@ import { AbsoluteBoardState } from '../AbsoluteBoardState'
 import { BoardState } from '../BoardState'
 import { BoardStateNode } from '../BoardStateNode'
 import { Ply } from '../Ply'
-import { SGInPlay } from './SingleGameState'
+import { SGInPlay, toAbsBoard, toPly, toPos } from './SingleGameState'
 
 /**
  * チェッカープレイが未確定の状態を表す
@@ -36,9 +36,9 @@ export type CheckerPlayStateCommitted = {
  * @returns
  */
 export function asCheckerPlayState(sgInPlay: SGInPlay): CheckerPlayState {
-    const { boardStateNode, absBoard, revertTo, toAbsBoard, toPly, toPos } =
-        sgInPlay
-    const curPly = toPly(boardStateNode)
+    const { boardStateNode, absBoard, revertTo } = sgInPlay
+    const _toPly = (node: BoardStateNode) => toPly(sgInPlay, node)
+    const curPly = _toPly(boardStateNode)
     const isUndoable = curPly.moves.length > 0
     return {
         isCommitted: false,
@@ -47,11 +47,11 @@ export function asCheckerPlayState(sgInPlay: SGInPlay): CheckerPlayState {
         curBoardState: boardStateNode,
         absBoard,
         boardStateNodeRevertTo: revertTo,
-        absBoardRevertTo: toAbsBoard(revertTo.board),
+        absBoardRevertTo: toAbsBoard(sgInPlay, revertTo.board),
 
-        toAbsBoard,
-        toPly,
-        toPos,
+        toAbsBoard: (board: BoardState) => toAbsBoard(sgInPlay, board),
+        toPly: _toPly,
+        toPos: (absPos: number) => toPos(sgInPlay, absPos),
 
         isUndoable,
         revertDicesFlag: false,

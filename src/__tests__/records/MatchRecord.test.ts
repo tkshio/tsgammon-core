@@ -3,7 +3,7 @@ import {
     matchStateForUnlimitedMatch,
 } from '../../MatchState'
 import { eog } from '../../EOGStatus'
-import { standardConf } from '../../GameConf'
+import { standardConf } from '../../GameConfs'
 import {
     addPlyRecord,
     discardCurrentGame,

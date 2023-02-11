@@ -6,12 +6,12 @@ import {
     absoluteMovesWhite,
 } from '../AbsoluteMove'
 import { BoardState, boardState } from '../BoardState'
-import { BoardStateNode, boardStateNode } from '../BoardStateNode'
+import { boardStateNode } from '../BoardStateNodeBuilders'
 import { Dice, DiceRoll } from '../Dices'
 import { matchStateForUnlimitedMatch } from '../MatchState'
 import { simpleNNEngine } from '../engines/SimpleNNGammon'
-import { EOGStatus } from '../EOGStatus'
-import { GameConf, standardConf } from '../GameConf'
+import { eog, EOGStatus } from '../EOGStatus'
+import { GameConf } from '../GameConf'
 import { Ply } from '../Ply'
 import {
     addPlyRecord,
@@ -30,6 +30,7 @@ import { formatBoard } from '../utils/formatBoard'
 import { formatPly } from '../utils/formatPly'
 import { formatStake } from '../utils/formatStake'
 import { toPositionID } from '../utils/toPositionID'
+import { standardConf } from '../GameConfs'
 
 const engine = simpleNNEngine
 const conf = { ...standardConf, jacobyRule: false }
@@ -61,7 +62,8 @@ function* runAutoMatch(
     )
     yield { tag: 'play', before: initialBoardState, after: node.board, ply }
 
-    while (!isEoG(node)) {
+    let eogStatus = eog({ isEndOfGame: false })
+    while (!eogStatus.isEndOfGame) {
         const roll = diceSource.roll()
         const { boardStateNode: nextNode, lastPly } = doCheckerPlay(
             node.board.revert(),
@@ -77,8 +79,9 @@ function* runAutoMatch(
 
         node = nextNode
         ply = lastPly
+        eogStatus = node.eogStatus
     }
-    const eogStatus = node.board.eogStatus()
+
     const stake = (ply.isRed ? scoreAsRed : scoreAsWhite)(
         eogStatus.calcStake(1)
     )
@@ -94,13 +97,13 @@ function* runAutoMatch(
 }
 
 function doCheckerPlay(boardState: BoardState, roll: DiceRoll, isRed: boolean) {
-    const node = boardStateNode(boardState, roll)
+    const node = boardStateNode(boardState, roll, conf.transition.ruleSet)
 
     const nextNode = engine.checkerPlay(node)
 
     const amoves: AbsoluteMove[] = (
         isRed ? absoluteMovesRed : absoluteMovesWhite
-    )(nextNode.lastMoves())
+    )(nextNode.lastMoves)
 
     const lastPly: Ply = {
         moves: amoves,
@@ -109,10 +112,6 @@ function doCheckerPlay(boardState: BoardState, roll: DiceRoll, isRed: boolean) {
     }
 
     return { boardStateNode: nextNode, lastPly }
-}
-
-function isEoG(boardStateNode: BoardStateNode): boolean {
-    return boardStateNode.board.eogStatus().isEndOfGame
 }
 
 type Driver = {

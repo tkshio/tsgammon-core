@@ -1,10 +1,16 @@
 import { boardState } from '../../BoardState'
-import { boardStateNode } from '../../BoardStateNode'
+import { boardStateNode } from '../../BoardStateNodeBuilders'
+import { standardConf } from '../../GameConfs'
 import { makePoint } from '../../utils/makePoint'
+
+const initialPos = standardConf.initialPos
 
 describe('makePoint', () => {
     test('returns node for point-making', () => {
-        const node = boardStateNode(boardState(), { dice1: 3, dice2: 1 })
+        const node = boardStateNode(boardState(initialPos), {
+            dice1: 3,
+            dice2: 1,
+        })
         const point2 = makePoint(node, 2)
         expect(point2.hasValue).toBeFalsy()
         const point20 = makePoint(node, 20)
@@ -13,7 +19,10 @@ describe('makePoint', () => {
         expect(point21.hasValue).toBeFalsy()
     })
     test('returns node for point-making(minor roll first)', () => {
-        const node = boardStateNode(boardState(), { dice1: 1, dice2: 3 })
+        const node = boardStateNode(boardState(initialPos), {
+            dice1: 1,
+            dice2: 3,
+        })
         const point2 = makePoint(node, 2)
         expect(point2.hasValue).toBeFalsy()
         const point20 = makePoint(node, 20)
@@ -22,7 +31,7 @@ describe('makePoint', () => {
         expect(point21.hasValue).toBeFalsy()
     })
     test('requires 2 unused dice', () => {
-        const node = boardStateNode(boardState(), {
+        const node = boardStateNode(boardState(initialPos), {
             dice1: 1,
             dice2: 3,
         }).majorFirst(19)
@@ -35,12 +44,18 @@ describe('makePoint', () => {
         expect(point21.hasValue).toBeFalsy()
     })
     test('returns node for point-making(doublet)', () => {
-        const node = boardStateNode(boardState(), { dice1: 1, dice2: 1 })
+        const node = boardStateNode(boardState(initialPos), {
+            dice1: 1,
+            dice2: 1,
+        })
         const point20 = makePoint(node, 20)
         expect(point20.hasValue).toBeTruthy()
     })
     test('returns node for point-making(doublet, requires all rolls)', () => {
-        const node = boardStateNode(boardState(), { dice1: 1, dice2: 1 })
+        const node = boardStateNode(boardState(initialPos), {
+            dice1: 1,
+            dice2: 1,
+        })
         const point21 = makePoint(node, 21)
         expect(point21.hasValue).toBeTruthy()
     })

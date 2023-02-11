@@ -52,7 +52,7 @@
         "prettier": "prettier --write .",
         "eslint": "eslint . --ext .ts,.tsx",
         "lint-staged": "lint-staged",
-        "precommit": "run-s lint-staged test",
+        "precommit": "run-s lint-staged",
         "prepush": "npm run test"
     },
     "simple-git-hooks": {

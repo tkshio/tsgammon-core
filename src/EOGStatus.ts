@@ -19,3 +19,9 @@ export function eog(status?: Partial<EOGStatus>): EOGStatus {
         ...status,
     }
 }
+
+export const inGame: EOGStatus = eog({
+    isEndOfGame: false,
+    isGammon: false,
+    isBackgammon: false,
+})

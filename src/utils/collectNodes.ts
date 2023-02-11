@@ -18,8 +18,7 @@ export function collectNodes(node: BoardStateNode): BoardStateNode[] {
             .map((_, idx) => node.minorFirst(idx))
             .map((node) => (node.hasValue ? collectNodes(node) : []))
             .flat()
-
         return minor.concat(major)
     }
-    return [node]
+    return [node] // 何も局面を変更しない(=nodeのままの)手を返している
 }

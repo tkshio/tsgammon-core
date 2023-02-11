@@ -1,5 +1,5 @@
 import { boardState } from '../../BoardState'
-import { standardConf } from '../../GameConf'
+import { standardConf } from '../../GameConfs'
 import { toPositionID, toPositionIDFromArray } from '../../utils/toPositionID'
 
 const positionIDTestData = [

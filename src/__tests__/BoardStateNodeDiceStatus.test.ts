@@ -1,5 +1,7 @@
-import { BoardStateNode, boardStateNodeFromArray } from '../BoardStateNode'
+import { BoardStateNode } from '../BoardStateNode'
+import { boardStateNodeFromArray } from '../BoardStateNodeBuilders'
 import { DicePip } from '../Dices'
+import { standardConf } from '../GameConfs'
 
 type DiceTestArg = {
     pos: number[]
@@ -88,7 +90,7 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
         },
     },
     {
-        name: "can't use larger dice",
+        name: "can't use higher number",
         args: {
             pos: [
                 0, 0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -105,18 +107,35 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
         },
     },
     {
-        name: "can't use larger dice (inv)",
+        name: "can't use lower number (eog)",
         args: {
             pos: [
                 0, 0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                /*bar*/ 0, 1, 0, -2, -2, 0, 0,
+                /*bar*/ 0, 0, 0, 0, 1, -2, 0,
             ],
-            diceRoll: [1, 2],
+            diceRoll: [2, 1],
             clicks: [
-                [{ used: [false, true] }, { pos: 20, used: [false, true] }],
+                [{ used: [false, true] }, { pos: 23, used: [true, true] }],
                 [
                     { used: [false, true] },
-                    { pos: 20, isMinor: true, used: [true, true] },
+                    { pos: 23, isMinor: true, used: [false, true] },
+                ],
+            ],
+        },
+    },
+    {
+        name: 'may use any dice (eog)',
+        args: {
+            pos: [
+                0, 0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                /*bar*/ 0, 0, 0, 0, 0, 1, 0,
+            ],
+            diceRoll: [2, 1],
+            clicks: [
+                [{ used: [false, false] }, { pos: 24, used: [true, true] }],
+                [
+                    { used: [false, false] },
+                    { pos: 24, isMinor: true, used: [true, true] },
                 ],
             ],
         },
@@ -152,7 +171,7 @@ const diceStatusTestDoublet: { name: string; args: DiceTestArg }[] = [
             diceRoll: [3, 3],
             clicks: [
                 [
-                    { used: [true, true, true, false] },
+                    { used: [false, true, true, true] },
                     { pos: 22, used: [true, true, true, true] },
                 ],
             ],
@@ -168,8 +187,8 @@ const diceStatusTestDoublet: { name: string; args: DiceTestArg }[] = [
             diceRoll: [3, 3],
             clicks: [
                 [
-                    { used: [true, true, false, false] },
-                    { pos: 19, used: [true, true, true, false] },
+                    { used: [false, false, true, true] },
+                    { pos: 19, used: [true, false, true, true] },
                     { pos: 22, used: [true, true, true, true] },
                 ],
             ],
@@ -185,9 +204,9 @@ const diceStatusTestDoublet: { name: string; args: DiceTestArg }[] = [
             diceRoll: [3, 3],
             clicks: [
                 [
-                    { used: [true, false, false, false] },
-                    { pos: 16, used: [true, true, false, false] },
-                    { pos: 19, used: [true, true, true, false] },
+                    { used: [false, false, false, true] },
+                    { pos: 16, used: [true, false, false, true] },
+                    { pos: 19, used: [true, true, false, true] },
                     { pos: 22, used: [true, true, true, true] },
                 ],
             ],
@@ -222,7 +241,7 @@ const diceStatusTestDoublet: { name: string; args: DiceTestArg }[] = [
             diceRoll: [2, 2],
             clicks: [
                 [
-                    { used: [true, true, true, false] },
+                    { used: [false, true, true, true] },
                     { pos: 20, used: [true, true, true, true] },
                 ],
             ],
@@ -238,8 +257,8 @@ const diceStatusTestDoublet: { name: string; args: DiceTestArg }[] = [
             diceRoll: [2, 2],
             clicks: [
                 [
-                    { used: [true, true, false, false] },
-                    { pos: 20, used: [true, true, true, false] },
+                    { used: [false, false, true, true] },
+                    { pos: 20, used: [true, false, true, true] },
                     { pos: 20, used: [true, true, true, true] },
                 ],
             ],
@@ -255,9 +274,9 @@ const diceStatusTestDoublet: { name: string; args: DiceTestArg }[] = [
             diceRoll: [2, 2],
             clicks: [
                 [
-                    { used: [true, false, false, false] },
-                    { pos: 20, used: [true, true, false, false] },
-                    { pos: 20, used: [true, true, true, false] },
+                    { used: [false, false, false, true] },
+                    { pos: 20, used: [true, false, false, true] },
+                    { pos: 20, used: [true, true, false, true] },
                     { pos: 20, used: [true, true, true, true] },
                 ],
             ],
@@ -280,7 +299,8 @@ function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
                 let node: BoardStateNode = boardStateNodeFromArray(
                     args.pos,
                     args.diceRoll[0],
-                    args.diceRoll[1]
+                    args.diceRoll[1],
+                    standardConf.transition.ruleSet
                 )
 
                 click.forEach((co) => {

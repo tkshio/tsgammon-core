@@ -1,5 +1,5 @@
 import { cube, CubeOwner } from '../../CubeState'
-import { resultToCBEoG } from '../../dispatchers/CubeGameState'
+import { resultToCBEoG } from '../../states/CubeGameState'
 import { eog } from '../../EOGStatus'
 import { SGResult } from '../../records/SGResult'
 
