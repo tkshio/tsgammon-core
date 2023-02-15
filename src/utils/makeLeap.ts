@@ -1,5 +1,4 @@
 import { BoardStateNode, NoMove, NO_MOVE, wrap } from '../BoardStateNode'
-import { findMove } from './findMove'
 
 /**
  * 与えられたBoardStateNodeについて、指定された位置へ駒を動かすムーブがあれば、それを返す
@@ -10,49 +9,31 @@ import { findMove } from './findMove'
  */
 export function makeLeap(
     node: BoardStateNode,
-    pos: number,
-    useMinorFirst: boolean
+    pos: number
 ): BoardStateNode | NoMove {
     const dices = node.dices.filter((d) => !d.used)
     if (dices.length == 0) {
         return NO_MOVE
     }
     // まず、一つだけですむケースを探す
-    const { major, minor } =
-        dices.length >= 2
-            ? dices[0].pip > dices[1].pip
-                ? { major: dices[0].pip, minor: dices[1].pip }
-                : { major: dices[1].pip, minor: dices[0].pip }
-            : { major: dices[0].pip, minor: undefined }
-    const withMajor =
-        pos - major >= 0 ? findMove(node, pos - major, false) : NO_MOVE
-    // 本来はここでもuseMinorFirstを意識しないといけないが、この関数はmakePointの後で
-    // 使用する想定なので、major/minorの両方で駒が動かせる時は、そちらで拾われることになり
-    // 意識する意味がない
+    const dice0 = dices[0].pip
+    const withMajor = pos - dice0 >= 0 ? node.majorFirst(pos - dice0) : NO_MOVE
     if (
         withMajor.hasValue &&
         withMajor.lastMoves[withMajor.lastMoves.length - 1].to === pos
     ) {
         return withMajor
     }
-
-    if (minor === undefined) {
+    // 使えるダイスが一つしかないなら該当なしを返す
+    if (dices.length < 2) {
         return NO_MOVE
     }
+    const dice1 = dices[1].pip
 
-    const withMinor =
-        pos - minor >= 0 ? findMove(node, pos - minor, true) : NO_MOVE
-    if (
-        withMinor.hasValue &&
-        withMinor.lastMoves[withMinor.lastMoves.length - 1].to === pos
-    ) {
-        return withMinor
-    }
-    // 二つ使う場合は、useMinorFirstを反映させる
-    const from = pos - (major + minor)
+    const from = pos - (dice0 + dice1)
     const leap = wrap(node)
-        .apply((node) => findMove(node, from, useMinorFirst))
-        .apply((node) => makeLeap(node, pos, useMinorFirst)).unwrap
+        .apply((node) => node.majorFirst(from))
+        .apply((node) => makeLeap(node, pos)).unwrap
     if (leap.hasValue) {
         return leap
     }
@@ -63,14 +44,11 @@ export function makeLeap(
 
     // 残りのダイス（全て同じ目とする）が使えるかどうかは再帰して判定する
     return (
+        // 既にダイスを2個使うケースは確認したので、2個進めた状態から再帰
         wrap(node)
-            // 一つ前のポイントをクリックした状態を生成
             .apply((node) =>
-                pos - major >= 0
-                    ? makeLeap(node, pos - major, useMinorFirst)
-                    : NO_MOVE
+                pos - dice0 >= 0 ? makeLeap(node, pos - dice0) : NO_MOVE
             )
-            // 一つ前のポイントにきた駒をクリックして進めた状態を生成
-            .apply((node) => findMove(node, pos - major, useMinorFirst)).unwrap
+            .apply((node) => node.majorFirst(pos - dice0)).unwrap
     )
 }

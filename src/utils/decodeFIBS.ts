@@ -133,7 +133,7 @@ function toNode(fibs: FIBSBoard): BoardStateNode {
     const { dice1, dice2 } = fibs
     return dice1 === 0 || dice2 === 0
         ? nodeWithEmptyDice(board)
-        : boardStateNode(board, { dice1, dice2 })
+        : boardStateNode(board, { dice1, dice2 }).root
 }
 
 function toCube(fibs: FIBSBoard): FIBSCube {

@@ -1,5 +1,5 @@
 import { BoardState, boardState } from './BoardState'
-import { BoardStateNode, NO_MOVE } from './BoardStateNode'
+import { BoardStateNode, NO_MOVE, wrap, Wrapped } from './BoardStateNode'
 import { Dice, DicePip, DiceRoll } from './Dices'
 import { eog } from './EOGStatus'
 import { buildDoubletNodeBuilder } from './internals/buildNodesForDoublet'
@@ -8,13 +8,76 @@ import { buildInternalBoardStateNodeBuilders } from './internals/internalBoardSt
 import { RuleSet } from './rules/RuleSet'
 import { standardRuleSet } from './rules/standardRuleSet'
 
+export type RootBoardStateNode = {
+    root: BoardStateNode
+    swapped?: BoardStateNode
+    dices: Dice[]
+    hasValue: true
+}
+
+export function wrapRootNode(
+    root: RootBoardStateNode,
+    swapFirst: boolean
+): Wrapped<BoardStateNode> {
+    return _wrapRootNode(root, { hasValue: false }, swapFirst)
+}
+export function _wrapRootNode(
+    root: RootBoardStateNode | { hasValue: false },
+    was: RootBoardStateNode | { hasValue: false },
+    swapFirst: boolean
+): Wrapped<BoardStateNode> {
+    function applySwapFirst(root: RootBoardStateNode, swapFirst: boolean) {
+        return swapFirst && root.swapped
+            ? { primary: root.swapped, secondary: root.root }
+            : { primary: root.root, secondary: root.swapped }
+    }
+    const wrapped: Wrapped<BoardStateNode> = {
+        apply: (
+            f: (a: BoardStateNode) => BoardStateNode | { hasValue: false }
+        ): Wrapped<BoardStateNode> => {
+            if (root.hasValue) {
+                const { primary, secondary } = applySwapFirst(root, swapFirst)
+                const result = f(primary)
+                if (result.hasValue) {
+                    return wrap(result)
+                }
+                if (secondary) {
+                    const result = f(secondary)
+                    return wrap(result)
+                }
+            }
+            return _wrapRootNode({ hasValue: false }, root, swapFirst) // or()に渡される // TODO: or()内のswapFirstの先取りをしてもいいかも
+        },
+        or: (
+            f: (a: BoardStateNode) => BoardStateNode | { hasValue: false }
+        ): Wrapped<BoardStateNode> => {
+            if (!root.hasValue && was.hasValue) {
+                const { primary, secondary } = applySwapFirst(was, swapFirst)
+                const result = f(primary)
+                if (result.hasValue) {
+                    return wrap(result)
+                }
+                if (secondary) {
+                    const result = f(secondary)
+                    return wrap(result)
+                }
+            }
+            // rootがapply()で成功している(のでor()は何もしない)か、
+            // 適用した関数が失敗しているので、与引数をそのまま次に渡す
+            return _wrapRootNode({ hasValue: false }, was, swapFirst)
+        },
+        unwrap: root.hasValue ? root.root : { hasValue: false },
+    }
+    return wrapped
+}
+
 /**
  * BoardStateNodeツリー生成関数の型定義
  */
 export type BoardStateNodeBuilder = (
     board: BoardState,
     dice: DiceRoll
-) => BoardStateNode
+) => RootBoardStateNode
 
 /**
  * 与えられた盤面とダイス目のペアから、BoardStateNodeを生成する
@@ -27,7 +90,7 @@ export function boardStateNode(
     board: BoardState,
     dicePips: DiceRoll,
     ruleSet: RuleSet = standardRuleSet
-): BoardStateNode {
+): RootBoardStateNode {
     return buildBoardStateNodeBuilder(ruleSet)(board, dicePips)
 }
 
@@ -49,7 +112,7 @@ export function buildBoardStateNodeBuilder(
     const buildNodeWithDoublet = buildDoubletNodeBuilder(internalNodeBuilders)
 
     // 両者を結合して返す
-    return (board: BoardState, dicePips: DiceRoll): BoardStateNode => {
+    return (board: BoardState, dicePips: DiceRoll) => {
         const { dice1, dice2 } = dicePips
 
         return dice1 !== dice2
@@ -76,7 +139,7 @@ export function boardStateNodeFromArray(
     dice2: DicePip,
     ruleSet: RuleSet,
     bornOffs: [number, number] = [0, 0]
-): BoardStateNode {
+): RootBoardStateNode {
     const board = boardState(pieces, bornOffs)
     return boardStateNode(board, { dice1, dice2 }, ruleSet)
 }

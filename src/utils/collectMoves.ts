@@ -1,13 +1,13 @@
-import { BoardStateNode } from '../BoardStateNode'
-import { collectNodes } from './collectNodes'
+import { RootBoardStateNode } from '../BoardStateNodeBuilders'
 import { Move } from '../Move'
+import { collectNodes } from './collectNodes'
 
 /**
  * 指定された局面について、冗長な手も含めて、可能な手を全て格納した配列を返す
  * @param node 局面
  */
 
-export function collectMoves(node: BoardStateNode): Moves[] {
+export function collectMoves(node: RootBoardStateNode): Moves[] {
     const nodes = collectNodes(node)
     return nodes.map((n) => ({
         moves: n.lastMoves,

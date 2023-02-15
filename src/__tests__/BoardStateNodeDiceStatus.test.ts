@@ -1,12 +1,20 @@
-import { BoardStateNode } from '../BoardStateNode'
-import { boardStateNodeFromArray } from '../BoardStateNodeBuilders'
+import {
+    boardStateNodeFromArray,
+    RootBoardStateNode,
+    wrapRootNode,
+} from '../BoardStateNodeBuilders'
 import { DicePip } from '../Dices'
 import { standardConf } from '../GameConfs'
 
 type DiceTestArg = {
     pos: number[]
     diceRoll: [DicePip, DicePip]
-    clicks: { pos?: number; isMinor?: boolean; used: boolean[] }[][]
+    clicks: {
+        pos?: number // クリックする場所
+        isMinor?: boolean // 小の目を優先する場合はtrue
+        used: boolean[] // diceRollの各要素の使用状態
+        forced?: boolean // そのままの順でダイスを使う(=node.swappedが設定されない)ならtrue、省略時もtrue扱い
+    }[][]
 }
 
 const diceStatusTest: { name: string; args: DiceTestArg }[] = [
@@ -20,12 +28,12 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
             diceRoll: [1, 3],
             clicks: [
                 [
-                    { used: [false, false] },
+                    { used: [false, false], forced: false },
                     { pos: 1, used: [true, false] },
                     { pos: 4, used: [true, true] },
                 ],
                 [
-                    { used: [false, false] },
+                    { used: [false, false], forced: false },
                     { pos: 1, isMinor: true, used: [true, false] },
                     { pos: 2, used: [true, true] },
                 ],
@@ -42,12 +50,12 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
             diceRoll: [3, 1],
             clicks: [
                 [
-                    { used: [false, false] },
+                    { used: [false, false], forced: false },
                     { pos: 1, used: [true, false] },
                     { pos: 4, used: [true, true] },
                 ],
                 [
-                    { used: [false, false] },
+                    { used: [false, false], forced: false },
                     { pos: 1, isMinor: true, used: [true, false] },
                     { pos: 2, used: [true, true] },
                 ],
@@ -63,9 +71,12 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
             ],
             diceRoll: [3, 1],
             clicks: [
-                [{ used: [false, false] }, { pos: 22, used: [true, true] }],
                 [
-                    { used: [false, false] },
+                    { used: [false, false], forced: false },
+                    { pos: 22, used: [true, true] },
+                ],
+                [
+                    { used: [false, false], forced: false },
                     { pos: 22, isMinor: true, used: [true, false] },
                 ],
             ],
@@ -81,10 +92,9 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
             diceRoll: [2, 1],
             // must use larger pip
             clicks: [
-                [{ used: [false, true] }, { pos: 20, used: [true, true] }],
                 [
-                    { used: [false, true] },
-                    { pos: 20, isMinor: true, used: [false, true] },
+                    { used: [false, true], forced: true },
+                    { pos: 20, used: [true, true], forced: true },
                 ],
             ],
         },
@@ -97,11 +107,17 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
                 /*bar*/ 0, 1, 0, -2, -2, 0, 0,
             ],
             diceRoll: [2, 1],
+            // ダイスは1→2の順で1のみが未使用
             clicks: [
-                [{ used: [false, true] }, { pos: 20, used: [false, true] }],
+                // 小の目先行なら動かせる
                 [
-                    { used: [false, true] },
-                    { pos: 20, isMinor: true, used: [true, true] },
+                    { used: [false, true], forced: true },
+                    {
+                        pos: 20,
+                        isMinor: true,
+                        used: [true, true],
+                        forced: true,
+                    },
                 ],
             ],
         },
@@ -115,10 +131,9 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
             ],
             diceRoll: [2, 1],
             clicks: [
-                [{ used: [false, true] }, { pos: 23, used: [true, true] }],
                 [
-                    { used: [false, true] },
-                    { pos: 23, isMinor: true, used: [false, true] },
+                    { used: [false, true], forced: true },
+                    { pos: 23, used: [true, true], forced: true },
                 ],
             ],
         },
@@ -132,9 +147,12 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
             ],
             diceRoll: [2, 1],
             clicks: [
-                [{ used: [false, false] }, { pos: 24, used: [true, true] }],
                 [
-                    { used: [false, false] },
+                    { used: [false, false], forced: false },
+                    { pos: 24, used: [true, true] },
+                ],
+                [
+                    { used: [false, false], forced: false },
                     { pos: 24, isMinor: true, used: [true, true] },
                 ],
             ],
@@ -296,7 +314,7 @@ function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
         // eslint-disable-next-line jest/valid-title
         test(name, () => {
             args.clicks.forEach((click) => {
-                let node: BoardStateNode = boardStateNodeFromArray(
+                let node: RootBoardStateNode = boardStateNodeFromArray(
                     args.pos,
                     args.diceRoll[0],
                     args.diceRoll[1],
@@ -305,11 +323,23 @@ function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
 
                 click.forEach((co) => {
                     if (co.pos) {
-                        const major = co.isMinor
-                            ? node.minorFirst(co.pos)
-                            : node.majorFirst(co.pos)
-                        node = major.hasValue ? major : node
+                        const target = wrapRootNode(node, co.isMinor ?? false)
+                        const found = target.apply((node) =>
+                            node.majorFirst(co.pos!)
+                        ).unwrap
+                        if (found.hasValue) {
+                            node = {
+                                root: found,
+                                dices: found.dices,
+                                hasValue: true,
+                            } // 2回目以降のクリックではswappedは無視して良い
+                        }
                     }
+                    // co.forcedがtrue、または省略されている場合は、
+                    // 小の目を先にプレイするという入れ替えの選択肢が提供されない
+                    expect(node.swapped == undefined).toBe(
+                        co.forced || co.forced == undefined
+                    )
                     expect(node.dices.map((dice) => dice.used)).toEqual(co.used)
                 })
             })

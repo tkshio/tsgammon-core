@@ -1,5 +1,6 @@
 import { BoardState } from '../BoardState'
 import { BoardStateNode, NoMove, NO_MOVE } from '../BoardStateNode'
+import { RootBoardStateNode } from '../BoardStateNodeBuilders'
 import { DicePip } from '../Dices'
 import {
     InternalBoardStateNodeBuilders,
@@ -11,7 +12,7 @@ import {
 
 export function buildHeteroDiceNodeBuilder(
     internalNodeBuilders: InternalBoardStateNodeBuilders
-): (board: BoardState, dice1: DicePip, dice2: DicePip) => BoardStateNode {
+): (board: BoardState, dice1: DicePip, dice2: DicePip) => RootBoardStateNode {
     // 共通ルールの設定
     const commonBuilder =
         // 最大限のダイスを使う
@@ -52,7 +53,7 @@ function buildNodesForHeteroDice(
     minorNodeBuilder: (
         majorNodes: (pos: number) => BoardStateNode | NoMove
     ) => InternalRecursiveNodeBuilder
-): BoardStateNode {
+): RootBoardStateNode {
     // ゾロ目は対応しない
     if (dice1 === dice2) {
         throw Error('Unexpected doublet: ' + dice1 + ',' + dice2)
@@ -74,36 +75,42 @@ function buildNodesForHeteroDice(
 
     // 大の目先行、小の目先行それぞれの場合を統合して、最終的な結果を得る
     if (hasNoMove(minor)) {
-        // どちらのダイスでも全く動かせない場合は、オリジナルのダイス順で返す
         return hasNoMove(major)
-            ? {
-                  ...major.node,
+            ? // どちらのダイスでも全く動かせない場合は、オリジナルのダイス順で返す
+              {
+                  root: major.node,
                   dices: [
                       { pip: dice1, used: true },
                       { pip: dice2, used: true },
                   ],
+                  hasValue: true,
               }
-            : major.node // 小の目が使えないので、大の目のみ使用
+            : // 小の目だけが使えないので、大の目のみ使用
+              {
+                  root: major.node,
+                  dices: major.node.dices,
+                  hasValue: true,
+              }
     }
 
     // 大の目が使えなければ、小の目のみ
     if (hasNoMove(major)) {
         return {
-            ...minor.node,
-            majorFirst: () => NO_MOVE,
-            minorFirst: minor.node.majorFirst,
+            root: minor.node,
+            dices: minor.node.dices,
+            hasValue: true,
         }
     }
 
     // ダイスを1つしか使えないほうは採用しない
     if (!canUseBothRolls(minor)) {
-        return major.node
+        return { root: major.node, dices: major.node.dices, hasValue: true }
     }
     if (!canUseBothRolls(major)) {
         return {
-            ...minor.node,
-            majorFirst: () => NO_MOVE,
-            minorFirst: minor.node.majorFirst,
+            root: minor.node,
+            dices: minor.node.dices,
+            hasValue: true,
         }
     }
 
@@ -122,9 +129,10 @@ function buildNodesForHeteroDice(
     ]
     const dices = isMajorFirst ? [majorDie, minorDie] : [minorDie, majorDie]
     return {
-        ...major.node,
         dices,
-        minorFirst: minor.node.majorFirst,
+        root: major.node,
+        swapped: minor.node,
+        hasValue: true,
     }
 
     function canUseBothRolls(arg: { node: BoardStateNode; canUse: number }) {

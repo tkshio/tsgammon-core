@@ -128,7 +128,8 @@ export function buildInternalBoardStateNodeBuilders(
                     hasValue: true,
                     dices,
                     board,
-                    majorFirst: (pos: number) => childNodes.children[pos].node,
+                    majorFirst: (pos: number) =>
+                        childNodes.children[pos]?.node ?? NO_MOVE,
                     minorFirst: () => NO_MOVE,
                     lastMoves,
                     isRedundant: false, // redundantの判定は後付けなので、一旦false

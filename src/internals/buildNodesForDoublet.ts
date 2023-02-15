@@ -1,5 +1,5 @@
 import { BoardState } from '../BoardState'
-import { BoardStateNode } from '../BoardStateNode'
+import { RootBoardStateNode } from '../BoardStateNodeBuilders'
 import { DicePip } from '../Dices'
 import { Move } from '../Move'
 import {
@@ -14,12 +14,17 @@ export function buildDoubletNodeBuilder(
     board: BoardState,
     dicePip: DicePip,
     countForDoublet: number
-) => BoardStateNode {
+) => RootBoardStateNode {
     const nodeBuilder = recursiveNodeBuilder(
         addDeduplicator(internalNodeBuilders)
     )
-    return (board: BoardState, dicePip: DicePip, countForDoublet: number) =>
-        nodeBuilder(board, Array(countForDoublet).fill(dicePip)).node
+    return (board: BoardState, dicePip: DicePip, countForDoublet: number) => {
+        const root = nodeBuilder(
+            board,
+            Array(countForDoublet).fill(dicePip)
+        ).node
+        return { root: root, dices: root.dices, hasValue: true }
+    }
 }
 
 // ゾロ目の場合の重複排除は、後ろの駒を先に動かす手を重複とみなす

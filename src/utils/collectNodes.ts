@@ -1,4 +1,5 @@
 import { BoardStateNode } from '../BoardStateNode'
+import { RootBoardStateNode } from '../BoardStateNodeBuilders'
 
 /**
  * 指定された局面について、冗長な手も含めて、手番終了時の局面を全て格納した配列を返す。
@@ -7,18 +8,23 @@ import { BoardStateNode } from '../BoardStateNode'
  * @param node 局面
  */
 
-export function collectNodes(node: BoardStateNode): BoardStateNode[] {
-    const hasUnusedDice = node.dices.find((dice) => !dice.used)
-    if (hasUnusedDice) {
-        const major: BoardStateNode[] = node.board.points
-            .map((_, idx) => node.majorFirst(idx))
-            .map((node) => (node.hasValue ? collectNodes(node) : []))
-            .flat()
-        const minor: BoardStateNode[] = node.board.points
-            .map((_, idx) => node.minorFirst(idx))
-            .map((node) => (node.hasValue ? collectNodes(node) : []))
-            .flat()
+export function collectNodes(node: RootBoardStateNode): BoardStateNode[] {
+    const major: BoardStateNode[] = _collectNodes(node.root)
+    const swapped = node.swapped
+    if (swapped) {
+        const minor = _collectNodes(swapped)
         return minor.concat(major)
     }
-    return [node] // 何も局面を変更しない(=nodeのままの)手を返している
+    return major
+}
+
+function _collectNodes(node: BoardStateNode): BoardStateNode[] {
+    const hasUnusedDice = node.dices.find((dice) => !dice.used)
+    if (hasUnusedDice) {
+        return node.board.points
+            .map((_, idx) => node.majorFirst(idx))
+            .map((node) => (node.hasValue ? _collectNodes(node) : []))
+            .flat()
+    }
+    return [node] // 末端に達したので、自分自身を返す
 }

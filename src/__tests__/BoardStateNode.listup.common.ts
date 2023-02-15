@@ -38,7 +38,7 @@ export function listupMovesTest(
 
     const isCommitable =
         arg.expectedMoves.length === 1 && arg.expectedMoves[0].length === 0
-    expect(node.isCommitable).toBe(isCommitable)
+    expect(node.root.isCommitable).toBe(isCommitable)
     expect(collected.map((moves) => moves.isRedundant)).toEqual(
         arg.expectedRedundancy
     )

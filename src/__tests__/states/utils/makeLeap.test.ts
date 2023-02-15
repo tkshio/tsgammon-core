@@ -1,4 +1,4 @@
-import { wrap } from '../../../BoardStateNode'
+import { wrapRootNode } from '../../../BoardStateNodeBuilders'
 import { boardStateNodeFromArray } from '../../../BoardStateNodeBuilders'
 import { standardConf } from '../../../GameConfs'
 import { makeLeap } from '../../../utils/makeLeap'
@@ -14,30 +14,38 @@ describe('makeLeap()', () => {
         2,
         standardConf.transition.ruleSet
     )
-    test('returns node if piece can be moved to pos', () => {
+    test('returns node if a piece can be moved to pos', () => {
         expect(
-            wrap(node).apply((node) => makeLeap(node, 2, true)).unwrap.hasValue
+            wrapRootNode(node, true).apply((node) => makeLeap(node, 2)).unwrap
+                .hasValue
         ).toBeTruthy()
         expect(
-            wrap(node).apply((node) => makeLeap(node, 2, false)).unwrap.hasValue
+            wrapRootNode(node, false).apply((node) => makeLeap(node, 2)).unwrap
+                .hasValue
         ).toBeTruthy()
         expect(
-            wrap(node).apply((node) => makeLeap(node, 3, true)).unwrap.hasValue
+            wrapRootNode(node, true).apply((node) => makeLeap(node, 3)).unwrap
+                .hasValue
         ).toBeTruthy()
         expect(
-            wrap(node).apply((node) => makeLeap(node, 3, false)).unwrap.hasValue
+            wrapRootNode(node, false).apply((node) => makeLeap(node, 3)).unwrap
+                .hasValue
         ).toBeTruthy()
         expect(
-            wrap(node).apply((node) => makeLeap(node, 4, true)).unwrap.hasValue
+            wrapRootNode(node, true).apply((node) => makeLeap(node, 4)).unwrap
+                .hasValue
         ).toBeTruthy()
         expect(
-            wrap(node).apply((node) => makeLeap(node, 4, false)).unwrap.hasValue
+            wrapRootNode(node, false).apply((node) => makeLeap(node, 4)).unwrap
+                .hasValue
         ).toBeTruthy()
         expect(
-            wrap(node).apply((node) => makeLeap(node, 5, true)).unwrap.hasValue
+            wrapRootNode(node, true).apply((node) => makeLeap(node, 5)).unwrap
+                .hasValue
         ).toBeFalsy()
         expect(
-            wrap(node).apply((node) => makeLeap(node, 5, false)).unwrap.hasValue
+            wrapRootNode(node, false).apply((node) => makeLeap(node, 5)).unwrap
+                .hasValue
         ).toBeFalsy()
     })
 
@@ -53,8 +61,8 @@ describe('makeLeap()', () => {
     )
     test('returns no node if no piece can be moved, because of blocks', () => {
         expect(
-            wrap(nodeWithBlock).apply((node) => makeLeap(node, 4, true)).unwrap
-                .hasValue
+            wrapRootNode(nodeWithBlock, true).apply((node) => makeLeap(node, 4))
+                .unwrap.hasValue
         ).toBeFalsy()
     })
 
@@ -71,12 +79,14 @@ describe('makeLeap()', () => {
         )
 
         expect(
-            wrap(nodeWithOnTheBar).apply((node) => makeLeap(node, 2, true))
-                .unwrap.hasValue
+            wrapRootNode(nodeWithOnTheBar, true).apply((node) =>
+                makeLeap(node, 2)
+            ).unwrap.hasValue
         ).toBeTruthy()
         expect(
-            wrap(nodeWithOnTheBar).apply((node) => makeLeap(node, 3, true))
-                .unwrap.hasValue
+            wrapRootNode(nodeWithOnTheBar, true).apply((node) =>
+                makeLeap(node, 3)
+            ).unwrap.hasValue
         ).toBeFalsy()
     })
     const nodeWithBlots = boardStateNodeFromArray(
@@ -90,8 +100,8 @@ describe('makeLeap()', () => {
         standardConf.transition.ruleSet
     )
     test('consumes major pip first if last arg is false', () => {
-        const found = wrap(nodeWithBlots).apply((node) =>
-            makeLeap(node, 4, false)
+        const found = wrapRootNode(nodeWithBlots, false).apply((node) =>
+            makeLeap(node, 4)
         ).unwrap
         expect(found.hasValue).toBeTruthy()
         expect(found.hasValue ? found.board.piecesAt(25) : 0).toBe(-1)
@@ -99,8 +109,8 @@ describe('makeLeap()', () => {
     })
 
     test('consumes minor pip first if last arg is true', () => {
-        const found = wrap(nodeWithBlots).apply((node) =>
-            makeLeap(node, 4, true)
+        const found = wrapRootNode(nodeWithBlots, true).apply((node) =>
+            makeLeap(node, 4)
         ).unwrap
         expect(found.hasValue).toBeTruthy()
         expect(found.hasValue ? found.board.piecesAt(25) : 0).toBe(-1)
@@ -120,24 +130,29 @@ describe('makeLeap()', () => {
 
     test('consumes arbitary nums of doublet', () => {
         expect(
-            wrap(nodeWithDoublets).apply((node) => makeLeap(node, 3, true))
-                .unwrap.hasValue
+            wrapRootNode(nodeWithDoublets, true).apply((node) =>
+                makeLeap(node, 3)
+            ).unwrap.hasValue
         ).toBeTruthy()
         expect(
-            wrap(nodeWithDoublets).apply((node) => makeLeap(node, 5, true))
-                .unwrap.hasValue
+            wrapRootNode(nodeWithDoublets, true).apply((node) =>
+                makeLeap(node, 5)
+            ).unwrap.hasValue
         ).toBeTruthy()
         expect(
-            wrap(nodeWithDoublets).apply((node) => makeLeap(node, 7, true))
-                .unwrap.hasValue
+            wrapRootNode(nodeWithDoublets, true).apply((node) =>
+                makeLeap(node, 7)
+            ).unwrap.hasValue
         ).toBeTruthy()
         expect(
-            wrap(nodeWithDoublets).apply((node) => makeLeap(node, 9, true))
-                .unwrap.hasValue
+            wrapRootNode(nodeWithDoublets, true).apply((node) =>
+                makeLeap(node, 9)
+            ).unwrap.hasValue
         ).toBeTruthy()
         expect(
-            wrap(nodeWithDoublets).apply((node) => makeLeap(node, 11, true))
-                .unwrap.hasValue
+            wrapRootNode(nodeWithDoublets, true).apply((node) =>
+                makeLeap(node, 11)
+            ).unwrap.hasValue
         ).toBeFalsy()
     })
 })

@@ -3,6 +3,7 @@ import { BoardStateNode } from '../BoardStateNode'
 import { collectNodes } from '../utils/collectNodes'
 import { CubeState } from '../CubeState'
 import { Evaluator } from './Evaluator'
+import { RootBoardStateNode } from '../BoardStateNodeBuilders'
 
 /**
  * チェッカープレイとキューブアクションを判断する思考エンジンが実装するインターフェース
@@ -43,7 +44,7 @@ export type GammonEngine = {
      * @param boardStateNode 局面
      * @returns プレイ後の局面（引数のboardStateNodeと同じ視点）。boardStateNodeの子局面が想定されているが、任意の局面を設定してもよい。また、手がない場合は引数をそのまま返す。
      */
-    checkerPlay(boardStateNode: BoardStateNode): BoardStateNode
+    checkerPlay(boardStateNode: RootBoardStateNode): BoardStateNode
 
     /**
      * ゲーム終了後に一度呼ばれる。
@@ -70,11 +71,11 @@ export function randomEngine(): GammonEngine {
         cubeResponse(): { isTake: boolean } {
             return { isTake: true }
         },
-        checkerPlay(node: BoardStateNode): BoardStateNode {
+        checkerPlay(node: RootBoardStateNode): BoardStateNode {
             const nodes = collectNodes(node).filter((node) => !node.isRedundant)
 
             if (nodes.length === 0) {
-                return node
+                return node.root
             }
             const n = Math.floor(Math.random() * nodes.length)
             return nodes[n]
@@ -120,14 +121,14 @@ export function simpleEvalEngineWithEvaluator(ev: Evaluator): GammonEngine {
         cubeResponse(board: BoardState): { isTake: boolean } {
             return { isTake: ev.evaluate(board) > -0.5 }
         },
-        checkerPlay(node: BoardStateNode): BoardStateNode {
+        checkerPlay(node: RootBoardStateNode): BoardStateNode {
             const candidates = collectNodes(node).filter(
                 (node) => !node.isRedundant
             )
             const bestEv = candidates
                 .map((node) => ({ node, e: ev.evaluate(node.board) }))
                 .reduce((prev, cur) => (prev.e > cur.e ? prev : cur), {
-                    node,
+                    node: node.root,
                     e: Number.NEGATIVE_INFINITY,
                 })
             return bestEv.node

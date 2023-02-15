@@ -1,5 +1,11 @@
 import { BoardStateNode, NoMove, NO_MOVE, wrap } from '../BoardStateNode'
-import { findMove } from './findMove'
+import { RootBoardStateNode, wrapRootNode } from '../BoardStateNodeBuilders'
+
+export function makePointRootNode(rootNode: RootBoardStateNode, pos: number) {
+    return wrapRootNode(rootNode, false).apply((node) => makePoint(node, pos))
+        .unwrap
+}
+
 /**
  * 指定された局面について、指定のポイントにブロックを築けるかどうかを返す
  *
@@ -33,7 +39,7 @@ export function makePoint(
         return nodeMakePoint
     }
 
-    // ゾロ目の場合は、中間地点に作ってからそれを動かせるかを調べる
+    // ゾロ目の場合は、中間地点に作ってからそれを動かせるかも調べる
     if (dices.length === 4 && major === minor) {
         return wrap(node)
             .apply(pointMaker(pos - major))
@@ -48,7 +54,7 @@ export function makePoint(
 function moveFinder(
     pos: number
 ): (node: BoardStateNode) => BoardStateNode | NoMove {
-    return (node: BoardStateNode) => findMove(node, pos, false)
+    return (node: BoardStateNode) => node.majorFirst(pos)
 }
 
 function pointMaker(

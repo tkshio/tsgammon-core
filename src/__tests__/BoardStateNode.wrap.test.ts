@@ -2,12 +2,14 @@ import { wrap } from '../BoardStateNode'
 import { boardStateNodeFromArray } from '../BoardStateNodeBuilders'
 import { standardConf } from '../GameConfs'
 
+// 初期配置で1,2が出た場合のノードツリー：当然何か値がある
 const nodeWithValue = boardStateNodeFromArray(
     standardConf.initialPos,
     1,
     2,
     standardConf.transition.ruleSet
-)
+).root
+// 上記について、2番目のポイントから可能な手のノードツリー：そこには駒はないので、値の無いツリーとなる
 const nodeNoValue = nodeWithValue.majorFirst(2)
 
 describe('Wrapper.apply', () => {
@@ -18,7 +20,7 @@ describe('Wrapper.apply', () => {
             2,
             standardConf.transition.ruleSet
         )
-        const wrapped = wrap(node)
+        const wrapped = wrap(node.root)
         expect(wrapped.apply((node) => node).unwrap.hasValue).toBeTruthy()
     })
 
@@ -46,7 +48,7 @@ describe('Wrapper.or', () => {
             1,
             2,
             standardConf.transition.ruleSet
-        ).majorFirst(2)
+        ).root.majorFirst(2)
         const wrapped = wrap(nodeNoValue)
         expect(wrapped.or(() => nodeWithValue).unwrap.hasValue).toBeFalsy()
     })
@@ -56,7 +58,7 @@ describe('Wrapper.or', () => {
             1,
             2,
             standardConf.transition.ruleSet
-        ).majorFirst(2)
+        ).root.majorFirst(2)
         const wrapped = wrap(nodeWithValue)
         expect(
             wrapped.or(() => nodeNoValue).or(() => nodeWithValue).unwrap
@@ -69,7 +71,7 @@ describe('Wrapper.or', () => {
             1,
             2,
             standardConf.transition.ruleSet
-        ).majorFirst(2)
+        ).root.majorFirst(2)
         const wrapped = wrap(nodeWithValue)
         expect(
             wrapped.or(() => nodeWithValue).or(() => nodeNoValue).unwrap
