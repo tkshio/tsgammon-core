@@ -1,7 +1,8 @@
 import { boardState } from '../../BoardState'
 import { boardStateNode } from '../../BoardStateNodeBuilders'
 import { standardConf } from '../../GameConfs'
-import { makePoint, makePointRootNode } from '../../utils/makePoint'
+import { makePointRootNode } from '../../RootBoardStateNodeUtils'
+import { makePoint } from '../../utils/makePoint'
 
 const initialPos = standardConf.initialPos
 
@@ -34,7 +35,7 @@ describe('makePoint', () => {
         const node = boardStateNode(boardState(initialPos), {
             dice1: 1,
             dice2: 3,
-        }).root.majorFirst(19)
+        }).root.childNode(19)
         if (!node.hasValue) {
             throw Error()
         }

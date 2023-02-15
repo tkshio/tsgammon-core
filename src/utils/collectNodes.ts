@@ -1,5 +1,5 @@
 import { BoardStateNode } from '../BoardStateNode'
-import { RootBoardStateNode } from '../BoardStateNodeBuilders'
+import { RootBoardStateNode } from '../RootBoardStateNode'
 
 /**
  * 指定された局面について、冗長な手も含めて、手番終了時の局面を全て格納した配列を返す。
@@ -22,7 +22,7 @@ function _collectNodes(node: BoardStateNode): BoardStateNode[] {
     const hasUnusedDice = node.dices.find((dice) => !dice.used)
     if (hasUnusedDice) {
         return node.board.points
-            .map((_, idx) => node.majorFirst(idx))
+            .map((_, idx) => node.childNode(idx))
             .map((node) => (node.hasValue ? _collectNodes(node) : []))
             .flat()
     }

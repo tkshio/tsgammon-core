@@ -1,4 +1,4 @@
-import { RootBoardStateNode } from '../BoardStateNodeBuilders'
+import { RootBoardStateNode } from '../RootBoardStateNode'
 import { Move } from '../Move'
 import { collectNodes } from './collectNodes'
 

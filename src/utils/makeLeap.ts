@@ -17,7 +17,7 @@ export function makeLeap(
     }
     // まず、一つだけですむケースを探す
     const dice0 = dices[0].pip
-    const withMajor = pos - dice0 >= 0 ? node.majorFirst(pos - dice0) : NO_MOVE
+    const withMajor = pos - dice0 >= 0 ? node.childNode(pos - dice0) : NO_MOVE
     if (
         withMajor.hasValue &&
         withMajor.lastMoves[withMajor.lastMoves.length - 1].to === pos
@@ -32,7 +32,7 @@ export function makeLeap(
 
     const from = pos - (dice0 + dice1)
     const leap = wrap(node)
-        .apply((node) => node.majorFirst(from))
+        .apply((node) => node.childNode(from))
         .apply((node) => makeLeap(node, pos)).unwrap
     if (leap.hasValue) {
         return leap
@@ -49,6 +49,6 @@ export function makeLeap(
             .apply((node) =>
                 pos - dice0 >= 0 ? makeLeap(node, pos - dice0) : NO_MOVE
             )
-            .apply((node) => node.majorFirst(pos - dice0)).unwrap
+            .apply((node) => node.childNode(pos - dice0)).unwrap
     )
 }

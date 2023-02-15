@@ -1,6 +1,6 @@
-import { wrapRootNode } from '../../../BoardStateNodeBuilders'
 import { boardStateNodeFromArray } from '../../../BoardStateNodeBuilders'
 import { standardConf } from '../../../GameConfs'
+import { wrapRootNode } from '../../../RootBoardStateNodeUtils'
 import { makeLeap } from '../../../utils/makeLeap'
 
 describe('makeLeap()', () => {

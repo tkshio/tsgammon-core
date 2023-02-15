@@ -26,15 +26,7 @@ export type BoardStateNode = {
      *
      * @param pos 目を適用したいポイント
      */
-    majorFirst: (pos: number) => BoardStateNode | NoMove
-
-    /**
-     * 指定されたポイントに小さいほうの目を適用した後の状態を返す。
-     *
-     * 適用できない、またはposが範囲外の場合、NoMoveが返る。
-     * @param pos 目を適用したいポイント
-     */
-    minorFirst: (pos: number) => BoardStateNode | NoMove
+    childNode: (pos: number) => BoardStateNode | NoMove
 
     /**
      * この局面にいたる直前までに適用した手。ロール直後の場合は空となる。

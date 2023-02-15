@@ -1,10 +1,8 @@
-import {
-    boardStateNodeFromArray,
-    RootBoardStateNode,
-    wrapRootNode,
-} from '../BoardStateNodeBuilders'
+import { boardStateNodeFromArray } from '../BoardStateNodeBuilders'
 import { DicePip } from '../Dices'
 import { standardConf } from '../GameConfs'
+import { RootBoardStateNode } from '../RootBoardStateNode'
+import { wrapRootNode } from '../RootBoardStateNodeUtils'
 
 type DiceTestArg = {
     pos: number[]
@@ -325,7 +323,7 @@ function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
                     if (co.pos) {
                         const target = wrapRootNode(node, co.isMinor ?? false)
                         const found = target.apply((node) =>
-                            node.majorFirst(co.pos!)
+                            node.childNode(co.pos!)
                         ).unwrap
                         if (found.hasValue) {
                             node = {

@@ -64,7 +64,7 @@ describe('encode intermediate state', () => {
         ).root
         const node = data.moves.reduce(
             (prev: BoardStateNode, move: { from: number }) => {
-                const next = prev.majorFirst(move.from)
+                const next = prev.childNode(move.from)
                 if (!next.hasValue) {
                     throw new Error('Illegal move')
                 }

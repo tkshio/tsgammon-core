@@ -3,7 +3,7 @@ import { BoardStateNode } from '../BoardStateNode'
 import { collectNodes } from '../utils/collectNodes'
 import { CubeState } from '../CubeState'
 import { Evaluator } from './Evaluator'
-import { RootBoardStateNode } from '../BoardStateNodeBuilders'
+import { RootBoardStateNode } from '../RootBoardStateNode'
 
 /**
  * チェッカープレイとキューブアクションを判断する思考エンジンが実装するインターフェース

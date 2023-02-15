@@ -1,6 +1,6 @@
 import { BoardState } from '../BoardState'
 import { BoardStateNode, NoMove, NO_MOVE } from '../BoardStateNode'
-import { RootBoardStateNode } from '../BoardStateNodeBuilders'
+import { RootBoardStateNode } from '../RootBoardStateNode'
 import { DicePip } from '../Dices'
 import {
     InternalBoardStateNodeBuilders,
@@ -68,7 +68,7 @@ function buildNodesForHeteroDice(
     const major = majorNodeBuilder(board, pips)
 
     // 小の目を先に使った場合のノードツリー
-    const minor = minorNodeBuilder(major.node.majorFirst)(board, [
+    const minor = minorNodeBuilder(major.node.childNode)(board, [
         minorPip,
         majorPip,
     ])
@@ -225,7 +225,7 @@ function isRedundantMinor(
 
         // 着手を入れ替えた手、q/q+m p/p+nがすでにあれば冗長
         const node = majorNodes(move2.from)
-        if (node.hasValue && node.majorFirst(move1.from).hasValue) {
+        if (node.hasValue && node.childNode(move1.from).hasValue) {
             return true
         }
 
@@ -240,7 +240,7 @@ function isRedundantMinor(
                 {
                     const majorPip = move2.pip
                     const swappedMoveTo = move1.from + majorPip
-                    if (!swappedMovesNode.majorFirst(swappedMoveTo).hasValue) {
+                    if (!swappedMovesNode.childNode(swappedMoveTo).hasValue) {
                         return false
                     }
                 }

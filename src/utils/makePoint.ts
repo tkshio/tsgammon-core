@@ -1,10 +1,4 @@
 import { BoardStateNode, NoMove, NO_MOVE, wrap } from '../BoardStateNode'
-import { RootBoardStateNode, wrapRootNode } from '../BoardStateNodeBuilders'
-
-export function makePointRootNode(rootNode: RootBoardStateNode, pos: number) {
-    return wrapRootNode(rootNode, false).apply((node) => makePoint(node, pos))
-        .unwrap
-}
 
 /**
  * 指定された局面について、指定のポイントにブロックを築けるかどうかを返す
@@ -54,7 +48,7 @@ export function makePoint(
 function moveFinder(
     pos: number
 ): (node: BoardStateNode) => BoardStateNode | NoMove {
-    return (node: BoardStateNode) => node.majorFirst(pos)
+    return (node: BoardStateNode) => node.childNode(pos)
 }
 
 function pointMaker(

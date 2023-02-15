@@ -91,8 +91,7 @@ export function buildInternalBoardStateNodeBuilders(
                             }))
                         ),
                         board,
-                        majorFirst: () => NO_MOVE,
-                        minorFirst: () => NO_MOVE,
+                        childNode: () => NO_MOVE,
                         lastMoves,
                         isRedundant: false,
                         isCommitable: true,
@@ -128,9 +127,8 @@ export function buildInternalBoardStateNodeBuilders(
                     hasValue: true,
                     dices,
                     board,
-                    majorFirst: (pos: number) =>
+                    childNode: (pos: number) =>
                         childNodes.children[pos]?.node ?? NO_MOVE,
-                    minorFirst: () => NO_MOVE,
                     lastMoves,
                     isRedundant: false, // redundantの判定は後付けなので、一旦false
                     isCommitable,

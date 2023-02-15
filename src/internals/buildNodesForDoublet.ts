@@ -1,5 +1,5 @@
 import { BoardState } from '../BoardState'
-import { RootBoardStateNode } from '../BoardStateNodeBuilders'
+import { RootBoardStateNode } from '../RootBoardStateNode'
 import { DicePip } from '../Dices'
 import { Move } from '../Move'
 import {

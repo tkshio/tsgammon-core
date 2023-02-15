@@ -10,7 +10,7 @@ const nodeWithValue = boardStateNodeFromArray(
     standardConf.transition.ruleSet
 ).root
 // 上記について、2番目のポイントから可能な手のノードツリー：そこには駒はないので、値の無いツリーとなる
-const nodeNoValue = nodeWithValue.majorFirst(2)
+const nodeNoValue = nodeWithValue.childNode(2)
 
 describe('Wrapper.apply', () => {
     test('applies func if node.hasValue()', () => {
@@ -48,7 +48,7 @@ describe('Wrapper.or', () => {
             1,
             2,
             standardConf.transition.ruleSet
-        ).root.majorFirst(2)
+        ).root.childNode(2)
         const wrapped = wrap(nodeNoValue)
         expect(wrapped.or(() => nodeWithValue).unwrap.hasValue).toBeFalsy()
     })
@@ -58,7 +58,7 @@ describe('Wrapper.or', () => {
             1,
             2,
             standardConf.transition.ruleSet
-        ).root.majorFirst(2)
+        ).root.childNode(2)
         const wrapped = wrap(nodeWithValue)
         expect(
             wrapped.or(() => nodeNoValue).or(() => nodeWithValue).unwrap
@@ -71,7 +71,7 @@ describe('Wrapper.or', () => {
             1,
             2,
             standardConf.transition.ruleSet
-        ).root.majorFirst(2)
+        ).root.childNode(2)
         const wrapped = wrap(nodeWithValue)
         expect(
             wrapped.or(() => nodeWithValue).or(() => nodeNoValue).unwrap

@@ -10,7 +10,7 @@ import {
 } from '../AbsoluteMove'
 import { BoardState } from '../BoardState'
 import { BoardStateNode } from '../BoardStateNode'
-import { RootBoardStateNode } from '../BoardStateNodeBuilders'
+import { RootBoardStateNode } from '../RootBoardStateNode'
 import { Dice, DicePip } from '../Dices'
 import { EOGStatus } from '../EOGStatus'
 import { Move } from '../Move'
