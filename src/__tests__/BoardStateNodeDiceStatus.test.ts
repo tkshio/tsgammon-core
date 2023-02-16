@@ -333,7 +333,7 @@ function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
                     }
                     // co.forcedがtrue、または省略されている場合は、
                     // 小の目を先にプレイするという入れ替えの選択肢が提供されない
-                    expect(node.isRoot && node.swapped == undefined).toBe(
+                    expect(node.isRoot && node.minorFirst == undefined).toBe(
                         node.isRoot && (co.forced || co.forced == undefined)
                     )
                     expect(node.dices.map((dice) => dice.used)).toEqual(co.used)

@@ -22,9 +22,9 @@ function _wrapRootNode(
     minorFirst: boolean
 ): Wrapped<BoardStateNode> {
     function swapForMinorFirst(root: BoardStateNodeRoot, swapFirst: boolean) {
-        return swapFirst && root.swapped
-            ? { primary: root.swapped, secondary: root.root }
-            : { primary: root.root, secondary: root.swapped }
+        return swapFirst && root.minorFirst
+            ? { primary: root.minorFirst, secondary: root.root }
+            : { primary: root.root, secondary: root.minorFirst }
     }
     const wrapped: Wrapped<BoardStateNode> = {
         apply: (
@@ -41,7 +41,9 @@ function _wrapRootNode(
                 }
                 if (secondary) {
                     const result = f(secondary)
-                    return wrap(result)
+                    if (result.hasValue) {
+                        return wrap(result)
+                    }
                 }
             }
             return _wrapRootNode({ hasValue: false }, root, minorFirst) // or()に渡される // TODO: or()内のswapFirstの先取りをしてもいいかも

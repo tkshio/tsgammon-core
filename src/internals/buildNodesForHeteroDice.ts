@@ -140,7 +140,7 @@ function buildNodesForHeteroDice(
     return {
         dices,
         root: major.node,
-        swapped: minor.node,
+        minorFirst: minor.node,
         hasValue: true,
         isRoot: true,
     }

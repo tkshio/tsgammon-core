@@ -26,7 +26,7 @@ function _collectNodes(node: BoardStateNode): BoardStateNode[] {
 
 function collectNodesRootNode(node: BoardStateNodeRoot): BoardStateNode[] {
     const major: BoardStateNode[] = _collectNodes(node.root)
-    const swapped = node.swapped
+    const swapped = node.minorFirst
     if (swapped) {
         const minor = _collectNodes(swapped)
         return minor.concat(major)
