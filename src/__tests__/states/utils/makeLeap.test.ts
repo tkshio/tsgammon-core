@@ -1,7 +1,7 @@
 import { boardStateNodeFromArray } from '../../../BoardStateNodeBuilders'
 import { standardConf } from '../../../GameConfs'
-import { wrapRootNode } from '../../../RootBoardStateNodeUtils'
 import { makeLeap } from '../../../utils/makeLeap'
+import { wrapRootNode } from '../../../utils/wrapNode'
 
 describe('makeLeap()', () => {
     const node = boardStateNodeFromArray(

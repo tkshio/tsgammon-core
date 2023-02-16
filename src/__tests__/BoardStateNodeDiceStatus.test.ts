@@ -1,8 +1,9 @@
 import { boardStateNodeFromArray } from '../BoardStateNodeBuilders'
 import { DicePip } from '../Dices'
 import { standardConf } from '../GameConfs'
-import { RootBoardStateNode } from '../RootBoardStateNode'
-import { wrapRootNode } from '../RootBoardStateNodeUtils'
+import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
+import { wrapNode, wrapRootNode } from '../utils/wrapNode'
+import { BoardStateNode } from '../BoardStateNode'
 
 type DiceTestArg = {
     pos: number[]
@@ -312,31 +313,28 @@ function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
         // eslint-disable-next-line jest/valid-title
         test(name, () => {
             args.clicks.forEach((click) => {
-                let node: RootBoardStateNode = boardStateNodeFromArray(
-                    args.pos,
-                    args.diceRoll[0],
-                    args.diceRoll[1],
-                    standardConf.transition.ruleSet
-                )
+                let node: BoardStateNodeRoot | BoardStateNode =
+                    boardStateNodeFromArray(
+                        args.pos,
+                        args.diceRoll[0],
+                        args.diceRoll[1],
+                        standardConf.transition.ruleSet
+                    )
 
                 click.forEach((co) => {
                     if (co.pos) {
-                        const target = wrapRootNode(node, co.isMinor ?? false)
+                        const target = wrapNode(node, co.isMinor ?? false)
                         const found = target.apply((node) =>
                             node.childNode(co.pos!)
                         ).unwrap
                         if (found.hasValue) {
-                            node = {
-                                root: found,
-                                dices: found.dices,
-                                hasValue: true,
-                            } // 2回目以降のクリックではswappedは無視して良い
+                            node = found
                         }
                     }
                     // co.forcedがtrue、または省略されている場合は、
                     // 小の目を先にプレイするという入れ替えの選択肢が提供されない
-                    expect(node.swapped == undefined).toBe(
-                        co.forced || co.forced == undefined
+                    expect(node.isRoot && node.swapped == undefined).toBe(
+                        node.isRoot && (co.forced || co.forced == undefined)
                     )
                     expect(node.dices.map((dice) => dice.used)).toEqual(co.used)
                 })

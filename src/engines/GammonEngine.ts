@@ -1,9 +1,9 @@
 import { BoardState } from '../BoardState'
 import { BoardStateNode } from '../BoardStateNode'
-import { collectNodes } from '../utils/collectNodes'
+import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
 import { CubeState } from '../CubeState'
+import { collectNodes } from '../utils/collectNodes'
 import { Evaluator } from './Evaluator'
-import { RootBoardStateNode } from '../RootBoardStateNode'
 
 /**
  * チェッカープレイとキューブアクションを判断する思考エンジンが実装するインターフェース
@@ -44,7 +44,7 @@ export type GammonEngine = {
      * @param boardStateNode 局面
      * @returns プレイ後の局面（引数のboardStateNodeと同じ視点）。boardStateNodeの子局面が想定されているが、任意の局面を設定してもよい。また、手がない場合は引数をそのまま返す。
      */
-    checkerPlay(boardStateNode: RootBoardStateNode): BoardStateNode
+    checkerPlay(boardStateNode: BoardStateNodeRoot): BoardStateNode
 
     /**
      * ゲーム終了後に一度呼ばれる。
@@ -71,7 +71,7 @@ export function randomEngine(): GammonEngine {
         cubeResponse(): { isTake: boolean } {
             return { isTake: true }
         },
-        checkerPlay(node: RootBoardStateNode): BoardStateNode {
+        checkerPlay(node: BoardStateNodeRoot): BoardStateNode {
             const nodes = collectNodes(node).filter((node) => !node.isRedundant)
 
             if (nodes.length === 0) {
@@ -121,7 +121,7 @@ export function simpleEvalEngineWithEvaluator(ev: Evaluator): GammonEngine {
         cubeResponse(board: BoardState): { isTake: boolean } {
             return { isTake: ev.evaluate(board) > -0.5 }
         },
-        checkerPlay(node: RootBoardStateNode): BoardStateNode {
+        checkerPlay(node: BoardStateNodeRoot): BoardStateNode {
             const candidates = collectNodes(node).filter(
                 (node) => !node.isRedundant
             )

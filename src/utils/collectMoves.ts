@@ -1,4 +1,5 @@
-import { RootBoardStateNode } from '../RootBoardStateNode'
+import { BoardStateNode } from '../BoardStateNode'
+import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
 import { Move } from '../Move'
 import { collectNodes } from './collectNodes'
 
@@ -7,9 +8,14 @@ import { collectNodes } from './collectNodes'
  * @param node 局面
  */
 
-export function collectMoves(node: RootBoardStateNode): Moves[] {
-    const nodes = collectNodes(node)
-    return nodes.map((n) => ({
+export function collectMoves(
+    node: BoardStateNode | BoardStateNodeRoot
+): Moves[] {
+    return node.isRoot ? collectMovesRootNode(node) : _collectMoves(node)
+}
+
+function _collectMoves(node: BoardStateNode): Moves[] {
+    return collectNodes(node).map((n) => ({
         moves: n.lastMoves,
         isRedundant: n.isRedundant,
     }))
@@ -23,4 +29,16 @@ export type Moves = {
     moves: Move[]
     /** 指し手を適用した後に同じ結果になる手が他に存在するなら、true */
     isRedundant: boolean
+}
+
+/**
+ * 指定された局面について、冗長な手も含めて、可能な手を全て格納した配列を返す
+ * @param node 局面
+ */
+
+function collectMovesRootNode(node: BoardStateNodeRoot): Moves[] {
+    return collectNodes(node).map((n) => ({
+        moves: n.lastMoves,
+        isRedundant: n.isRedundant,
+    }))
 }

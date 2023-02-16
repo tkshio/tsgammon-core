@@ -1,11 +1,15 @@
 import { boardState } from '../../BoardState'
 import { boardStateNode } from '../../BoardStateNodeBuilders'
+import { BoardStateNodeRoot } from '../../BoardStateNodeRoot'
 import { standardConf } from '../../GameConfs'
-import { makePointRootNode } from '../../RootBoardStateNodeUtils'
 import { makePoint } from '../../utils/makePoint'
+import { wrapNode } from '../../utils/wrapNode'
 
 const initialPos = standardConf.initialPos
 
+function makePointRootNode(root: BoardStateNodeRoot, pos: number) {
+    return wrapNode(root).apply((node) => makePoint(node, pos)).unwrap
+}
 describe('makePoint', () => {
     test('returns node for point-making', () => {
         const node = boardStateNode(boardState(initialPos), {

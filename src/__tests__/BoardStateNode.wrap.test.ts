@@ -1,4 +1,4 @@
-import { wrap } from '../BoardStateNode'
+import { wrap } from '../utils/wrap'
 import { boardStateNodeFromArray } from '../BoardStateNodeBuilders'
 import { standardConf } from '../GameConfs'
 

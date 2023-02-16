@@ -1,10 +1,11 @@
-import { BoardStateNode, NoMove, NO_MOVE, wrap } from '../BoardStateNode'
+import { BoardStateNode, NoMove, NO_MOVE } from '../BoardStateNode'
+import { wrap } from './wrap'
 
 /**
  * 与えられたBoardStateNodeについて、指定された位置へ駒を動かすムーブがあれば、それを返す
  * @param node
  * @param pos
- * @param useMinorFirst
+ * @param minorFirst 小さい目を先に使うならtrue
  * @returns
  */
 export function makeLeap(

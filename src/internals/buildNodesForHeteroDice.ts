@@ -1,6 +1,6 @@
 import { BoardState } from '../BoardState'
 import { BoardStateNode, NoMove, NO_MOVE } from '../BoardStateNode'
-import { RootBoardStateNode } from '../RootBoardStateNode'
+import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
 import { DicePip } from '../Dices'
 import {
     InternalBoardStateNodeBuilders,
@@ -12,7 +12,7 @@ import {
 
 export function buildHeteroDiceNodeBuilder(
     internalNodeBuilders: InternalBoardStateNodeBuilders
-): (board: BoardState, dice1: DicePip, dice2: DicePip) => RootBoardStateNode {
+): (board: BoardState, dice1: DicePip, dice2: DicePip) => BoardStateNodeRoot {
     // 共通ルールの設定
     const commonBuilder =
         // 最大限のダイスを使う
@@ -53,7 +53,7 @@ function buildNodesForHeteroDice(
     minorNodeBuilder: (
         majorNodes: (pos: number) => BoardStateNode | NoMove
     ) => InternalRecursiveNodeBuilder
-): RootBoardStateNode {
+): BoardStateNodeRoot {
     // ゾロ目は対応しない
     if (dice1 === dice2) {
         throw Error('Unexpected doublet: ' + dice1 + ',' + dice2)
@@ -84,12 +84,14 @@ function buildNodesForHeteroDice(
                       { pip: dice2, used: true },
                   ],
                   hasValue: true,
+                  isRoot: true,
               }
             : // 小の目だけが使えないので、大の目のみ使用
               {
                   root: major.node,
                   dices: major.node.dices,
                   hasValue: true,
+                  isRoot: true,
               }
     }
 
@@ -99,18 +101,25 @@ function buildNodesForHeteroDice(
             root: minor.node,
             dices: minor.node.dices,
             hasValue: true,
+            isRoot: true,
         }
     }
 
     // ダイスを1つしか使えないほうは採用しない
     if (!canUseBothRolls(minor)) {
-        return { root: major.node, dices: major.node.dices, hasValue: true }
+        return {
+            root: major.node,
+            dices: major.node.dices,
+            hasValue: true,
+            isRoot: true,
+        }
     }
     if (!canUseBothRolls(major)) {
         return {
             root: minor.node,
             dices: minor.node.dices,
             hasValue: true,
+            isRoot: true,
         }
     }
 
@@ -133,6 +142,7 @@ function buildNodesForHeteroDice(
         root: major.node,
         swapped: minor.node,
         hasValue: true,
+        isRoot: true,
     }
 
     function canUseBothRolls(arg: { node: BoardStateNode; canUse: number }) {

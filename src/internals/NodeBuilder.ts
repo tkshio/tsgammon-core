@@ -1,12 +1,29 @@
 // 局面ツリー構築用の型
 
 export type NodeBuilders<NODE, TMP_NODE, CHILDREN> = {
+    /**
+     * 与えられた仮ノードが末端の局面なら、末端ノードを生成して返す
+     * @param node 仮ノード
+     * @returns nodeが末端なら生成した末端ノード、そうでなければ{hasValue:false}
+     */
     ifLeafThenBuild: (node: TMP_NODE) => HasValueOrNot<NODE>
+    /**
+     * 与えられた仮ノードと子ノードの集合から、枝ノードを生成する
+     * @param node 仮ノード
+     * @param childNodes buildChildNodes()によって生成された、nodeの子ノード
+     * @returns childNodesを子ノードにもつ枝ノード
+     */
     buildBranchNode: (node: TMP_NODE, childNodes: CHILDREN) => NODE
-    buildChildNodes(
+    /**
+     * 与えられた仮ノードに対し、recurse()関数を使って、子ノードの集合を生成する
+     * @param parent 仮ノード
+     * @param recurse 子ノードとなる仮ノードから、子ノードを生成する関数
+     * @returns parent(から生成される枝ノード)の子ノードの集合
+     */
+    buildChildNodes: (
         parent: TMP_NODE,
-        recurse: (parent: TMP_NODE) => NODE
-    ): CHILDREN
+        recurse: (tmpChild: TMP_NODE) => NODE
+    ) => CHILDREN
 }
 
 export type HasValueOrNot<T> =

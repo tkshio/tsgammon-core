@@ -1,4 +1,5 @@
-import { BoardStateNode, NoMove, NO_MOVE, wrap } from '../BoardStateNode'
+import { BoardStateNode, NoMove, NO_MOVE } from '../BoardStateNode'
+import { wrap } from './wrap'
 
 /**
  * 指定された局面について、指定のポイントにブロックを築けるかどうかを返す

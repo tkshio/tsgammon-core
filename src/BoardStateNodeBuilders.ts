@@ -5,7 +5,7 @@ import { eog } from './EOGStatus'
 import { buildDoubletNodeBuilder } from './internals/buildNodesForDoublet'
 import { buildHeteroDiceNodeBuilder } from './internals/buildNodesForHeteroDice'
 import { buildInternalBoardStateNodeBuilders } from './internals/internalBoardStateNodeBuilders'
-import { RootBoardStateNode } from './RootBoardStateNode'
+import { BoardStateNodeRoot } from './BoardStateNodeRoot'
 import { RuleSet } from './rules/RuleSet'
 import { standardRuleSet } from './rules/standardRuleSet'
 
@@ -15,7 +15,7 @@ import { standardRuleSet } from './rules/standardRuleSet'
 export type BoardStateNodeBuilder = (
     board: BoardState,
     dice: DiceRoll
-) => RootBoardStateNode
+) => BoardStateNodeRoot
 
 /**
  * 与えられた盤面とダイス目のペアから、BoardStateNodeを生成する
@@ -28,7 +28,7 @@ export function boardStateNode(
     board: BoardState,
     dicePips: DiceRoll,
     ruleSet: RuleSet = standardRuleSet
-): RootBoardStateNode {
+): BoardStateNodeRoot {
     return buildBoardStateNodeBuilder(ruleSet)(board, dicePips)
 }
 
@@ -77,7 +77,7 @@ export function boardStateNodeFromArray(
     dice2: DicePip,
     ruleSet: RuleSet,
     bornOffs: [number, number] = [0, 0]
-): RootBoardStateNode {
+): BoardStateNodeRoot {
     const board = boardState(pieces, bornOffs)
     return boardStateNode(board, { dice1, dice2 }, ruleSet)
 }
@@ -93,6 +93,7 @@ function emptyNode(board: BoardState, dices: Dice[]): BoardStateNode {
         isRedundant: false,
         isCommitable: true,
         eogStatus: eog(),
+        isRoot: false,
     }
 }
 

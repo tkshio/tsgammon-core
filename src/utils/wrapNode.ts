@@ -1,24 +1,27 @@
-import { BoardStateNode, wrap, Wrapped } from './BoardStateNode'
-import { RootBoardStateNode } from './RootBoardStateNode'
-import { makePoint } from './utils/makePoint'
+import { BoardStateNode } from '../BoardStateNode'
+import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
+import { wrap, Wrapped } from './wrap'
 
-export function makePointRootNode(rootNode: RootBoardStateNode, pos: number) {
-    return wrapRootNode(rootNode, false).apply((node) => makePoint(node, pos))
-        .unwrap
+export function wrapNode(
+    node: BoardStateNode | BoardStateNodeRoot,
+    minorFirst = false
+) {
+    return node.isRoot ? wrapRootNode(node, minorFirst) : wrap(node)
 }
 
 export function wrapRootNode(
-    root: RootBoardStateNode,
-    swapFirst: boolean
+    root: BoardStateNodeRoot,
+    minorFirst: boolean
 ): Wrapped<BoardStateNode> {
-    return _wrapRootNode(root, { hasValue: false }, swapFirst)
+    return _wrapRootNode(root, { hasValue: false }, minorFirst)
 }
-export function _wrapRootNode(
-    root: RootBoardStateNode | { hasValue: false },
-    was: RootBoardStateNode | { hasValue: false },
-    swapFirst: boolean
+
+function _wrapRootNode(
+    root: BoardStateNodeRoot | { hasValue: false },
+    was: BoardStateNodeRoot | { hasValue: false },
+    minorFirst: boolean
 ): Wrapped<BoardStateNode> {
-    function applySwapFirst(root: RootBoardStateNode, swapFirst: boolean) {
+    function swapForMinorFirst(root: BoardStateNodeRoot, swapFirst: boolean) {
         return swapFirst && root.swapped
             ? { primary: root.swapped, secondary: root.root }
             : { primary: root.root, secondary: root.swapped }
@@ -28,7 +31,10 @@ export function _wrapRootNode(
             f: (a: BoardStateNode) => BoardStateNode | { hasValue: false }
         ): Wrapped<BoardStateNode> => {
             if (root.hasValue) {
-                const { primary, secondary } = applySwapFirst(root, swapFirst)
+                const { primary, secondary } = swapForMinorFirst(
+                    root,
+                    minorFirst
+                )
                 const result = f(primary)
                 if (result.hasValue) {
                     return wrap(result)
@@ -38,13 +44,16 @@ export function _wrapRootNode(
                     return wrap(result)
                 }
             }
-            return _wrapRootNode({ hasValue: false }, root, swapFirst) // or()に渡される // TODO: or()内のswapFirstの先取りをしてもいいかも
+            return _wrapRootNode({ hasValue: false }, root, minorFirst) // or()に渡される // TODO: or()内のswapFirstの先取りをしてもいいかも
         },
         or: (
             f: (a: BoardStateNode) => BoardStateNode | { hasValue: false }
         ): Wrapped<BoardStateNode> => {
             if (!root.hasValue && was.hasValue) {
-                const { primary, secondary } = applySwapFirst(was, swapFirst)
+                const { primary, secondary } = swapForMinorFirst(
+                    was,
+                    minorFirst
+                )
                 const result = f(primary)
                 if (result.hasValue) {
                     return wrap(result)
@@ -56,7 +65,7 @@ export function _wrapRootNode(
             }
             // rootがapply()で成功している(のでor()は何もしない)か、
             // 適用した関数が失敗しているので、与引数をそのまま次に渡す
-            return _wrapRootNode({ hasValue: false }, was, swapFirst)
+            return _wrapRootNode({ hasValue: false }, was, minorFirst)
         },
         unwrap: root.hasValue ? root.root : { hasValue: false },
     }

@@ -1,5 +1,5 @@
 import { BoardState } from '../BoardState'
-import { RootBoardStateNode } from '../RootBoardStateNode'
+import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
 import { DicePip } from '../Dices'
 import { Move } from '../Move'
 import {
@@ -14,7 +14,7 @@ export function buildDoubletNodeBuilder(
     board: BoardState,
     dicePip: DicePip,
     countForDoublet: number
-) => RootBoardStateNode {
+) => BoardStateNodeRoot {
     const nodeBuilder = recursiveNodeBuilder(
         addDeduplicator(internalNodeBuilders)
     )
@@ -23,7 +23,7 @@ export function buildDoubletNodeBuilder(
             board,
             Array(countForDoublet).fill(dicePip)
         ).node
-        return { root: root, dices: root.dices, hasValue: true }
+        return { root: root, dices: root.dices, hasValue: true, isRoot: true }
     }
 }
 

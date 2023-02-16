@@ -96,6 +96,7 @@ export function buildInternalBoardStateNodeBuilders(
                         isRedundant: false,
                         isCommitable: true,
                         eogStatus,
+                        isRoot: false,
                     },
                     canUse: 0,
                 },
@@ -132,7 +133,8 @@ export function buildInternalBoardStateNodeBuilders(
                     lastMoves,
                     isRedundant: false, // redundantの判定は後付けなので、一旦false
                     isCommitable,
-                    eogStatus: inGame, // eogならleafNodeの生成に遷移するので、常にfalse
+                    eogStatus: inGame, // eogならleafNodeの生成に遷移するので、常にfalse,
+                    isRoot: false,
                 },
                 canUse: 1 + childNodes.maxUsage,
             }
