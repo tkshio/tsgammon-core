@@ -1,5 +1,6 @@
 import { BoardState } from '../BoardState'
 import { BoardStateNode } from '../BoardStateNode'
+import { boardStateNode } from '../BoardStateNodeBuilders'
 import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
 import { CubeState } from '../CubeState'
 import { collectNodes } from '../utils/collectNodes'
@@ -44,7 +45,9 @@ export type GammonEngine = {
      * @param boardStateNode 局面
      * @returns プレイ後の局面（引数のboardStateNodeと同じ視点）。boardStateNodeの子局面が想定されているが、任意の局面を設定してもよい。また、手がない場合は引数をそのまま返す。
      */
-    checkerPlay(boardStateNode: BoardStateNodeRoot): BoardStateNode
+    checkerPlay(
+        boardStateNode: BoardStateNodeRoot | BoardStateNode
+    ): BoardStateNode
 
     /**
      * ゲーム終了後に一度呼ばれる。
@@ -121,14 +124,14 @@ export function simpleEvalEngineWithEvaluator(ev: Evaluator): GammonEngine {
         cubeResponse(board: BoardState): { isTake: boolean } {
             return { isTake: ev.evaluate(board) > -0.5 }
         },
-        checkerPlay(node: BoardStateNodeRoot): BoardStateNode {
+        checkerPlay(node: BoardStateNodeRoot | BoardStateNode): BoardStateNode {
             const candidates = collectNodes(node).filter(
                 (node) => !node.isRedundant
             )
             const bestEv = candidates
-                .map((node) => ({ node, e: ev.evaluate(node.board) }))
+                .map((n) => ({ node: n, e: ev.evaluate(n.board) }))
                 .reduce((prev, cur) => (prev.e > cur.e ? prev : cur), {
-                    node: node.root,
+                    node: node.isRoot ? node.root : node,
                     e: Number.NEGATIVE_INFINITY,
                 })
             return bestEv.node
