@@ -77,19 +77,19 @@ export function buildInternalBoardStateNodeBuilders(
             }
 
             const { unusedDices, usedDices, board, lastMoves } = tmpNode
+            // unusedDicesが空でない場合（＝途中でEoGに達した場合）、
+            // 未使用のダイスを使用不可としてマークする
+            const markedUnusedDices = unusedDices.map((dice) => ({
+                pip: dice.pip,
+                used: true,
+            }))
+
             return {
                 hasValue: true,
                 value: {
                     node: {
                         hasValue: true,
-                        dices: usedDices.concat(
-                            // unusedDicesが空でない場合（＝途中でEoGに達した場合）、
-                            // 未使用のダイスを使用不可としてマークしする
-                            unusedDices.map((dice) => ({
-                                pip: dice.pip,
-                                used: true,
-                            }))
-                        ),
+                        dices: usedDices.concat(markedUnusedDices),
                         board,
                         childNode: () => NO_MOVE,
                         lastMoves,
@@ -140,7 +140,7 @@ export function buildInternalBoardStateNodeBuilders(
             }
         },
 
-        buildChildNodes(
+        prepareChildNodes(
             parent: TmpNode,
             recurse: (tmpNode: TmpNode) => NodeOrNoMove
         ): {

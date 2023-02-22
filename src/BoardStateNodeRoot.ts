@@ -1,10 +1,10 @@
 import { BoardStateNode } from './BoardStateNode'
-import { Dice } from './Dices'
+import { DicePip } from './Dices'
 
 export type BoardStateNodeRoot = {
     root: BoardStateNode
     minorFirst?: BoardStateNode
-    dices: Dice[]
+    dices: DicePip[]
     hasValue: true
     isRoot: true
 }

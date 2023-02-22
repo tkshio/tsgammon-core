@@ -10,7 +10,7 @@ export type NodeBuilders<NODE, TMP_NODE, CHILDREN> = {
     /**
      * 与えられた仮ノードと子ノードの集合から、枝ノードを生成する
      * @param node 仮ノード
-     * @param childNodes buildChildNodes()によって生成された、nodeの子ノード
+     * @param childNodes prepareChildNodes()によって生成された、nodeの子ノード
      * @returns childNodesを子ノードにもつ枝ノード
      */
     buildBranchNode: (node: TMP_NODE, childNodes: CHILDREN) => NODE
@@ -20,7 +20,7 @@ export type NodeBuilders<NODE, TMP_NODE, CHILDREN> = {
      * @param recurse 子ノードとなる仮ノードから、子ノードを生成する関数
      * @returns parent(から生成される枝ノード)の子ノードの集合
      */
-    buildChildNodes: (
+    prepareChildNodes: (
         parent: TMP_NODE,
         recurse: (tmpChild: TMP_NODE) => NODE
     ) => CHILDREN
@@ -43,7 +43,7 @@ export function buildRecursiveNodeBuilder<N, T, C>(
             return node.value
         } else {
             // それ以外なら、一手進めた局面のノードのリストを生成し、中間ノードを生成する
-            const children = nodeBuilders.buildChildNodes(
+            const children = nodeBuilders.prepareChildNodes(
                 tmpNode,
                 recursiveNodeBuilder
             )

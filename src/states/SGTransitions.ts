@@ -57,7 +57,7 @@ function doOpening(
         const boardState = state.boardState
         if (needReRoll(openingRoll)) {
             // 同じ目なら、再度Openingへ遷移
-            return openingState(boardState, openingRoll.dice1)
+            return openingState(boardState, openingRoll)
         } else {
             // そうでなければ、オープニングロールのダイス目を引数として、大きい目を出した方のInPlayへ遷移
             const isRed = isRedPlayerFirst(openingRoll)

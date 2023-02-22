@@ -19,11 +19,10 @@ export function buildDoubletNodeBuilder(
         addDeduplicator(internalNodeBuilders)
     )
     return (board: BoardState, dicePip: DicePip, countForDoublet: number) => {
-        const root = nodeBuilder(
-            board,
-            Array(countForDoublet).fill(dicePip)
-        ).node
-        return { root: root, dices: root.dices, hasValue: true, isRoot: true }
+        const dices = Array(countForDoublet).fill(dicePip)
+
+        const root = nodeBuilder(board, dices).node
+        return { root, dices, hasValue: true, isRoot: true }
     }
 }
 
@@ -52,8 +51,8 @@ function addDeduplicator(
                 return maybeNode // {hasValue: false}
             }
         },
-        buildChildNodes(parent, recurse) {
-            return nodeBuilders.buildChildNodes(
+        prepareChildNodes(parent, recurse) {
+            return nodeBuilders.prepareChildNodes(
                 {
                     ...parent,
                     isRedundantAlready:

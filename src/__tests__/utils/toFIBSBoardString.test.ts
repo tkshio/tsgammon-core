@@ -28,14 +28,13 @@ describe('encode BoardState', () => {
 describe('encode BoardStateNode', () => {
     test.each(testDataWithRoll)('encodes $title', (data) => {
         const { myBearOff = 0, oppBearOff = 0 } = data
-        const root = boardStateNodeFromArray(
+        const node = boardStateNodeFromArray(
             data.pos,
             data.roll.dice1,
             data.roll.dice2,
             standardConf.transition.ruleSet,
             [myBearOff, oppBearOff]
-        )
-        const node = { ...root.root, dices: root.dices }
+        ).root
         const opt = {
             player: data.player,
             opponent: data.opponent,

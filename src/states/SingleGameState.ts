@@ -11,7 +11,7 @@ import {
 import { BoardState } from '../BoardState'
 import { BoardStateNode } from '../BoardStateNode'
 import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
-import { Dice, DicePip } from '../Dices'
+import { Dice, DiceRoll } from '../Dices'
 import { EOGStatus } from '../EOGStatus'
 import { Move } from '../Move'
 import { Ply } from '../Ply'
@@ -33,7 +33,7 @@ type _SGState = {
 
 export type SGOpening = Omit<_SGState, 'lastPly'> & {
     tag: 'SGOpening'
-    dicePip?: DicePip
+    diceRoll?: DiceRoll
 }
 
 type _SGInPlay = _SGState & {
@@ -88,12 +88,12 @@ export type SGEoGNoGame = _SGEoG & {
 
 export function openingState(
     boardState: BoardState,
-    dicePip: DicePip | undefined
+    diceRoll?: DiceRoll
 ): SGOpening {
     const absBoard = whiteViewAbsoluteBoard(boardState)
     return {
         tag: 'SGOpening',
-        dicePip,
+        diceRoll,
         absBoard,
         boardState,
     }
@@ -166,14 +166,14 @@ function inPlayStateWithNodeRed(
     state: SGInPlayRed,
     node: BoardStateNode
 ): SGInPlayRed {
-    return inPlayStateRed(state.rootNode, node, toPlyRed(state))
+    return inPlayStateRed(state.rootNode, node, toPlyRed(state, node))
 }
 
 function inPlayStateWithNodeWhite(
     state: SGInPlayWhite,
     node: BoardStateNode
 ): SGInPlayWhite {
-    return inPlayStateWhite(state.rootNode, node, toPlyWhite(state))
+    return inPlayStateWhite(state.rootNode, node, toPlyWhite(state, node))
 }
 
 export function toPly(

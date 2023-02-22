@@ -60,8 +60,7 @@ function buildNodesForHeteroDice(
     }
 
     // ダイスの大小を識別する
-    const [pips, isMajorFirst] =
-        dice1 > dice2 ? [[dice1, dice2], true] : [[dice2, dice1], false]
+    const pips = dice1 > dice2 ? [dice1, dice2] : [dice2, dice1]
     const [majorPip, minorPip] = pips
 
     // 大の目を先に使った場合のノードツリー
@@ -79,17 +78,14 @@ function buildNodesForHeteroDice(
             ? // どちらのダイスでも全く動かせない場合は、オリジナルのダイス順で返す
               {
                   root: major.node,
-                  dices: [
-                      { pip: dice1, used: true },
-                      { pip: dice2, used: true },
-                  ],
+                  dices: [dice1, dice2],
                   hasValue: true,
                   isRoot: true,
               }
             : // 小の目だけが使えないので、大の目のみ使用
               {
                   root: major.node,
-                  dices: major.node.dices,
+                  dices: [dice1, dice2],
                   hasValue: true,
                   isRoot: true,
               }
@@ -99,7 +95,7 @@ function buildNodesForHeteroDice(
     if (hasNoMove(major)) {
         return {
             root: minor.node,
-            dices: minor.node.dices,
+            dices: [dice1, dice2],
             hasValue: true,
             isRoot: true,
         }
@@ -109,7 +105,7 @@ function buildNodesForHeteroDice(
     if (!canUseBothRolls(minor)) {
         return {
             root: major.node,
-            dices: major.node.dices,
+            dices: [dice1, dice2],
             hasValue: true,
             isRoot: true,
         }
@@ -117,28 +113,14 @@ function buildNodesForHeteroDice(
     if (!canUseBothRolls(major)) {
         return {
             root: minor.node,
-            dices: minor.node.dices,
+            dices: [dice1, dice2],
             hasValue: true,
             isRoot: true,
         }
     }
 
-    // どちらのダイスも使えるので、本来のダイス順に戻して返す
-    const majorDices = major.node.dices
-    const minorDices = minor.node.dices
-    const [majorDie, minorDie] = [
-        {
-            pip: majorDices[0].pip,
-            used: majorDices[0].used && minorDices[1].used,
-        },
-        {
-            pip: majorDices[1].pip,
-            used: majorDices[1].used && minorDices[0].used,
-        },
-    ]
-    const dices = isMajorFirst ? [majorDie, minorDie] : [minorDie, majorDie]
     return {
-        dices,
+        dices: [dice1, dice2],
         root: major.node,
         minorFirst: minor.node,
         hasValue: true,

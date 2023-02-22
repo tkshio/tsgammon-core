@@ -336,7 +336,9 @@ function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
                     expect(node.isRoot && node.minorFirst == undefined).toBe(
                         node.isRoot && (co.forced || co.forced == undefined)
                     )
-                    expect(node.dices.map((dice) => dice.used)).toEqual(co.used)
+                    expect(
+                        node.isRoot && node.root.dices.map((dice) => dice.used)
+                    ).toEqual(co.used)
                 })
             })
         })
