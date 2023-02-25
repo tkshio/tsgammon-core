@@ -2,7 +2,7 @@ import { boardStateNodeFromArray } from '../BoardStateNodeBuilders'
 import { DicePip } from '../Dices'
 import { standardConf } from '../GameConfs'
 import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
-import { wrapNode, wrapRootNode } from '../utils/wrapNode'
+import { wrapNode } from '../utils/wrapNode'
 import { BoardStateNode } from '../BoardStateNode'
 
 type DiceTestArg = {
@@ -64,9 +64,12 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
     {
         name: 'changes dice status for sub nodes (eog)',
         args: {
+            // prettier-ignore
             pos: [
-                0, 0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                /*bar*/ 0, 0, 0, 1, 0, 0, 0,
+                0, 
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 1, 0, 0,
+                0,
             ],
             diceRoll: [3, 1],
             clicks: [
@@ -99,6 +102,58 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
         },
     },
     {
+        name: 'must use higher number first',
+        args: {
+            pos:
+                // prettier-ignore
+                [
+                0, 
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 1, 0, /*bar*/ 0, -2, 0, 0, 0, 1,
+                0,
+            ],
+            diceRoll: [1, 2],
+            clicks: [
+                [
+                    { used: [false, false], forced: true },
+                    {
+                        pos: 17,
+                        used: [true, false],
+                        forced: true,
+                        isMinor: true,
+                    },
+                    { pos: 24, used: [true, true] },
+                ],
+            ],
+        },
+    },
+    {
+        name: 'must use lower number first',
+        args: {
+            pos:
+                // prettier-ignore
+                [
+                0, 
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 1, /*bar*/ 0, 0,-2, 0, 1,-2,
+                0,
+            ],
+            diceRoll: [1, 2],
+            clicks: [
+                [
+                    { used: [false, false], forced: true },
+                    {
+                        pos: 18,
+                        used: [true, false],
+                        forced: true,
+                        isMinor: true,
+                    },
+                    { pos: 23, used: [true, true] },
+                ],
+            ],
+        },
+    },
+    {
         name: "can't use higher number",
         args: {
             pos: [
@@ -110,12 +165,11 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
             clicks: [
                 // 小の目先行なら動かせる
                 [
-                    { used: [false, true], forced: true },
+                    { used: [true, false], forced: true },
                     {
                         pos: 20,
                         isMinor: true,
                         used: [true, true],
-                        forced: true,
                     },
                 ],
             ],
@@ -132,7 +186,7 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
             clicks: [
                 [
                     { used: [false, true], forced: true },
-                    { pos: 23, used: [true, true], forced: true },
+                    { pos: 23, used: [true, true] },
                 ],
             ],
         },
@@ -333,12 +387,10 @@ function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
                     }
                     // co.forcedがtrue、または省略されている場合は、
                     // 小の目を先にプレイするという入れ替えの選択肢が提供されない
-                    expect(node.isRoot && node.minorFirst == undefined).toBe(
+                    expect(node.isRoot && node.alternate == undefined).toBe(
                         node.isRoot && (co.forced || co.forced == undefined)
                     )
-                    expect(
-                        node.isRoot && node.root.dices.map((dice) => dice.used)
-                    ).toEqual(co.used)
+                    expect(node.dices.map((dice) => dice.used)).toEqual(co.used)
                 })
             })
         })

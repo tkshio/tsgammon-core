@@ -16,8 +16,8 @@ export function findMove(
     useMinorFirst = false
 ): BoardStateNode | NoMove {
     const target = node.isRoot
-        ? useMinorFirst && node.minorFirst
-            ? node.minorFirst
+        ? useMinorFirst && node.alternate
+            ? node.alternate
             : node.root
         : node
     return target.childNode(pos)

@@ -1,18 +1,19 @@
 import { boardState, BoardState } from '../BoardState'
 import { BoardStateNode } from '../BoardStateNode'
+import { Dice, DiceRoll0 } from '../Dices'
 import { FIBSCube } from './FIBSCube'
-import { DicePip, DiceRoll } from '../Dices'
 
+import { nodeWithEmptyDice } from '../BoardStateNodeBuilders'
 import {
+    COLOUR,
+    DIRECTION,
+    encodeFIBSBoardString,
     FIBSBoard,
     initBoard,
     TURN,
-    encodeFIBSBoardString,
-    COLOUR,
-    DIRECTION,
 } from './FIBSBoard'
 import { FIBSScore } from './FIBSState'
-import { nodeWithEmptyDice } from '../BoardStateNodeBuilders'
+import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
 
 /**
  * BoardState/BoardStateNode/number[]で表された状況を、FIBS Clientの仕様で
@@ -33,7 +34,7 @@ import { nodeWithEmptyDice } from '../BoardStateNodeBuilders'
  */
 export function toFIBSBoard(
     arg: {
-        board: number[] | BoardState | BoardStateNode
+        board: number[] | BoardState | BoardStateNode | BoardStateNodeRoot
         cube?: FIBSCube
         player?: string
         opponent?: string
@@ -46,15 +47,26 @@ export function toFIBSBoard(
         omitUnusedDice?: boolean
     } = {}
 ): string {
-    const boardOrNode = Array.isArray(arg.board)
-        ? boardState(arg.board)
-        : arg.board
-
-    const flagged: BoardStateNode | (BoardState & { hasValue: false }) = {
-        hasValue: false,
-        ...boardOrNode,
+    function toNode(
+        board: BoardState | BoardStateNode | BoardStateNodeRoot
+    ): BoardStateNode {
+        const labeled:
+            | ({ isRoot: false; hasValue: false } & BoardState)
+            | ({ isRoot: false } & BoardStateNode)
+            | BoardStateNodeRoot = {
+            isRoot: false,
+            hasValue: false,
+            ...board,
+        }
+        return labeled.isRoot
+            ? { ...labeled.root, dices: labeled.dices }
+            : labeled.hasValue
+            ? labeled
+            : nodeWithEmptyDice(labeled)
     }
-    const node = flagged.hasValue ? flagged : nodeWithEmptyDice(flagged)
+    const node = Array.isArray(arg.board)
+        ? nodeWithEmptyDice(boardState(arg.board))
+        : toNode(arg.board)
     const cube = {
         cubeValue: 1,
         playerMayDouble: true,
@@ -95,15 +107,16 @@ function boardStateToFIBSBoard(
 
     const board = node.board
     const dices = omitUnusedDice
-        ? node.dices.filter((dice) => !dice.used)
-        : node.dices
-
-    const diceRoll: DiceRoll | { dice1: DicePip | 0; dice2: 0 } =
-        dices.length >= 2
+        ? omitUnused(node.dices.filter((dice) => !dice.used))
+        : { dice1: node.dices[0]?.pip ?? 0, dice2: node.dices[1]?.pip ?? 0 }
+    function omitUnused(dices: Dice[]): DiceRoll0 {
+        return dices.length >= 2
             ? { dice1: dices[0].pip, dice2: dices[1].pip }
             : dices.length === 1
             ? { dice1: dices[0].pip, dice2: 0 }
             : { dice1: 0, dice2: 0 }
+    }
+
     const canMove = node.hasValue
         ? node.dices.filter((dice) => !dice.used).length
         : 0
@@ -129,7 +142,7 @@ function boardStateToFIBSBoard(
         opponent,
         turn,
         pos,
-        ...diceRoll,
+        ...dices,
         playerOnHome,
         opponentOnHome,
         ...cube,

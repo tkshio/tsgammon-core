@@ -3,6 +3,7 @@
  */
 export type DiceRoll = { dice1: DicePip; dice2: DicePip }
 
+export type DiceRoll0 = { dice1: DicePip | 0; dice2: DicePip | 0 }
 /**
  * ダイスの目のペアを生成する
  *

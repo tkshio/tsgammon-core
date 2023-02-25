@@ -19,10 +19,10 @@ export function buildDoubletNodeBuilder(
         addDeduplicator(internalNodeBuilders)
     )
     return (board: BoardState, dicePip: DicePip, countForDoublet: number) => {
-        const dices = Array(countForDoublet).fill(dicePip)
+        const dicePips = Array(countForDoublet).fill(dicePip)
 
-        const root = nodeBuilder(board, dices).node
-        return { root, dices, hasValue: true, isRoot: true }
+        const root = nodeBuilder(board, dicePips).node
+        return { root, dices: root.dices, hasValue: true, isRoot: true }
     }
 }
 

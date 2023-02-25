@@ -18,7 +18,11 @@ describe('encode BoardState', () => {
         }
         expect(
             toFIBSBoard(
-                { board, cube: data.cube, matchScore: data.matchScore },
+                {
+                    board,
+                    cube: data.cube,
+                    matchScore: data.matchScore,
+                },
                 opt
             )
         ).toStrictEqual(data.fibs)
@@ -34,7 +38,7 @@ describe('encode BoardStateNode', () => {
             data.roll.dice2,
             standardConf.transition.ruleSet,
             [myBearOff, oppBearOff]
-        ).root
+        )
         const opt = {
             player: data.player,
             opponent: data.opponent,
@@ -44,7 +48,11 @@ describe('encode BoardStateNode', () => {
         }
         expect(
             toFIBSBoard(
-                { board: node, cube: data.cube, matchScore: data.matchScore },
+                {
+                    board: node,
+                    cube: data.cube,
+                    matchScore: data.matchScore,
+                },
                 opt
             )
         ).toStrictEqual(data.fibs)
@@ -60,7 +68,7 @@ describe('encode intermediate state', () => {
             data.roll.dice2,
             standardConf.transition.ruleSet,
             [myBearOff, oppBearOff]
-        ).root
+        )
         const node = data.moves.reduce(
             (prev: BoardStateNode, move: { from: number }) => {
                 const next = prev.childNode(move.from)
@@ -69,7 +77,7 @@ describe('encode intermediate state', () => {
                 }
                 return next
             },
-            initialNode
+            initialNode.root
         )
         const opt = {
             player: data.player,
@@ -81,7 +89,11 @@ describe('encode intermediate state', () => {
         }
         expect(
             toFIBSBoard(
-                { board: node, cube: data.cube, matchScore: data.matchScore },
+                {
+                    board: node,
+                    cube: data.cube,
+                    matchScore: data.matchScore,
+                },
                 opt
             )
         ).toStrictEqual(data.fibs)

@@ -60,9 +60,17 @@ function buildNodesForHeteroDice(
     }
 
     // ダイスの大小を識別する
-    const pips = dice1 > dice2 ? [dice1, dice2] : [dice2, dice1]
+    const [pips, isMajorFirst] =
+        dice1 > dice2 ? [[dice1, dice2], true] : [[dice2, dice1], false]
     const [majorPip, minorPip] = pips
-
+    const useMajorDiceOnly = [
+        { pip: dice1, used: !isMajorFirst },
+        { pip: dice2, used: isMajorFirst },
+    ]
+    const useMinorDiceOnly = [
+        { pip: dice1, used: isMajorFirst },
+        { pip: dice2, used: !isMajorFirst },
+    ]
     // 大の目を先に使った場合のノードツリー
     const major = majorNodeBuilder(board, pips)
 
@@ -78,14 +86,17 @@ function buildNodesForHeteroDice(
             ? // どちらのダイスでも全く動かせない場合は、オリジナルのダイス順で返す
               {
                   root: major.node,
-                  dices: [dice1, dice2],
+                  dices: [
+                      { pip: dice1, used: true },
+                      { pip: dice2, used: true },
+                  ],
                   hasValue: true,
                   isRoot: true,
               }
             : // 小の目だけが使えないので、大の目のみ使用
               {
                   root: major.node,
-                  dices: [dice1, dice2],
+                  dices: useMajorDiceOnly,
                   hasValue: true,
                   isRoot: true,
               }
@@ -95,34 +106,47 @@ function buildNodesForHeteroDice(
     if (hasNoMove(major)) {
         return {
             root: minor.node,
-            dices: [dice1, dice2],
+            dices: canUseBothRolls(minor)
+                ? [
+                      {
+                          pip: dice1,
+                          used: false,
+                      },
+                      { pip: dice2, used: false },
+                  ]
+                : useMinorDiceOnly,
             hasValue: true,
             isRoot: true,
         }
     }
-
+    const useBoth = [
+        { pip: dice1, used: false },
+        { pip: dice2, used: false },
+    ]
     // ダイスを1つしか使えないほうは採用しない
     if (!canUseBothRolls(minor)) {
         return {
             root: major.node,
-            dices: [dice1, dice2],
+            dices: canUseBothRolls(major) ? useBoth : useMajorDiceOnly,
             hasValue: true,
             isRoot: true,
         }
     }
     if (!canUseBothRolls(major)) {
+        // minorから使えば両方使える
         return {
             root: minor.node,
-            dices: [dice1, dice2],
+            dices: useBoth,
             hasValue: true,
             isRoot: true,
         }
     }
 
+    // どちらのダイスを使っても良い
     return {
-        dices: [dice1, dice2],
+        dices: useBoth,
         root: major.node,
-        minorFirst: minor.node,
+        alternate: minor.node,
         hasValue: true,
         isRoot: true,
     }
@@ -143,19 +167,20 @@ function buildNodesForHeteroDice(
 function addEoGHandling(
     nodeBuilders: InternalBoardStateNodeBuilders
 ): InternalBoardStateNodeBuilders {
-    // 中間ノードの子局面のいずれかがEoGになるなら(※)その中間ノードでは、ダイスは2個とも使える扱いにする
+    // 中間ノードの子局面のいずれかがEoGになるなら(※)その中間ノードでは、ダイスは2個とも使える扱いにしたい
     // これにより、一方は2個使わないとEoGにできない場合でも、もう一方の1個しか使わない手を有効にする
     // ※ この場合、自駒は一つしかないので、いずれかと言っても、実際にはEoGにする手しかない
     // この処理は、ゾロ目では目の大小を意識しないので必要ない
     return {
         ...nodeBuilders,
         buildBranchNode: (node, childNodes) => {
+            const toRet = nodeBuilders.buildBranchNode(node, childNodes)
             return childNodes.mayTerm
                 ? {
-                      ...nodeBuilders.buildBranchNode(node, childNodes),
+                      node: toRet.node,
                       canUse: node.unusedDices.length,
                   }
-                : nodeBuilders.buildBranchNode(node, childNodes)
+                : toRet
         },
     }
 }
