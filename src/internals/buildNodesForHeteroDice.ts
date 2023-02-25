@@ -1,7 +1,7 @@
 import { BoardState } from '../BoardState'
 import { BoardStateNode, NoMove, NO_MOVE } from '../BoardStateNode'
 import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
-import { DicePip } from '../Dices'
+import { Dice, DicePip } from '../Dices'
 import {
     InternalBoardStateNodeBuilders,
     InternalRecursiveNodeBuilder,
@@ -63,18 +63,6 @@ function buildNodesForHeteroDice(
     const [pips, isMajorFirst] =
         dice1 > dice2 ? [[dice1, dice2], true] : [[dice2, dice1], false]
     const [majorPip, minorPip] = pips
-    const useMajorDiceOnly = [
-        { pip: dice1, used: !isMajorFirst },
-        { pip: dice2, used: isMajorFirst },
-    ]
-    const useMinorDiceOnly = [
-        { pip: dice1, used: isMajorFirst },
-        { pip: dice2, used: !isMajorFirst },
-    ]
-    const useBoth = [
-        { pip: dice1, used: false },
-        { pip: dice2, used: false },
-    ]
 
     // 大の目を先に使った場合のノードツリー
     const major = majorNodeBuilder(board, pips)
@@ -86,65 +74,81 @@ function buildNodesForHeteroDice(
     ])
 
     // 大の目先行、小の目先行それぞれの場合を統合して、最終的な結果を得る
+
+    // 小の目先行では動かせない場合、大の目先行のみ
     if (hasNoMove(minor)) {
-        return {
-            primary: major.node,
-            dices: hasNoMove(major) // どちらのダイスでも全く動かせない
-                ? [
-                      { pip: dice1, used: true },
-                      { pip: dice2, used: true },
-                  ]
-                : canUseBothRolls(major) // 小の目だけが使えないので、大の目のみ使用
-                ? // NG: minorがnoMoveでmajorが1Move+Eogの場合、勝手に2に補完されているので、
-                  // useBothが選ばれてしまう
-                  useBoth
-                : useMajorDiceOnly,
-            hasValue: true,
-            isRoot: true,
-        }
+        return majorNodeOnly()
     }
-
-    // 大の目が使えなければ、小の目のみ
+    // 大の目先行では動かせない場合、上記と同様で今度は小の目先行
     if (hasNoMove(major)) {
-        return {
-            primary: minor.node,
-            dices: canUseBothRolls(minor) ? useBoth : useMinorDiceOnly,
-            hasValue: true,
-            isRoot: true,
-        }
-    }
-    // ダイスを1つしか使えないほうは採用しない
-    if (!canUseBothRolls(minor)) {
-        return {
-            primary: major.node,
-            // どちらも1つしか使えない場合は、大の目のみ使える手になる
-            dices: canUseBothRolls(major) ? useBoth : useMajorDiceOnly,
-            hasValue: true,
-            isRoot: true,
-        }
-    }
-    if (!canUseBothRolls(major)) {
-        // minorから使えば両方使える
-        return {
-            primary: minor.node,
-            dices: useBoth,
-            hasValue: true,
-            isRoot: true,
-        }
+        return minorNodeOnly()
     }
 
-    // どちらのダイスを使っても良い
-    const { root, alternate } = isMajorFirst
-        ? { root: major.node, alternate: minor.node }
-        : { root: minor.node, alternate: major.node }
+    // 小の目先行ではダイスを1つしか使えない場合、大の目を優先する
+    if (!canUseBothRolls(minor)) {
+        // 大の目先行ではダイスを1つ以上使えることが確定している
+        return majorNodeOnly()
+    }
+
+    // すでに小の目先行で2つダイスが使えると確定しているので、
+    // 大の目先行が1つしか使えなければ無視してよい
+    if (!canUseBothRolls(major)) {
+        // ※ 小の目1つ使用でEoGになってダイス2つ使えるとみなしている場合、
+        // 大の目1つ使用でも必ずEoGになるので、ここではなく次のブロックへ行く
+        return minorNodeOnly()
+    }
+
+    // どちらのダイスから使ってもよいが、順番は元々の順序に合わせる
+    const { primary, alternate } = isMajorFirst
+        ? { primary: major.node, alternate: minor.node }
+        : { primary: minor.node, alternate: major.node }
+
     return {
-        dices: useBoth,
-        primary: root,
+        dices: [
+            { pip: dice1, used: false },
+            { pip: dice2, used: false },
+        ],
+        primary,
         alternate,
         hasValue: true,
         isRoot: true,
     }
 
+    function majorNodeOnly(): {
+        primary: BoardStateNode
+        dices: Dice[]
+        hasValue: true
+        isRoot: true
+    } {
+        return {
+            primary: major.node,
+            // 小の目先行を無視するだけで良く、majorのダイスの状態を
+            // 順番だけ調整して使えるダイスの状態とする
+            dices: [
+                isMajorFirst ? major.node.dices[0] : major.node.dices[1],
+                isMajorFirst ? major.node.dices[1] : major.node.dices[0],
+            ],
+            hasValue: true,
+            isRoot: true,
+        }
+    }
+    function minorNodeOnly(): {
+        primary: BoardStateNode
+        dices: Dice[]
+        hasValue: true
+        isRoot: true
+    } {
+        return {
+            primary: minor.node,
+            // 最前と同様、大の目先行を無視するだけ
+            dices: [
+                isMajorFirst ? minor.node.dices[1] : minor.node.dices[0],
+                isMajorFirst ? minor.node.dices[0] : minor.node.dices[1],
+            ],
+            hasValue: true,
+            isRoot: true,
+        }
+    }
     function canUseBothRolls(arg: { node: BoardStateNode; canUse: number }) {
         return arg.canUse === 2
     }
