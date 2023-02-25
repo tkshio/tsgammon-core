@@ -39,7 +39,7 @@ describe('makePoint', () => {
         const node = boardStateNode(boardState(initialPos), {
             dice1: 1,
             dice2: 3,
-        }).root.childNode(19)
+        }).primary.childNode(19)
         if (!node.hasValue) {
             throw Error()
         }

@@ -101,15 +101,15 @@ export function openingState(
 
 export function inPlayStateRed(
     rootNode: BoardStateNodeRoot,
-    curNode: BoardStateNode = rootNode.root,
+    curNode: BoardStateNode = rootNode.primary,
     curPly: Ply = {
-        dices: rootNode.root.dices.map((dice) => dice.pip),
+        dices: rootNode.primary.dices.map((dice) => dice.pip),
         moves: [],
         isRed: true,
     }
 ): SGInPlayRed {
-    const dices = rootNode.root.dices
-    const absBoard = redViewAbsoluteBoard(rootNode.root.board)
+    const dices = rootNode.primary.dices
+    const absBoard = redViewAbsoluteBoard(rootNode.primary.board)
 
     return {
         curPly,
@@ -119,22 +119,22 @@ export function inPlayStateRed(
         boardState: curNode.board,
         dices,
         absBoard,
-        revertTo: rootNode.root,
+        revertTo: rootNode.primary,
         isRed: true,
     }
 }
 
 export function inPlayStateWhite(
     rootNode: BoardStateNodeRoot,
-    curNode = rootNode.root,
+    curNode = rootNode.primary,
     curPly: Ply = {
-        dices: rootNode.root.dices.map((dice) => dice.pip),
+        dices: rootNode.primary.dices.map((dice) => dice.pip),
         moves: [],
         isRed: true,
     }
 ): SGInPlayWhite {
-    const dices = rootNode.root.dices
-    const absBoard = whiteViewAbsoluteBoard(rootNode.root.board)
+    const dices = rootNode.primary.dices
+    const absBoard = whiteViewAbsoluteBoard(rootNode.primary.board)
 
     return {
         curPly,
@@ -144,7 +144,7 @@ export function inPlayStateWhite(
         boardState: curNode.board,
         dices,
         absBoard,
-        revertTo: rootNode.root,
+        revertTo: rootNode.primary,
 
         isRed: false,
     }

@@ -52,38 +52,41 @@ describe('wrapRootNode.apply()', () => {
 describe('wrapRootNode.or()', () => {
     test('applies or() when apply() failed', () => {
         const g = { count: 0 }
+        // first or() must be called with 1st roll
         const ret = wrapNode(rootNode)
             .apply((_) => ({ hasValue: false }))
             .or((node) => {
                 g.count++
-                // first or() must be called with major node of root node
                 return isMajor(node)
             }).unwrap
-        expect(g.count).toBe(1)
+        // call or() twice, because 1st roll is not major pip
+        expect(g.count).toBe(2)
         expect(ret.hasValue).toBeTruthy()
     })
-    test('applies or() with the minor first order', () => {
+    test('applies or(), 2nd roll first', () => {
         const g = { count: 0 }
+        // first or() must be called with 2nd roll
         const ret = wrapNode(rootNode, true)
             .apply((_) => ({ hasValue: false }))
             .or((node) => {
-                // first or() must be called with minor node
                 g.count++
                 return isMinor(node)
             }).unwrap
-        expect(g.count).toBe(1)
+        // call or() twice, because 2nd roll is not minor pip
+        expect(g.count).toBe(2)
         expect(ret.hasValue).toBeTruthy()
     })
-    test('applies or() for major first, then minor', () => {
+    test('applies or(), 1st roll first', () => {
         const g = { count: 0 }
+        // first or() must be called with 1st roll
         const ret = wrapNode(rootNode)
             .apply((_) => ({ hasValue: false }))
             .or((node) => {
-                // first or() must be called with minor node
                 g.count++
                 return isMinor(node)
             }).unwrap
-        expect(g.count).toBe(2)
+        // call or() once, because 1st roll is minor pip
+        expect(g.count).toBe(1)
         expect(ret.hasValue).toBeTruthy()
     })
 

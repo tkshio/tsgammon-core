@@ -21,8 +21,8 @@ export function buildDoubletNodeBuilder(
     return (board: BoardState, dicePip: DicePip, countForDoublet: number) => {
         const dicePips = Array(countForDoublet).fill(dicePip)
 
-        const root = nodeBuilder(board, dicePips).node
-        return { root, dices: root.dices, hasValue: true, isRoot: true }
+        const primary = nodeBuilder(board, dicePips).node
+        return { primary, dices: primary.dices, hasValue: true, isRoot: true }
     }
 }
 

@@ -78,7 +78,7 @@ export function randomEngine(): GammonEngine {
             const nodes = collectNodes(node).filter((node) => !node.isRedundant)
 
             if (nodes.length === 0) {
-                return node.root
+                return node.primary
             }
             const n = Math.floor(Math.random() * nodes.length)
             return nodes[n]
@@ -131,7 +131,7 @@ export function simpleEvalEngineWithEvaluator(ev: Evaluator): GammonEngine {
             const bestEv = candidates
                 .map((n) => ({ node: n, e: ev.evaluate(n.board) }))
                 .reduce((prev, cur) => (prev.e > cur.e ? prev : cur), {
-                    node: node.isRoot ? node.root : node,
+                    node: node.isRoot ? node.primary : node,
                     e: Number.NEGATIVE_INFINITY,
                 })
             return bestEv.node

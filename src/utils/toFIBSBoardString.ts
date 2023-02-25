@@ -59,7 +59,7 @@ export function toFIBSBoard(
             ...board,
         }
         return labeled.isRoot
-            ? { ...labeled.root, dices: labeled.dices }
+            ? { ...labeled.primary, dices: labeled.dices }
             : labeled.hasValue
             ? labeled
             : nodeWithEmptyDice(labeled)

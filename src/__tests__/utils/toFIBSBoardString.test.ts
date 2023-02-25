@@ -77,7 +77,7 @@ describe('encode intermediate state', () => {
                 }
                 return next
             },
-            initialNode.root
+            initialNode.primary
         )
         const opt = {
             player: data.player,

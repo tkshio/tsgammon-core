@@ -8,7 +8,7 @@ const nodeWithValue = boardStateNodeFromArray(
     1,
     2,
     standardConf.transition.ruleSet
-).root
+).primary
 // 上記について、2番目のポイントから可能な手のノードツリー：そこには駒はないので、値の無いツリーとなる
 const nodeNoValue = nodeWithValue.childNode(2)
 
@@ -20,7 +20,7 @@ describe('Wrapper.apply', () => {
             2,
             standardConf.transition.ruleSet
         )
-        const wrapped = wrap(node.root)
+        const wrapped = wrap(node.primary)
         expect(wrapped.apply((node) => node).unwrap.hasValue).toBeTruthy()
     })
 
@@ -48,7 +48,7 @@ describe('Wrapper.or', () => {
             1,
             2,
             standardConf.transition.ruleSet
-        ).root.childNode(2)
+        ).primary.childNode(2)
         const wrapped = wrap(nodeNoValue)
         expect(wrapped.or(() => nodeWithValue).unwrap.hasValue).toBeFalsy()
     })
@@ -58,7 +58,7 @@ describe('Wrapper.or', () => {
             1,
             2,
             standardConf.transition.ruleSet
-        ).root.childNode(2)
+        ).primary.childNode(2)
         const wrapped = wrap(nodeWithValue)
         expect(
             wrapped.or(() => nodeNoValue).or(() => nodeWithValue).unwrap
@@ -71,7 +71,7 @@ describe('Wrapper.or', () => {
             1,
             2,
             standardConf.transition.ruleSet
-        ).root.childNode(2)
+        ).primary.childNode(2)
         const wrapped = wrap(nodeWithValue)
         expect(
             wrapped.or(() => nodeWithValue).or(() => nodeNoValue).unwrap

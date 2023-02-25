@@ -10,7 +10,7 @@ type DiceTestArg = {
     diceRoll: [DicePip, DicePip]
     clicks: {
         pos?: number // クリックする場所
-        isMinor?: boolean // 小の目を優先する場合はtrue
+        swapDice?: boolean // 小の目を優先する場合はtrue
         used: boolean[] // diceRollの各要素の使用状態
         forced?: boolean // そのままの順でダイスを使う(=node.swappedが設定されない)ならtrue、省略時もtrue扱い
     }[][]
@@ -28,12 +28,12 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
             clicks: [
                 [
                     { used: [false, false], forced: false },
-                    { pos: 1, used: [true, false] },
+                    { pos: 1, swapDice: true, used: [true, false] },
                     { pos: 4, used: [true, true] },
                 ],
                 [
                     { used: [false, false], forced: false },
-                    { pos: 1, isMinor: true, used: [true, false] },
+                    { pos: 1, used: [true, false] },
                     { pos: 2, used: [true, true] },
                 ],
             ],
@@ -55,7 +55,7 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
                 ],
                 [
                     { used: [false, false], forced: false },
-                    { pos: 1, isMinor: true, used: [true, false] },
+                    { pos: 1, swapDice: true, used: [true, false] },
                     { pos: 2, used: [true, true] },
                 ],
             ],
@@ -79,7 +79,7 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
                 ],
                 [
                     { used: [false, false], forced: false },
-                    { pos: 22, isMinor: true, used: [true, false] },
+                    { pos: 22, swapDice: true, used: [true, false] },
                 ],
             ],
         },
@@ -109,6 +109,58 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
                 [
                 0, 
                 0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, /*bar*/ 1,-2, 0, 0, 0, 0,
+                0,
+            ],
+            diceRoll: [1, 2],
+            clicks: [
+                [
+                    { used: [false, false], forced: true },
+                    {
+                        pos: 19,
+                        used: [true, false],
+                        forced: true,
+                        swapDice: true,
+                    },
+                    { pos: 21, used: [true, true] },
+                ],
+            ],
+        },
+    },
+    {
+        name: 'must use lower number first',
+        args: {
+            pos:
+                // prettier-ignore
+                [
+                0, 
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, /*bar*/ 1, 0,-2, 0, 0, 0,
+                0,
+            ],
+            diceRoll: [1, 2],
+            clicks: [
+                [
+                    { used: [false, false], forced: true },
+                    {
+                        pos: 19,
+                        used: [true, false],
+                        forced: true,
+                        swapDice: true,
+                    },
+                    { pos: 20, used: [true, true] },
+                ],
+            ],
+        },
+    },
+    {
+        name: 'must use higher number first(eog)',
+        args: {
+            pos:
+                // prettier-ignore
+                [
+                0, 
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 1, 0, /*bar*/ 0, -2, 0, 0, 0, 1,
                 0,
             ],
@@ -120,7 +172,7 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
                         pos: 17,
                         used: [true, false],
                         forced: true,
-                        isMinor: true,
+                        swapDice: true,
                     },
                     { pos: 24, used: [true, true] },
                 ],
@@ -128,7 +180,7 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
         },
     },
     {
-        name: 'must use lower number first',
+        name: 'must use lower number first(eog)',
         args: {
             pos:
                 // prettier-ignore
@@ -146,7 +198,7 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
                         pos: 18,
                         used: [true, false],
                         forced: true,
-                        isMinor: true,
+                        swapDice: true,
                     },
                     { pos: 23, used: [true, true] },
                 ],
@@ -156,9 +208,12 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
     {
         name: "can't use higher number",
         args: {
+            // prettier-ignore
             pos: [
-                0, 0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                /*bar*/ 0, 1, 0, -2, -2, 0, 0,
+                0,
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 1, 0,-2,-2, 0,
+                0,
             ],
             diceRoll: [2, 1],
             // ダイスは1→2の順で1のみが未使用
@@ -168,7 +223,32 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
                     { used: [true, false], forced: true },
                     {
                         pos: 20,
-                        isMinor: true,
+                        swapDice: true,
+                        used: [true, true],
+                    },
+                ],
+            ],
+        },
+    },
+    {
+        name: "can't use lower number",
+        args: {
+            // prettier-ignore
+            pos: [
+                0,
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 1,-2, 0,-2, 0,
+                0,
+            ],
+            diceRoll: [2, 1],
+            // ダイスは2→1の順で1のみが未使用
+            clicks: [
+                // 小の目先行なら動かせる
+                [
+                    { used: [false, true], forced: true },
+                    {
+                        pos: 20,
+                        swapDice: true,
                         used: [true, true],
                     },
                 ],
@@ -178,9 +258,12 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
     {
         name: "can't use lower number (eog)",
         args: {
+            // prettier-ignore
             pos: [
-                0, 0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                /*bar*/ 0, 0, 0, 0, 1, -2, 0,
+                0, 
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, /*bar*/ 0, 0, 0, 0, 1, -2,
+                0,
             ],
             diceRoll: [2, 1],
             clicks: [
@@ -206,7 +289,7 @@ const diceStatusTest: { name: string; args: DiceTestArg }[] = [
                 ],
                 [
                     { used: [false, false], forced: false },
-                    { pos: 24, isMinor: true, used: [true, true] },
+                    { pos: 24, swapDice: true, used: [true, true] },
                 ],
             ],
         },
@@ -377,7 +460,7 @@ function testDiceStatus(testConds: { name: string; args: DiceTestArg }[]) {
 
                 click.forEach((co) => {
                     if (co.pos) {
-                        const target = wrapNode(node, co.isMinor ?? false)
+                        const target = wrapNode(node, co.swapDice ?? false)
                         const found = target.apply((node) =>
                             node.childNode(co.pos!)
                         ).unwrap

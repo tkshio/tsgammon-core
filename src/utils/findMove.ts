@@ -18,7 +18,7 @@ export function findMove(
     const target = node.isRoot
         ? useMinorFirst && node.alternate
             ? node.alternate
-            : node.root
+            : node.primary
         : node
     return target.childNode(pos)
 }

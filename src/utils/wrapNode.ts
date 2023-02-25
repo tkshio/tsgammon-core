@@ -26,8 +26,8 @@ function _wrapRootNode(
         selectAlternate: boolean
     ) {
         return selectAlternate && root.alternate
-            ? { primary: root.alternate, secondary: root.root }
-            : { primary: root.root, secondary: root.alternate }
+            ? { primary: root.alternate, secondary: root.primary }
+            : { primary: root.primary, secondary: root.alternate }
     }
     const wrapped: Wrapped<BoardStateNode> = {
         apply: (
@@ -72,7 +72,7 @@ function _wrapRootNode(
             // 適用した関数が失敗しているので、与引数をそのまま次に渡す
             return _wrapRootNode({ hasValue: false }, was, selectAlternate)
         },
-        unwrap: root.hasValue ? root.root : { hasValue: false },
+        unwrap: root.hasValue ? root.primary : { hasValue: false },
     }
     return wrapped
 }

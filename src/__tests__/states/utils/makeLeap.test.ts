@@ -99,22 +99,22 @@ describe('makeLeap()', () => {
         2,
         standardConf.transition.ruleSet
     )
-    test('consumes major pip first if last arg is false', () => {
+    test('consumes first roll if last arg is false', () => {
         const found = wrapRootNode(nodeWithBlots, false).apply((node) =>
             makeLeap(node, 4)
         ).unwrap
         expect(found.hasValue).toBeTruthy()
         expect(found.hasValue ? found.board.piecesAt(25) : 0).toBe(-1)
-        expect(found.hasValue ? found.board.piecesAt(3) : -1).toBe(0)
+        expect(found.hasValue ? found.board.piecesAt(2) : -1).toBe(0)
     })
 
-    test('consumes minor pip first if last arg is true', () => {
+    test('consumes second roll if last arg is true', () => {
         const found = wrapRootNode(nodeWithBlots, true).apply((node) =>
             makeLeap(node, 4)
         ).unwrap
         expect(found.hasValue).toBeTruthy()
         expect(found.hasValue ? found.board.piecesAt(25) : 0).toBe(-1)
-        expect(found.hasValue ? found.board.piecesAt(2) : -1).toBe(0)
+        expect(found.hasValue ? found.board.piecesAt(3) : -1).toBe(0)
     })
 
     const nodeWithDoublets = boardStateNodeFromArray(

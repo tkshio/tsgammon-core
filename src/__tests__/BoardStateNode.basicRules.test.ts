@@ -324,7 +324,7 @@ function basicTest(arg: BasicTestArg) {
 
     const isCommitable =
         arg.expectedMoves.length === 1 && arg.expectedMoves[0].length === 0
-    expect(node.root.isCommitable).toBe(isCommitable)
+    expect(node.primary.isCommitable).toBe(isCommitable)
     expect(collected.map((moves) => moves.isRedundant)).toEqual(
         arg.expectedRedundancy
     )
