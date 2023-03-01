@@ -50,6 +50,6 @@ export function dices(dicePip: DicePip, count: number): Dice[] {
  * @param pip ダイスの目
  * @returns 未使用の状態のダイス
  */
-export function dice(pip: DicePip): Dice {
-    return { pip, used: false }
+export function dice(pip: DicePip, used = false): Dice {
+    return { pip, used }
 }
