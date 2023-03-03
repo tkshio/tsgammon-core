@@ -1,20 +1,38 @@
+import { BoardStateNode } from '../../../BoardStateNode'
 import { boardStateNodeFromArray } from '../../../BoardStateNodeBuilders'
+import { BoardStateNodeRoot } from '../../../BoardStateNodeRoot'
 import { standardConf } from '../../../GameConfs'
 import { makeLeap } from '../../../utils/makeLeap'
 import { wrapRootNode } from '../../../utils/wrapNode'
 
 describe('makeLeap()', () => {
-    const node = boardStateNodeFromArray(
-        //prettier-ignore
-        [0,
-            1, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
-         0],
-        1,
-        2,
-        standardConf.transition.ruleSet
-    )
     test('returns node if a piece can be moved to pos', () => {
+        const node = boardStateNodeFromArray(
+            //prettier-ignore
+            [0,
+                1, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+             0],
+            1,
+            2,
+            standardConf.transition.ruleSet
+        )
+        doTest(node)
+    })
+    test('returns node if a piece can be moved to pos(swap)', () => {
+        const node = boardStateNodeFromArray(
+            //prettier-ignore
+            [0,
+                1, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+             0],
+            2,
+            1,
+            standardConf.transition.ruleSet
+        )
+        doTest(node)
+    })
+    function doTest(node: BoardStateNodeRoot) {
         expect(
             wrapRootNode(node, true).apply((node) => makeLeap(node, 2)).unwrap
                 .hasValue
@@ -47,7 +65,7 @@ describe('makeLeap()', () => {
             wrapRootNode(node, false).apply((node) => makeLeap(node, 5)).unwrap
                 .hasValue
         ).toBeFalsy()
-    })
+    }
 
     const nodeWithBlock = boardStateNodeFromArray(
         //prettier-ignore

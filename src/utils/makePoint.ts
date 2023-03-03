@@ -16,28 +16,25 @@ export function makePoint(
     if (dices.length < 2) {
         return NO_MOVE
     }
-    const { major, minor } =
-        dices[0].pip > dices[1].pip
-            ? { major: dices[0].pip, minor: dices[1].pip }
-            : { major: dices[1].pip, minor: dices[0].pip }
-
-    if (pos < major) {
+    const dice1 = dices[0].pip,
+        dice2 = dices[1].pip
+    if (pos < dice1 || pos < dice2) {
         return NO_MOVE
     }
 
     // 未使用のダイス2つで指定されたポイントが作れるなら、それを返す
     const nodeMakePoint = wrap(node)
-        .apply(moveFinder(pos - major))
-        .apply(moveFinder(pos - minor)).unwrap
+        .apply(moveFinder(pos - dice1))
+        .apply(moveFinder(pos - dice2)).unwrap
 
     if (nodeMakePoint.hasValue) {
         return nodeMakePoint
     }
 
     // ゾロ目の場合は、中間地点に作ってからそれを動かせるかも調べる
-    if (dices.length === 4 && major === minor) {
+    if (dices.length === 4 && dice1 === dice2) {
         return wrap(node)
-            .apply(pointMaker(pos - major))
+            .apply(pointMaker(pos - dice1))
             .apply(pointMaker(pos)).unwrap
     }
 
