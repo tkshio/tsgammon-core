@@ -32,7 +32,10 @@ export function toGameState(bgState: BGState, rsState: ResignState): GameState {
                 isResignOffered: rsState.tag === 'RSOffered',
                 isDoubleOffered: cbState.tag === 'CBResponse',
                 offer: rsState.tag === 'RSOffered' ? rsState.offer : undefined,
-                dices: sgState.tag === 'SGInPlay' ? sgState.dices : undefined,
+                dices:
+                    sgState.tag === 'SGInPlay'
+                        ? sgState.rootNode.dices
+                        : undefined,
                 isRed:
                     rsState.tag === 'RSOffered' ? rsState.isRed : cbState.isRed,
             }

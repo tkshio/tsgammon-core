@@ -38,11 +38,9 @@ export type SGOpening = Omit<_SGState, 'lastPly'> & {
 
 type _SGInPlay = _SGState & {
     tag: 'SGInPlay'
-    dices: Dice[]
     curPly: Ply
     rootNode: BoardStateNodeRoot
     boardStateNode: BoardStateNode
-    revertTo: BoardStateNode
 }
 
 export type SGInPlayRed = _SGInPlay & {
@@ -103,13 +101,12 @@ export function inPlayStateRed(
     rootNode: BoardStateNodeRoot,
     curNode: BoardStateNode = rootNode.primary,
     curPly: Ply = {
-        dices: rootNode.primary.dices.map((dice) => dice.pip),
+        dices: rootNode.dices.map((dice) => dice.pip),
         moves: [],
         isRed: true,
     }
 ): SGInPlayRed {
-    const dices = rootNode.primary.dices
-    const absBoard = redViewAbsoluteBoard(rootNode.primary.board)
+    const absBoard = redViewAbsoluteBoard(curNode.board)
 
     return {
         curPly,
@@ -117,9 +114,7 @@ export function inPlayStateRed(
         rootNode,
         boardStateNode: curNode,
         boardState: curNode.board,
-        dices,
         absBoard,
-        revertTo: rootNode.primary,
         isRed: true,
     }
 }
@@ -128,13 +123,12 @@ export function inPlayStateWhite(
     rootNode: BoardStateNodeRoot,
     curNode = rootNode.primary,
     curPly: Ply = {
-        dices: rootNode.primary.dices.map((dice) => dice.pip),
+        dices: rootNode.dices.map((dice) => dice.pip),
         moves: [],
         isRed: true,
     }
 ): SGInPlayWhite {
-    const dices = rootNode.primary.dices
-    const absBoard = whiteViewAbsoluteBoard(rootNode.primary.board)
+    const absBoard = whiteViewAbsoluteBoard(curNode.board)
 
     return {
         curPly,
@@ -142,9 +136,7 @@ export function inPlayStateWhite(
         rootNode,
         boardStateNode: curNode,
         boardState: curNode.board,
-        dices,
         absBoard,
-        revertTo: rootNode.primary,
 
         isRed: false,
     }
@@ -155,25 +147,11 @@ export function inPlayStateWithNode(
     node: BoardStateNode
 ): SGInPlay {
     return state.isRed
-        ? inPlayStateWithNodeRed(state, node)
-        : inPlayStateWithNodeWhite(state, node)
+        ? inPlayStateRed(state.rootNode, node, toPlyRed(state, node))
+        : inPlayStateWhite(state.rootNode, node, toPlyWhite(state, node))
 }
 export function inPlayState(node: BoardStateNodeRoot, isRed: boolean) {
     return (isRed ? inPlayStateRed : inPlayStateWhite)(node)
-}
-
-function inPlayStateWithNodeRed(
-    state: SGInPlayRed,
-    node: BoardStateNode
-): SGInPlayRed {
-    return inPlayStateRed(state.rootNode, node, toPlyRed(state, node))
-}
-
-function inPlayStateWithNodeWhite(
-    state: SGInPlayWhite,
-    node: BoardStateNode
-): SGInPlayWhite {
-    return inPlayStateWhite(state.rootNode, node, toPlyWhite(state, node))
 }
 
 export function toPly(

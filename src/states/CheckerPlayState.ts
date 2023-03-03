@@ -1,6 +1,7 @@
 import { AbsoluteBoardState } from '../AbsoluteBoardState'
 import { BoardState } from '../BoardState'
 import { BoardStateNode } from '../BoardStateNode'
+import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
 import { Ply } from '../Ply'
 import { SGInPlay, toAbsBoard, toPly, toPos } from './SingleGameState'
 
@@ -14,7 +15,7 @@ export type CheckerPlayState = {
     curBoardState: BoardStateNode
     absBoard: AbsoluteBoardState
     isUndoable: boolean
-    boardStateNodeRevertTo: BoardStateNode
+    boardStateNodeRevertTo: BoardStateNodeRoot
     absBoardRevertTo: AbsoluteBoardState
     toAbsBoard: (board: BoardState) => AbsoluteBoardState
     toPly: (board: BoardStateNode) => Ply
@@ -36,7 +37,7 @@ export type CheckerPlayStateCommitted = {
  * @returns
  */
 export function asCheckerPlayState(sgInPlay: SGInPlay): CheckerPlayState {
-    const { boardStateNode, absBoard, revertTo } = sgInPlay
+    const { boardStateNode, absBoard, rootNode } = sgInPlay
     const _toPly = (node: BoardStateNode) => toPly(sgInPlay, node)
     const curPly = _toPly(boardStateNode)
     const isUndoable = curPly.moves.length > 0
@@ -46,8 +47,8 @@ export function asCheckerPlayState(sgInPlay: SGInPlay): CheckerPlayState {
         curPly,
         curBoardState: boardStateNode,
         absBoard,
-        boardStateNodeRevertTo: revertTo,
-        absBoardRevertTo: toAbsBoard(sgInPlay, revertTo.board),
+        boardStateNodeRevertTo: rootNode,
+        absBoardRevertTo: toAbsBoard(sgInPlay, rootNode.primary.board),
 
         toAbsBoard: (board: BoardState) => toAbsBoard(sgInPlay, board),
         toPly: _toPly,

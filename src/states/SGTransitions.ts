@@ -41,7 +41,7 @@ function doCheckerPlayCommitSugoroku(state: SGInPlay): SGToRoll | SGEoG {
     if (state.boardStateNode.eogStatus.isEndOfGame) {
         return toEoGState(state)
     } else {
-        const dices = state.dices
+        const dices = state.rootNode.dices
         if (dices.length === 2 && dices[0].pip === dices[1].pip) {
             return toToRollStateAgain(state)
         } else {
