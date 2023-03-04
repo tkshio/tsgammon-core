@@ -65,7 +65,9 @@ function _wrapRootNode(
                 }
                 if (secondary) {
                     const result = f(secondary)
-                    return wrap(result)
+                    if (result.hasValue) {
+                        return wrap(result)
+                    }
                 }
             }
             // rootがapply()で成功している(のでor()は何もしない)か、

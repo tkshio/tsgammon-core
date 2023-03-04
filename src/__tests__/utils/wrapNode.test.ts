@@ -2,6 +2,8 @@ import { BoardStateNode } from '../../BoardStateNode'
 import { boardStateNodeFromArray } from '../../BoardStateNodeBuilders'
 import { standardConf } from '../../GameConfs'
 import { standardRuleSet } from '../../rules/standardRuleSet'
+import { makeLeap } from '../../utils/makeLeap'
+import { makePoint } from '../../utils/makePoint'
 import { wrapNode } from '../../utils/wrapNode'
 
 const rootNode = boardStateNodeFromArray(
@@ -34,6 +36,18 @@ describe('wrapRootNode.apply()', () => {
             hasValue: false,
         })).unwrap
         expect(ret.hasValue).toBeFalsy()
+    })
+
+    test('applies multiple apply()', () => {
+        const pos = 22
+        const ret = wrapNode(rootNode, true)
+            // クリック位置から動かせる駒がある
+            .apply((node) => node.childNode(pos))
+            // クリック位置でポイントを作れる
+            .or((node) => makePoint(node, pos))
+            // クリック位置へ動かせる
+            .or((node) => makeLeap(node, pos)).unwrap
+        expect(ret.hasValue).toBeTruthy()
     })
 
     function catchMajor(
@@ -87,6 +101,21 @@ describe('wrapRootNode.or()', () => {
             }).unwrap
         // call or() once, because 1st roll is minor pip
         expect(g.count).toBe(1)
+        expect(ret.hasValue).toBeTruthy()
+    })
+
+    test('applies or() after failure', () => {
+        const g = { count: 0 }
+        // first or() must be called with 2nd roll
+        const ret = wrapNode(rootNode, true)
+            .apply((_) => ({ hasValue: false }))
+            .or((_) => ({ hasValue: false }))
+            .or((node) => {
+                g.count++
+                return isMinor(node)
+            }).unwrap
+        // call or() twice, because 2nd roll is not minor pip
+        expect(g.count).toBe(2)
         expect(ret.hasValue).toBeTruthy()
     })
 
