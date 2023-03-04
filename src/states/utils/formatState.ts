@@ -3,7 +3,6 @@ import { SGResult } from '../../records/SGResult'
 import { defaultNames } from '../../records/utils/defaultNames'
 import { MoveFormatDirection } from '../../utils/formatAbsMove'
 import { formatPly, formatPlyAbbr } from '../../utils/formatPly'
-import { CheckerPlayState } from '../CheckerPlayState'
 import { CBState } from '../CubeGameState'
 import { SGState } from '../SingleGameState'
 
@@ -21,7 +20,7 @@ import { SGState } from '../SingleGameState'
 export function formatState(
     sgState: SGState,
     cbState?: CBState,
-    cpState?: CheckerPlayState,
+    curPly?: Ply,
     moveFormatDirection?: MoveFormatDirection,
     red: string = defaultNames.red,
     white: string = defaultNames.white
@@ -70,7 +69,7 @@ export function formatState(
         }
     }
 
-    return formatSGState(sgState, cpState, moveFormatDirection, red, white)
+    return formatSGState(sgState, curPly, moveFormatDirection, red, white)
 }
 
 function formatToRoll(
@@ -90,14 +89,14 @@ function formatToRoll(
 
 function formatSGState(
     sgState: SGState,
-    cpState?: CheckerPlayState,
+    curPly?: Ply,
     moveFormatDirection?: MoveFormatDirection,
     red: string = defaultNames.red,
     white: string = defaultNames.white
 ) {
     // 移動中
-    if (cpState) {
-        return formatPly(cpState.curPly)
+    if (curPly) {
+        return formatPly(curPly)
     }
     switch (sgState.tag) {
         case 'SGOpening':
