@@ -3,20 +3,15 @@ import {
     redViewAbsoluteBoard,
     whiteViewAbsoluteBoard,
 } from '../AbsoluteBoardState'
-import {
-    AbsoluteMove,
-    makeMoveAbsoluteAsRed,
-    makeMoveAbsoluteAsWhite,
-} from '../AbsoluteMove'
 import { BoardState } from '../BoardState'
 import { BoardStateNode } from '../BoardStateNode'
 import { BoardStateNodeRoot } from '../BoardStateNodeRoot'
 import { Dice, DiceRoll } from '../Dices'
 import { EOGStatus } from '../EOGStatus'
-import { Move } from '../Move'
 import { Ply } from '../Ply'
 import { SGResult } from '../records/SGResult'
 import { score, Score, scoreAsRed, scoreAsWhite } from '../Score'
+import { toPlyRed, toPlyWhite } from './toPly'
 
 /**
  * キューブレスのバックギャモンの局面の状態を定義した型
@@ -41,6 +36,7 @@ type _SGInPlay = _SGState & {
     curPly: Ply
     rootNode: BoardStateNodeRoot
     boardStateNode: BoardStateNode
+    isRootState: boolean
 }
 
 export type SGInPlayRed = _SGInPlay & {
@@ -97,15 +93,35 @@ export function openingState(
     }
 }
 
-export function inPlayStateRed(
+export function inPlayState(isRed: boolean, rootNode: BoardStateNodeRoot) {
+    return (isRed ? inPlayStateRed : inPlayStateWhite)(rootNode)
+}
+
+export function inPlayStateWithNode(
+    state: SGInPlay,
+    node: BoardStateNode
+): SGInPlay {
+    return (state.isRed ? _inPlayStateRed : _inPlayStateWhite)(
+        state.rootNode,
+        node,
+        false
+    )
+}
+
+export function inPlayStateRed(rootNode: BoardStateNodeRoot) {
+    return _inPlayStateRed(rootNode, rootNode.primary, true)
+}
+
+export function inPlayStateWhite(rootNode: BoardStateNodeRoot) {
+    return _inPlayStateWhite(rootNode, rootNode.primary, true)
+}
+
+function _inPlayStateRed(
     rootNode: BoardStateNodeRoot,
-    curNode: BoardStateNode = rootNode.primary,
-    curPly: Ply = {
-        dices: rootNode.dices.map((dice) => dice.pip),
-        moves: [],
-        isRed: true,
-    }
+    curNode: BoardStateNode,
+    isRootState: boolean
 ): SGInPlayRed {
+    const curPly = toPlyRed(rootNode.dices, curNode)
     const absBoard = redViewAbsoluteBoard(curNode.board)
 
     return {
@@ -116,18 +132,16 @@ export function inPlayStateRed(
         boardState: curNode.board,
         absBoard,
         isRed: true,
+        isRootState,
     }
 }
 
-export function inPlayStateWhite(
+function _inPlayStateWhite(
     rootNode: BoardStateNodeRoot,
-    curNode = rootNode.primary,
-    curPly: Ply = {
-        dices: rootNode.dices.map((dice) => dice.pip),
-        moves: [],
-        isRed: true,
-    }
+    curNode: BoardStateNode,
+    isRootState: boolean
 ): SGInPlayWhite {
+    const curPly = toPlyWhite(rootNode.dices, curNode)
     const absBoard = whiteViewAbsoluteBoard(curNode.board)
 
     return {
@@ -137,76 +151,27 @@ export function inPlayStateWhite(
         boardStateNode: curNode,
         boardState: curNode.board,
         absBoard,
-
         isRed: false,
+        isRootState,
     }
 }
 
-export function inPlayStateWithNode(
-    state: SGInPlay,
-    node: BoardStateNode
-): SGInPlay {
-    return state.isRed
-        ? inPlayStateRed(state.rootNode, node, toPlyRed(state, node))
-        : inPlayStateWhite(state.rootNode, node, toPlyWhite(state, node))
-}
-export function inPlayState(node: BoardStateNodeRoot, isRed: boolean) {
-    return (isRed ? inPlayStateRed : inPlayStateWhite)(node)
-}
-
-export function isRootState(state: SGInPlay) {
-    return state.rootNode.primary === state.boardStateNode
-}
-
-export function toPly(
-    state: ({ isRed: true } | { isRed: false }) & {
-        boardStateNode: BoardStateNode
-    },
-    node?: BoardStateNode
-): Ply {
-    return state.isRed ? toPlyRed(state, node) : toPlyWhite(state, node)
-}
-
-function toPlyRed(
-    state: { isRed: true; boardStateNode: BoardStateNode },
-    node: BoardStateNode = state.boardStateNode
-) {
-    return _toPly(node, makeMoveAbsoluteAsRed, true)
-}
-
-function toPlyWhite(
-    state: { isRed: false; boardStateNode: BoardStateNode },
-    node: BoardStateNode = state.boardStateNode
-) {
-    return _toPly(node, makeMoveAbsoluteAsWhite, false)
-}
-
-function _toPly(
-    boardStateNode: BoardStateNode, //
-    toAbsMove: (move: Move, invertPos: (pos: number) => number) => AbsoluteMove, //
-    isRed: boolean
-) {
-    return {
-        moves: boardStateNode.lastMoves.map((m) =>
-            toAbsMove(m, boardStateNode.board.invertPos)
-        ),
-        dices: boardStateNode.dices.map((dice) => dice.pip),
-        isRed: isRed,
-        isWhite: !isRed,
-    }
+export function toPly(state: SGInPlay): (node: BoardStateNode) => Ply {
+    const func = state.isRed ? toPlyRed : toPlyWhite
+    return (node) => func(state.rootNode.dices, node)
 }
 
 export function toAbsBoard(
-    state: SGInPlay,
-    boardState: BoardState
-): AbsoluteBoardState {
-    return (state.isRed ? redViewAbsoluteBoard : whiteViewAbsoluteBoard)(
-        boardState
-    )
+    state: SGInPlay
+): (boardState: BoardState) => AbsoluteBoardState {
+    const func = state.isRed ? redViewAbsoluteBoard : whiteViewAbsoluteBoard
+    return (boardState: BoardState) => func(boardState)
 }
 
-export function toPos(state: SGInPlay, absPos: number) {
-    return state.isRed ? state.boardStateNode.board.invertPos(absPos) : absPos
+export function toPos(state: SGInPlay): (absPos: number) => number {
+    return state.isRed
+        ? (absPos) => state.boardStateNode.board.invertPos(absPos)
+        : (absPos) => absPos
 }
 
 export function toEoGState(state: SGInPlay): SGEoG {
@@ -217,30 +182,57 @@ export function toEoGState(state: SGInPlay): SGEoG {
 }
 
 export function toToRollState(state: SGInPlay): SGToRoll {
+    const dices = state.rootNode.dices
     const boardStateNode = state.boardStateNode
     return state.isRed
-        ? _doCheckerCommit(boardStateNode, toPlyRed(state), toRollStateWhite)
-        : _doCheckerCommit(boardStateNode, toPlyWhite(state), toRollStateRed)
+        ? _doCheckerCommit(
+              boardStateNode,
+              toPlyRed(dices, boardStateNode),
+              toRollStateWhite
+          )
+        : _doCheckerCommit(
+              boardStateNode,
+              toPlyWhite(dices, boardStateNode),
+              toRollStateRed
+          )
 }
 export function toToRollStateAgain(state: SGInPlay): SGToRoll {
+    const dices = state.rootNode.dices
     const boardStateNode = state.boardStateNode
     return state.isRed
-        ? _doCheckerCommit(boardStateNode, toPlyRed(state), toRollStateRed)
-        : _doCheckerCommit(boardStateNode, toPlyWhite(state), toRollStateWhite)
+        ? _doCheckerCommit(
+              boardStateNode,
+              toPlyRed(dices, boardStateNode),
+              toRollStateRed
+          )
+        : _doCheckerCommit(
+              boardStateNode,
+              toPlyWhite(dices, boardStateNode),
+              toRollStateWhite
+          )
 }
 
 function _doCheckerCommit(
     committed: BoardStateNode,
     lastPly: Ply,
-    toRollState: (boardState: BoardState, lastPly: Ply) => SGToRoll
+    toRollStateFunc: (boardState: BoardState, lastPly: Ply) => SGToRoll
 ): SGToRoll {
     // 手番プレイヤーと相対表記の盤面とをそれぞれ入れ替える
     const nextBoardState = committed.board.revert()
-    return toRollState(nextBoardState, lastPly)
+    return toRollStateFunc(nextBoardState, lastPly)
 }
+
+export function toRollState(
+    isRed: boolean,
+    boardState: BoardState,
+    lastPly?: Ply
+) {
+    return (isRed ? toRollStateRed : toRollStateWhite)(boardState, lastPly)
+}
+
 export function toRollStateRed(
     boardState: BoardState,
-    lastPly: Ply = { moves: [], dices: [], isRed: true }
+    lastPly: Ply = { moves: [], dices: [], isRed: false }
 ): SGToRollRed {
     const absBoard = redViewAbsoluteBoard(boardState)
     return {
@@ -255,7 +247,7 @@ export function toRollStateRed(
 
 export function toRollStateWhite(
     boardState: BoardState,
-    lastPly: Ply = { moves: [], dices: [], isRed: false }
+    lastPly: Ply = { moves: [], dices: [], isRed: true }
 ): SGToRollWhite {
     const absBoard = whiteViewAbsoluteBoard(boardState)
     return {

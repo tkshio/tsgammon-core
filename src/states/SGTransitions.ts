@@ -64,7 +64,7 @@ function doOpening(
             const board = boardToPlay(boardState, isRed)
             const node = boardStateNodeFunc(board, openingRoll)
 
-            return inPlayState(node, isRed)
+            return inPlayState(isRed, node)
         }
 
         function needReRoll(openingRoll: DiceRoll) {
@@ -86,7 +86,7 @@ function doRoll(
 ): (state: SGToRoll, dices: DiceRoll) => SGInPlay {
     return (state, dices) => {
         const node = boardStateNodeFunc(state.boardState, dices)
-        return inPlayState(node, state.isRed)
+        return inPlayState(state.isRed, node)
     }
 }
 
