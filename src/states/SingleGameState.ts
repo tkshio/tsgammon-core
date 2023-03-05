@@ -154,6 +154,10 @@ export function inPlayState(node: BoardStateNodeRoot, isRed: boolean) {
     return (isRed ? inPlayStateRed : inPlayStateWhite)(node)
 }
 
+export function isRootState(state: SGInPlay) {
+    return state.rootNode.primary === state.boardStateNode
+}
+
 export function toPly(
     state: ({ isRed: true } | { isRed: false }) & {
         boardStateNode: BoardStateNode
