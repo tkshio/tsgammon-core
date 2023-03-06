@@ -127,6 +127,12 @@ Apache 2.0 license.
 
 ## Change logs
 
+2023/3 version 0.4.0
+- (supports Beaver/Racoon)
+- (supports new variants)
+- some refactorings, allow more flexible rule customize
+- migrates some code to tsgammon-ui
+- some incompatible updates to APIs
 
 2022/8/3 version 0.3.0
 
