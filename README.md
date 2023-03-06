@@ -40,7 +40,7 @@ $
 
 setup:
 ```typescript
-const node:BoardStateNode = boardStateNodeFromArray(
+const rootNode:BoardStateNodeRoot = boardStateNodeFromArray(
     [
         0, // your bar point
         2,0,0,0,0,-5, 0,-3,0,0,0,5,
@@ -55,7 +55,7 @@ const node:BoardStateNode = boardStateNodeFromArray(
 
 list up moves:
 ```typescript
-const candidates: Move[][] = collectMoves(node)
+const candidates: Move[][] = collectMoves(rootNode)
     .filter(moves => !moves.isRedundant)
     .map(moves => moves.moves)
 
@@ -71,7 +71,7 @@ candidates.map(moves => console.log(moves.map(move=>formatMove(move))))
 or list up as nodes:
 ```typescript
 // each node corresponds to the position after moves[n]
-const nodes:BoardStateNodes[] = collectNodes(node)
+const nodes:BoardStateNodes[] = collectNodes(rootNode)
 
 // nodes[0] corresponds to moves[0] (=[1/4, 1/2])
 const nodeAfterMove = nodes[0]
@@ -86,11 +86,11 @@ const nextNodeToPlay = boardStateNode(nextBoardState,diceRoll(5,2))
 
 test whether pieces on a point is moveble:
 ```typescript
-const nodeAfterMove14 = findMove(node, 1, false/* use larger pip first */)
+const nodeAfterMove14 = findMove(node, 1, false/* use first pip(=1) */)
 // returns position after move [1/4]
 console.log(nodeAfterMove14.hasValue) // true
 
-const nodeAfterMove12 = findMove(node, 1, true/* use smaller pip first */)
+const nodeAfterMove12 = findMove(node, 1, true/* use second pip(=3) */)
 // returns position after move [1/2]
 console.log(nodeAfterMove12.hasValue) // true
 
@@ -124,4 +124,25 @@ console.log(evaluate(node.board))
 ## License
 
 Apache 2.0 license.
+
+## Change logs
+
+
+2022/8/3 version 0.3.0
+
+- migrates some code from tsgammon-ui
+- some incompatible updates to APIs
+
+
+2022/4/9 version 0.2.0
+
+- supports Position ID, FIBS format
+- refactored BoardState
+- added bin/index.ts for demo
+- set up some configurations for C.I.
+
+
+2022/3/29 version 0.1.0
+
+- Initial release: separated from tsgammon-ui
 
