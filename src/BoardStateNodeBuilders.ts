@@ -75,7 +75,7 @@ export function boardStateNodeFromArray(
     pieces: number[],
     dice1: DicePip,
     dice2: DicePip,
-    ruleSet: RuleSet,
+    ruleSet: RuleSet = standardRuleSet,
     bornOffs: [number, number] = [0, 0]
 ): BoardStateNodeRoot {
     const board = boardState(pieces, bornOffs)
